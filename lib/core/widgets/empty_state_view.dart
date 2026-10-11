@@ -34,7 +34,7 @@ class EmptyStateView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppDimensions.space20),
               decoration: BoxDecoration(
-                color: AppColors.primaryContainerLight.withOpacity(0.5),
+                color: AppColors.primaryContainerLight.withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
               child: Icon(

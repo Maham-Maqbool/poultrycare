@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_image_view.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/models/flock_model.dart';
@@ -63,10 +64,14 @@ class _FlockDetailScreenState extends State<FlockDetailScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        flock.name,
-                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+                      Expanded(
+                        child: Text(
+                          flock.name,
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
@@ -85,20 +90,31 @@ class _FlockDetailScreenState extends State<FlockDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Row(
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 8,
                     children: [
-                      const Icon(Icons.egg_outlined, size: 18, color: AppColors.secondary),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Total Birds: ${flock.birdCount ?? 'Unspecified'}',
-                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.egg_outlined, size: 18, color: AppColors.secondary),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Total Birds: ${flock.birdCount ?? 'Unspecified'}',
+                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+                          ),
+                        ],
                       ),
-                      const Spacer(),
-                      const Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.textMutedLight),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Registered: ${AppFormatters.formatDate(flock.createdAt)}',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondaryLight),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.calendar_today_outlined, size: 16, color: AppColors.textMutedLight),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Registered: ${AppFormatters.formatDate(flock.createdAt)}',
+                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondaryLight),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -143,12 +159,12 @@ class _FlockDetailScreenState extends State<FlockDetailScreen> {
             else if (_flockScans.isEmpty)
               AppCard(
                 padding: const EdgeInsets.all(20),
-                child: Center(
+                child: const Center(
                   child: Column(
                     children: [
-                      const Icon(Icons.health_and_safety_outlined, size: 40, color: AppColors.primary),
-                      const SizedBox(height: 8),
-                      const Text(
+                      Icon(Icons.health_and_safety_outlined, size: 40, color: AppColors.primary),
+                      SizedBox(height: 8),
+                      Text(
                         'No health scans filed for this shed yet.',
                         style: TextStyle(fontSize: 13.5, color: AppColors.textSecondaryLight),
                       ),
@@ -170,27 +186,25 @@ class _FlockDetailScreenState extends State<FlockDetailScreen> {
                     padding: const EdgeInsets.all(12),
                     child: Row(
                       children: [
-                        ClipRRect(
+                        AppImageView(
+                          imagePath: item.scan.imagePath,
+                          width: 52,
+                          height: 52,
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            item.scan.imagePath,
-                            width: 52,
-                            height: 52,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 52,
-                              height: 52,
-                              color: AppColors.primaryContainerLight,
-                              child: const Icon(Icons.image, color: AppColors.primary),
-                            ),
-                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              StatusBadge.forDisease(disease),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                children: [
+                                  StatusBadge.forDisease(disease),
+                                  StatusBadge.forSeverity(item.prediction.severity),
+                                ],
+                              ),
                               const SizedBox(height: 4),
                               Text(
                                 '${AppFormatters.formatConfidence(item.prediction.calibratedConfidence)} confidence',
@@ -203,7 +217,11 @@ class _FlockDetailScreenState extends State<FlockDetailScreen> {
                             ],
                           ),
                         ),
-                        StatusBadge.forSeverity(item.prediction.severity),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 14,
+                          color: AppColors.textMutedLight,
+                        ),
                       ],
                     ),
                   );

@@ -78,7 +78,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
         color: isDark ? const Color(0xFF132D18) : AppColors.primaryContainerLight,
         borderRadius: AppDimensions.borderRadiusLarge,
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.2),
+          color: AppColors.primary.withValues(alpha: 0.2),
           width: 1.0,
         ),
       ),
@@ -129,7 +129,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
                 const SizedBox(height: 6),
                 LinearProgressIndicator(
                   value: _isPlaying ? _progress : 0.0,
-                  backgroundColor: AppColors.primary.withOpacity(0.15),
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.15),
                   valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
                   minHeight: 4,
                   borderRadius: BorderRadius.circular(2),

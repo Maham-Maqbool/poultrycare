@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_image_view.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../routes/app_routes.dart';
 import '../controllers/scanner_controller.dart';
@@ -22,65 +23,78 @@ class ScannerScreen extends StatelessWidget {
       builder: (ctx) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Select Test Sample Image',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Choose an authentic poultry fecal dropping photograph for instant demonstration:',
-                style: TextStyle(color: AppColors.textSecondaryLight, fontSize: 13),
-              ),
-              const SizedBox(height: 16),
-              _buildSampleTile(
-                ctx,
-                title: 'Coccidiosis (Bloody / Mucoid)',
-                subtitle: 'Severe reddish mucoid dropping',
-                imagePath: AppAssets.sampleCoccidiosis,
-                disease: 'coccidiosis',
-                onSelect: () {
-                  scanner.setImagePath(AppAssets.sampleCoccidiosis, targetDisease: 'coccidiosis');
-                  Navigator.pop(ctx);
-                },
-              ),
-              _buildSampleTile(
-                ctx,
-                title: 'Newcastle Disease (Greenish Watery)',
-                subtitle: 'Fluorescent green diarrhea',
-                imagePath: AppAssets.sampleNewcastle,
-                disease: 'ncd',
-                onSelect: () {
-                  scanner.setImagePath(AppAssets.sampleNewcastle, targetDisease: 'ncd');
-                  Navigator.pop(ctx);
-                },
-              ),
-              _buildSampleTile(
-                ctx,
-                title: 'Salmonella (Chalky White)',
-                subtitle: 'Watery white vent paste',
-                imagePath: AppAssets.sampleSalmonella,
-                disease: 'salmonella',
-                onSelect: () {
-                  scanner.setImagePath(AppAssets.sampleSalmonella, targetDisease: 'salmonella');
-                  Navigator.pop(ctx);
-                },
-              ),
-              _buildSampleTile(
-                ctx,
-                title: 'Healthy (Normal Digestion)',
-                subtitle: 'Firm cylindrical with white urate cap',
-                imagePath: AppAssets.sampleHealthy,
-                disease: 'healthy',
-                onSelect: () {
-                  scanner.setImagePath(AppAssets.sampleHealthy, targetDisease: 'healthy');
-                  Navigator.pop(ctx);
-                },
-              ),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Select Test Sample Specimen',
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16.5),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Authentic poultry fecal dropping photographs for laboratory demonstration:',
+                  style: TextStyle(color: AppColors.textSecondaryLight, fontSize: 12.5),
+                ),
+                const SizedBox(height: 14),
+                _buildSampleTile(
+                  ctx,
+                  title: 'Coccidiosis (Bloody / Mucoid)',
+                  subtitle: 'Eimeria tenella intestinal lesion exudate',
+                  imagePath: AppAssets.sampleCoccidiosis,
+                  disease: 'coccidiosis',
+                  onSelect: () {
+                    scanner.selectSampleImage(AppAssets.sampleCoccidiosis, targetDisease: 'coccidiosis');
+                    Navigator.pop(ctx);
+                  },
+                ),
+                _buildSampleTile(
+                  ctx,
+                  title: 'Newcastle Disease (Green Watery)',
+                  subtitle: 'Velogenic paramyxovirus diarrhea',
+                  imagePath: AppAssets.sampleNewcastle,
+                  disease: 'ncd',
+                  onSelect: () {
+                    scanner.selectSampleImage(AppAssets.sampleNewcastle, targetDisease: 'ncd');
+                    Navigator.pop(ctx);
+                  },
+                ),
+                _buildSampleTile(
+                  ctx,
+                  title: 'Salmonella (Chalky White)',
+                  subtitle: 'Pullorum disease chalky paste',
+                  imagePath: AppAssets.sampleSalmonella,
+                  disease: 'salmonella',
+                  onSelect: () {
+                    scanner.selectSampleImage(AppAssets.sampleSalmonella, targetDisease: 'salmonella');
+                    Navigator.pop(ctx);
+                  },
+                ),
+                _buildSampleTile(
+                  ctx,
+                  title: 'Healthy (Normal Digestion)',
+                  subtitle: 'Firm cylindrical feces with urate cap',
+                  imagePath: AppAssets.sampleHealthy,
+                  disease: 'healthy',
+                  onSelect: () {
+                    scanner.selectSampleImage(AppAssets.sampleHealthy, targetDisease: 'healthy');
+                    Navigator.pop(ctx);
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -97,23 +111,24 @@ class ScannerScreen extends StatelessWidget {
   }) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(vertical: 4),
-      leading: ClipRRect(
+      leading: AppImageView(
+        imagePath: imagePath,
+        width: 52,
+        height: 52,
         borderRadius: BorderRadius.circular(8),
-        child: Image.network(
-          imagePath,
-          width: 52,
-          height: 52,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(
-            width: 52,
-            height: 52,
-            color: AppColors.primaryContainerLight,
-            child: const Icon(Icons.broken_image, color: AppColors.primary),
-          ),
-        ),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(fontSize: 11.5),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
       onTap: onSelect,
     );
@@ -129,7 +144,7 @@ class ScannerScreen extends StatelessWidget {
         title: const Text('AI Diagnostic Studio'),
         actions: [
           IconButton(
-            tooltip: 'Pick Test Sample',
+            tooltip: 'Standard Test Specimens',
             icon: const Icon(Icons.collections_bookmark_outlined),
             onPressed: () => _showSamplePicker(context),
           ),
@@ -140,7 +155,7 @@ class ScannerScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image Preview & Capture Container
+            // AI Viewfinder Camera Box
             AppCard(
               padding: EdgeInsets.zero,
               child: Column(
@@ -150,75 +165,204 @@ class ScannerScreen extends StatelessWidget {
                       ClipRRect(
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                         child: Container(
-                          height: 220,
+                          height: 240,
                           width: double.infinity,
-                          color: Colors.black,
+                          color: const Color(0xFF0F172A),
                           child: scanner.selectedImagePath != null
-                              ? Image.network(
-                                  scanner.selectedImagePath!,
+                              ? AppImageView(
+                                  imagePath: scanner.selectedImagePath!,
+                                  width: double.infinity,
+                                  height: 240,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Center(
-                                    child: Icon(Icons.image, size: 64, color: Colors.white54),
-                                  ),
                                 )
                               : const Center(
-                                  child: Icon(
-                                    Icons.add_a_photo_outlined,
-                                    size: 56,
-                                    color: Colors.white54,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_a_photo_outlined,
+                                        size: 48,
+                                        color: Colors.white54,
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        'Capture or upload chicken dropping photo',
+                                        style: TextStyle(color: Colors.white60, fontSize: 13),
+                                      ),
+                                    ],
                                   ),
                                 ),
                         ),
                       ),
+
+                      // Clinical AI Reticle Overlay
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: Center(
+                            child: Container(
+                              width: 140,
+                              height: 140,
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  width: 1.5,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Stack(
+                                children: [
+                                  Center(
+                                    child: Icon(
+                                      Icons.add,
+                                      size: 24,
+                                      color: Colors.white.withValues(alpha: 0.75),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Status Header Badge
                       Positioned(
                         top: 12,
-                        right: 12,
+                        left: 12,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.65),
+                            color: Colors.black.withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.center_focus_strong, size: 14, color: Colors.white),
-                              SizedBox(width: 4),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.healthy,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
                               Text(
-                                'Focal Target',
-                                style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                                scanner.isLocalFile ? 'Live Camera / File Specimen' : 'Standard Specimen',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            icon: const Icon(Icons.photo_library_outlined, size: 18),
-                            label: const Text('Pick Image'),
-                            onPressed: () => _showSamplePicker(context),
+
+                      Positioned(
+                        top: 12,
+                        right: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.7),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            '224x224 Tensor Target',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.camera_alt_outlined, size: 18),
-                            label: const Text('Camera'),
-                            onPressed: () {
-                              scanner.setImagePath(AppAssets.sampleNewcastle, targetDisease: 'ncd');
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Simulated live camera snapshot loaded.'),
-                                  duration: Duration(seconds: 1),
+                      ),
+                    ],
+                  ),
+
+                  // 3 Real Upload Action Controls
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            // Real Camera Capture
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
                                 ),
-                              );
-                            },
+                                icon: const Icon(Icons.camera_alt_rounded, size: 18),
+                                label: const Text(
+                                  'Camera',
+                                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
+                                ),
+                                onPressed: () async {
+                                  final success = await scanner.pickImageFromCamera();
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          success
+                                              ? 'Poultry photograph captured successfully.'
+                                              : 'Camera capture cancelled.',
+                                        ),
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+
+                            // Real Device Gallery Picker
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                                icon: const Icon(Icons.photo_library_outlined, size: 18),
+                                label: const Text(
+                                  'Gallery',
+                                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
+                                ),
+                                onPressed: () async {
+                                  final success = await scanner.pickImageFromGallery();
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          success
+                                              ? 'Specimen image loaded from gallery.'
+                                              : 'Image selection cancelled.',
+                                        ),
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Standard Samples Bottom Bar
+                        SizedBox(
+                          width: double.infinity,
+                          child: TextButton.icon(
+                            icon: const Icon(Icons.science_outlined, size: 16),
+                            label: const Text(
+                              'Or Choose Test Fecal Sample (4 Authentic Classes)',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                            ),
+                            onPressed: () => _showSamplePicker(context),
                           ),
                         ),
                       ],
@@ -238,12 +382,14 @@ class ScannerScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Image Quality Checks',
-                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+                      const Expanded(
+                        child: Text(
+                          'Pre-Inference Quality Checks',
+                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+                        ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: scanner.isImageValid ? AppColors.healthyLight : AppColors.severeLight,
                           borderRadius: BorderRadius.circular(10),
@@ -261,17 +407,17 @@ class ScannerScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   _buildCheckRow(
-                    title: 'Lighting & Visibility',
+                    title: 'Lighting & Specimen Visibility',
                     passed: scanner.lightingPassed,
                     onToggle: scanner.toggleLighting,
                   ),
                   _buildCheckRow(
-                    title: 'Focus & Sharpness',
+                    title: 'Focal Sharpness & Detail',
                     passed: scanner.sharpnessPassed,
                     onToggle: scanner.toggleSharpness,
                   ),
                   _buildCheckRow(
-                    title: 'Single Dropping in Focus',
+                    title: 'Isolated Dropping in Target',
                     passed: scanner.singleDroppingPassed,
                     onToggle: scanner.toggleSingleDropping,
                   ),
@@ -287,12 +433,12 @@ class ScannerScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Assign to Farm Flock',
+                    'Assign Specimen to Farm Shed',
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
                   ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: scanner.selectedFlockId,
+                    initialValue: scanner.selectedFlockId,
                     decoration: const InputDecoration(
                       contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     ),
@@ -300,8 +446,8 @@ class ScannerScreen extends StatelessWidget {
                       return DropdownMenuItem<String>(
                         value: f.id,
                         child: Text(
-                          '${f.name} (${f.birdCount ?? 0} birds)',
-                          style: const TextStyle(fontSize: 14),
+                          '${f.name} (${f.birdCount ?? 0} chickens)',
+                          style: const TextStyle(fontSize: 13.5),
                         ),
                       );
                     }).toList(),
@@ -322,27 +468,30 @@ class ScannerScreen extends StatelessWidget {
                     children: [
                       Icon(Icons.medical_services_outlined, size: 20, color: AppColors.primary),
                       SizedBox(width: 8),
-                      Text(
-                        'Clinical Flock Triage (3 Questions)',
-                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                      Expanded(
+                        child: Text(
+                          'Clinical Flock Triage (3 Vital Signals)',
+                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'These signals combine with photo classification to derive true disease severity:',
-                    style: TextStyle(color: AppColors.textSecondaryLight, fontSize: 12.5),
+                    'These vitals synthesize with image classification to derive calibrated clinical severity:',
+                    style: TextStyle(color: AppColors.textSecondaryLight, fontSize: 12),
                   ),
                   const Divider(height: 24),
 
                   // Q1: Lethargy
                   const Text(
-                    '1. Lethargy & Droopy Birds:',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+                    '1. Bird Lethargy & Wing Droop:',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   ),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 8,
+                    runSpacing: 6,
                     children: [
                       _buildTriageChip(
                         label: 'None',
@@ -378,11 +527,12 @@ class ScannerScreen extends StatelessWidget {
                   // Q2: Intake Drop
                   const Text(
                     '2. Feed & Water Consumption:',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   ),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 8,
+                    runSpacing: 6,
                     children: [
                       _buildTriageChip(
                         label: 'Normal',
@@ -418,11 +568,12 @@ class ScannerScreen extends StatelessWidget {
                   // Q3: Sudden Mortality
                   const Text(
                     '3. Sudden Mortality in Last 24 Hours:',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5),
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   ),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 8,
+                    runSpacing: 6,
                     children: [
                       _buildTriageChip(
                         label: 'None in 24h',
@@ -501,24 +652,32 @@ class ScannerScreen extends StatelessWidget {
     required void Function(bool) onToggle,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 3.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Icon(
-                passed ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                size: 18,
-                color: passed ? AppColors.healthy : AppColors.severe,
-              ),
-              const SizedBox(width: 8),
-              Text(title, style: const TextStyle(fontSize: 13.5)),
-            ],
+          Expanded(
+            child: Row(
+              children: [
+                Icon(
+                  passed ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                  size: 18,
+                  color: passed ? AppColors.healthy : AppColors.severe,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(fontSize: 13),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
           Switch(
             value: passed,
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             onChanged: onToggle,
           ),
@@ -533,7 +692,13 @@ class ScannerScreen extends StatelessWidget {
     required VoidCallback onSelect,
   }) {
     return ChoiceChip(
-      label: Text(label, style: TextStyle(fontSize: 12, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)),
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+        ),
+      ),
       selected: selected,
       selectedColor: AppColors.primaryContainerLight,
       onSelected: (_) => onSelect(),

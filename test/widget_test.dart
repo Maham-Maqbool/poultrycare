@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:poultrycare/app.dart';
+import 'package:poultrycare/core/widgets/app_image_view.dart';
 import 'package:poultrycare/data/repositories/auth_repository.dart';
 import 'package:poultrycare/data/repositories/flock_repository.dart';
 import 'package:poultrycare/data/repositories/disease_repository.dart';
@@ -39,5 +41,36 @@ void main() {
 
     expect(find.text('PoultryCare'), findsOneWidget);
     await tester.pumpAndSettle(const Duration(seconds: 3));
+  });
+
+  testWidgets('AppImageView renders graceful specimen placeholder when empty', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: AppImageView(imagePath: null, width: 80, height: 80),
+        ),
+      ),
+    );
+
+    expect(find.text('Poultry Specimen'), findsOneWidget);
+    expect(find.byIcon(Icons.biotech_rounded), findsOneWidget);
+  });
+
+  test('ScannerController manages specimen selection and triage synthesis', () async {
+    final diseaseRepo = DiseaseRepository();
+    final diagnosticRepo = DiagnosticRepository();
+    final controller = ScannerController(diagnosticRepo, diseaseRepo);
+
+    expect(controller.isImageValid, isTrue);
+    controller.selectSampleImage('https://images.unsplash.com/sample', targetDisease: 'coccidiosis');
+    expect(controller.selectedImagePath, 'https://images.unsplash.com/sample');
+    expect(controller.forcedDisease, 'coccidiosis');
+
+    controller.setFlockSignals(
+      lethargy: 'Over 10% of birds',
+      intakeDrop: 'Severely dropped',
+      suddenMortality: 'Multiple birds died',
+    );
+    expect(controller.suddenMortality, 'Multiple birds died');
   });
 }

@@ -59,7 +59,7 @@ class DiagnosticRepository {
     final decodeMs = 14.0;
 
     // 2. Determine target disease class
-    final String predictedClass = (forcedDisease ?? _detectClassFromImage(imagePath)).toLowerCase();
+    final String predictedClass = (forcedDisease ?? _detectClassFromImage(imagePath, flockSignals)).toLowerCase();
 
     // 3. Simulate inference latency and confidence metrics
     await Future.delayed(const Duration(milliseconds: 400));
@@ -233,12 +233,27 @@ class DiagnosticRepository {
     }
   }
 
-  String _detectClassFromImage(String path) {
+  String _detectClassFromImage(String path, Map<String, dynamic> flockSignals) {
     final lower = path.toLowerCase();
     if (lower.contains('newcastle') || lower.contains('ncd')) return 'ncd';
     if (lower.contains('salmonella')) return 'salmonella';
     if (lower.contains('coccidiosis')) return 'coccidiosis';
     if (lower.contains('healthy')) return 'healthy';
-    return 'coccidiosis';
+
+    // For live camera photos or device gallery uploads, synthesize with triage signals
+    final mortality = (flockSignals['suddenMortality'] ?? '').toString();
+    final intake = (flockSignals['intakeDrop'] ?? '').toString();
+    final lethargy = (flockSignals['lethargy'] ?? '').toString();
+
+    if (mortality.contains('Multiple') || mortality.contains('1 to 2')) {
+      return 'ncd';
+    }
+    if (intake.contains('Severely') || lethargy.contains('Over 10%')) {
+      return 'coccidiosis';
+    }
+    if (intake.contains('Reduced') || lethargy.contains('Under 10%')) {
+      return 'salmonella';
+    }
+    return 'healthy';
   }
 }

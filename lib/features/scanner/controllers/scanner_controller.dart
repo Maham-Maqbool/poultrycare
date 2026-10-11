@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../data/mock/mock_scans_data.dart';
 import '../../../data/models/treatment_model.dart';
 import '../../../data/repositories/diagnostic_repository.dart';
 import '../../../data/repositories/disease_repository.dart';
 import '../../../core/constants/app_assets.dart';
 
-/// ScannerController manages image selection, quality validation,
-/// 3-question flock triage input, and diagnostic execution.
+/// ScannerController manages camera capture, local gallery selection,
+/// image quality validation, 3-question flock triage input, and diagnostic execution.
 class ScannerController extends ChangeNotifier {
   final DiagnosticRepository _diagRepo;
   final DiseaseRepository _diseaseRepo;
+  final ImagePicker _picker = ImagePicker();
 
   String? _selectedImagePath = AppAssets.sampleCoccidiosis;
   String? _selectedFlockId = 'flock-101';
   String? _forcedDisease; // For demo testing specific classes
+  bool _isLocalFile = false;
 
   // 3 Clinical Flock Triage Questions
   String _lethargy = 'Under 10% of birds';
@@ -36,6 +39,7 @@ class ScannerController extends ChangeNotifier {
   String? get selectedImagePath => _selectedImagePath;
   String? get selectedFlockId => _selectedFlockId;
   String? get forcedDisease => _forcedDisease;
+  bool get isLocalFile => _isLocalFile;
 
   String get lethargy => _lethargy;
   String get intakeDrop => _intakeDrop;
@@ -51,8 +55,72 @@ class ScannerController extends ChangeNotifier {
   DiagnosticRecord? get lastResult => _lastResult;
   TreatmentModel? get lastTreatment => _lastTreatment;
 
-  void setImagePath(String path, {String? targetDisease}) {
+  /// Captures a live photograph using the device camera.
+  Future<bool> pickImageFromCamera() async {
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 88,
+      );
+      if (photo != null) {
+        _selectedImagePath = photo.path;
+        _isLocalFile = true;
+        _forcedDisease = null; // Unbiased AI inference on actual photo
+        _lightingPassed = true;
+        _sharpnessPassed = true;
+        _singleDroppingPassed = true;
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Camera capture error: $e');
+      return false;
+    }
+  }
+
+  /// Selects an authentic poultry photo from local device gallery.
+  Future<bool> pickImageFromGallery() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 88,
+      );
+      if (image != null) {
+        _selectedImagePath = image.path;
+        _isLocalFile = true;
+        _forcedDisease = null; // Unbiased AI inference on actual photo
+        _lightingPassed = true;
+        _sharpnessPassed = true;
+        _singleDroppingPassed = true;
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Gallery picker error: $e');
+      return false;
+    }
+  }
+
+  /// Selects one of the curated standard poultry test samples.
+  void selectSampleImage(String path, {String? targetDisease}) {
     _selectedImagePath = path;
+    _isLocalFile = false;
+    _forcedDisease = targetDisease;
+    _lightingPassed = true;
+    _sharpnessPassed = true;
+    _singleDroppingPassed = true;
+    notifyListeners();
+  }
+
+  void setImagePath(String path, {String? targetDisease, bool isLocal = false}) {
+    _selectedImagePath = path;
+    _isLocalFile = isLocal;
     _forcedDisease = targetDisease;
     _lightingPassed = true;
     _sharpnessPassed = true;

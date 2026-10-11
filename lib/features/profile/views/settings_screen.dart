@@ -37,7 +37,7 @@ class SettingsScreen extends StatelessWidget {
                     title: const Text('Dark Mode'),
                     subtitle: const Text('Reduces outdoor screen glare and saves battery'),
                     value: settings.isDarkMode,
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                     onChanged: (_) => settings.toggleTheme(),
                   ),
                   const Divider(height: 1),
@@ -127,9 +127,12 @@ class SettingsScreen extends StatelessWidget {
                     children: [
                       const Icon(Icons.cleaning_services_outlined, color: AppColors.primary),
                       const SizedBox(width: 8),
-                      Text(
-                        'Temporary Image Cache: ${(settings.cacheSizeKb / 1024).toStringAsFixed(1)} MB',
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                      Expanded(
+                        child: Text(
+                          'Temporary Image Cache: ${(settings.cacheSizeKb / 1024).toStringAsFixed(1)} MB',
+                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
@@ -159,7 +162,7 @@ class SettingsScreen extends StatelessWidget {
                     title: const Text('Anonymized Research Consent', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
                     subtitle: const Text('Allow encrypted feature hashes for model retraining', style: TextStyle(fontSize: 12)),
                     value: settings.imageRetentionConsent,
-                    activeColor: AppColors.primary,
+                    activeThumbColor: AppColors.primary,
                     onChanged: settings.toggleConsent,
                   ),
                 ],

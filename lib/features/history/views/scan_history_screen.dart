@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_image_view.dart';
 import '../../../core/widgets/empty_state_view.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/mock/mock_scans_data.dart';
@@ -46,20 +47,11 @@ class ScanHistoryScreen extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ClipRRect(
+                  AppImageView(
+                    imagePath: scan.imagePath,
+                    width: 72,
+                    height: 72,
                     borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      scan.imagePath,
-                      width: 72,
-                      height: 72,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: 72,
-                        height: 72,
-                        color: AppColors.primaryContainerLight,
-                        child: const Icon(Icons.image, color: AppColors.primary),
-                      ),
-                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -82,8 +74,10 @@ class ScanHistoryScreen extends StatelessWidget {
                 ],
               ),
               const Divider(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
                 children: [
                   StatusBadge.forSeverity(pred.severity, isLarge: true),
                   StatusBadge.forUrgency(pred.urgency, isLarge: true),
@@ -101,7 +95,7 @@ class ScanHistoryScreen extends StatelessWidget {
                 runSpacing: 6,
                 children: pred.triageRules.map((r) => Chip(
                   label: Text(r, style: const TextStyle(fontSize: 11)),
-                  backgroundColor: AppColors.primaryContainerLight.withOpacity(0.4),
+                  backgroundColor: AppColors.primaryContainerLight.withValues(alpha: 0.5),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 )).toList(),
               ),
@@ -115,7 +109,7 @@ class ScanHistoryScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryContainerLight.withOpacity(0.3),
+                    color: AppColors.primaryContainerLight.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
@@ -131,11 +125,13 @@ class ScanHistoryScreen extends StatelessWidget {
                             color: AppColors.primary,
                           ),
                           const SizedBox(width: 6),
-                          Text(
-                            record.feedback!.confirmedByVet
-                                ? 'Confirmed by Vet: ${record.feedback!.actualClass ?? 'Same'}'
-                                : 'Farmer Assessment',
-                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                          Expanded(
+                            child: Text(
+                              record.feedback!.confirmedByVet
+                                  ? 'Confirmed by Vet: ${record.feedback!.actualClass ?? 'Same'}'
+                                  : 'Farmer Assessment',
+                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                            ),
                           ),
                         ],
                       ),
@@ -249,30 +245,22 @@ class ScanHistoryScreen extends StatelessWidget {
                         onTap: () => _showRecordDetail(context, item),
                         child: Row(
                           children: [
-                            ClipRRect(
+                            AppImageView(
+                              imagePath: scan.imagePath,
+                              width: 56,
+                              height: 56,
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                scan.imagePath,
-                                width: 56,
-                                height: 56,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
-                                  width: 56,
-                                  height: 56,
-                                  color: AppColors.primaryContainerLight,
-                                  child: const Icon(Icons.image, color: AppColors.primary),
-                                ),
-                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 4,
                                     children: [
                                       StatusBadge.forDisease(disease),
-                                      const SizedBox(width: 6),
                                       StatusBadge.forSeverity(pred.severity),
                                     ],
                                   ),
@@ -280,6 +268,7 @@ class ScanHistoryScreen extends StatelessWidget {
                                   Text(
                                     '${AppFormatters.formatConfidence(pred.calibratedConfidence)} confidence | ${pred.triageRules.length} rules fired',
                                     style: const TextStyle(fontSize: 12, color: AppColors.textSecondaryLight),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
@@ -306,10 +295,18 @@ class ScanHistoryScreen extends StatelessWidget {
     required bool selected,
     required VoidCallback onSelect,
   }) {
-    return ChoiceChip(
-      label: Text(label, style: TextStyle(fontSize: 12, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)),
+    return FilterChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          color: selected ? AppColors.primary : AppColors.textSecondaryLight,
+        ),
+      ),
       selected: selected,
       selectedColor: AppColors.primaryContainerLight,
+      showCheckmark: false,
       onSelected: (_) => onSelect(),
     );
   }

@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_image_view.dart';
 import '../../../core/widgets/audio_player_widget.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/status_badge.dart';
@@ -109,7 +110,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                 margin: const EdgeInsets.only(bottom: 16),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.severeLight,
+                  color: isDark ? const Color(0xFF3B1212) : AppColors.severeLight,
                   borderRadius: AppDimensions.borderRadiusLarge,
                   border: Border.all(color: AppColors.severe, width: 2),
                 ),
@@ -135,8 +136,8 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                             isUrdu
                               ? 'رانی کھیت انتہائی خطرناک اور متعدی بیماری ہے۔ فارم پر فوری قرنطینہ نافذ کریں اور پولٹری ڈاکٹر کو اطلاع دیں'
                               : 'Newcastle Disease is reportable by law. Quarantine the flock immediately and notify regional veterinary authorities.',
-                            style: const TextStyle(
-                              color: AppColors.textPrimaryLight,
+                            style: TextStyle(
+                              color: isDark ? Colors.white : AppColors.textPrimaryLight,
                               fontSize: 12.5,
                               height: 1.4,
                             ),
@@ -158,20 +159,11 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ClipRRect(
+                      AppImageView(
+                        imagePath: scan.imagePath,
+                        width: 88,
+                        height: 88,
                         borderRadius: AppDimensions.borderRadiusMedium,
-                        child: Image.network(
-                          scan.imagePath,
-                          width: 88,
-                          height: 88,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            width: 88,
-                            height: 88,
-                            color: AppColors.primaryContainerLight,
-                            child: const Icon(Icons.image, color: AppColors.primary),
-                          ),
-                        ),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -207,6 +199,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                                 fontSize: 11.5,
                                 color: AppColors.textMutedLight,
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
@@ -215,30 +208,37 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                   ),
                   const Divider(height: 24),
 
-                  // Metrics Row: Confidence & Severity & Urgency
+                  // Metrics Row: AI Confidence, Severity & Urgency
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildMetricTile(
-                        label: 'AI Confidence',
-                        value: AppFormatters.formatConfidence(pred.calibratedConfidence),
-                        badgeColor: AppColors.primary,
+                      Expanded(
+                        child: _buildMetricTile(
+                          label: 'AI Confidence',
+                          value: AppFormatters.formatConfidence(pred.calibratedConfidence),
+                          badgeColor: AppColors.primary,
+                        ),
                       ),
-                      _buildMetricTile(
-                        label: 'Clinical Severity',
-                        value: severity.toUpperCase(),
-                        badgeColor: severity == 'severe'
-                            ? AppColors.severe
-                            : severity == 'moderate'
-                                ? AppColors.moderate
-                                : AppColors.healthy,
+                      Container(width: 1, height: 36, color: AppColors.borderLight),
+                      Expanded(
+                        child: _buildMetricTile(
+                          label: 'Clinical Severity',
+                          value: severity.toUpperCase(),
+                          badgeColor: severity == 'severe'
+                              ? AppColors.severe
+                              : severity == 'moderate'
+                                  ? AppColors.moderate
+                                  : AppColors.healthy,
+                        ),
                       ),
-                      _buildMetricTile(
-                        label: 'Action Urgency',
-                        value: urgency.replaceAll('_', ' ').toUpperCase(),
-                        badgeColor: urgency == 'vet_now'
-                            ? AppColors.urgencyVetNow
-                            : AppColors.urgencyTreatToday,
+                      Container(width: 1, height: 36, color: AppColors.borderLight),
+                      Expanded(
+                        child: _buildMetricTile(
+                          label: 'Action Urgency',
+                          value: urgency.replaceAll('_', ' ').toUpperCase(),
+                          badgeColor: urgency == 'vet_now'
+                              ? AppColors.urgencyVetNow
+                              : AppColors.urgencyTreatToday,
+                        ),
                       ),
                     ],
                   ),
@@ -268,9 +268,11 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                       children: [
                         const Icon(Icons.medication_liquid_outlined, color: AppColors.primary, size: 22),
                         const SizedBox(width: 8),
-                        Text(
-                          isUrdu ? 'تجویز کردہ ادویات اور مقدار' : 'Recommended Medical Treatment',
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                        Expanded(
+                          child: Text(
+                            isUrdu ? 'تجویز کردہ ادویات اور مقدار' : 'Recommended Medical Treatment',
+                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5),
+                          ),
                         ),
                       ],
                     ),
@@ -285,9 +287,11 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                       children: [
                         const Icon(Icons.checklist_rtl_rounded, color: AppColors.secondary, size: 22),
                         const SizedBox(width: 8),
-                        Text(
-                          isUrdu ? 'بیمار پرندوں کی فوری دیکھ بھال' : 'Patient Care & Hydration Steps',
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                        Expanded(
+                          child: Text(
+                            isUrdu ? 'بیمار پرندوں کی فوری دیکھ بھال' : 'Patient Care & Hydration Steps',
+                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5),
+                          ),
                         ),
                       ],
                     ),
@@ -302,9 +306,11 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                       children: [
                         const Icon(Icons.shield_outlined, color: AppColors.urgencyMonitor, size: 22),
                         const SizedBox(width: 8),
-                        Text(
-                          isUrdu ? 'بائیو سیکیورٹی اور شیڈ کی حفاظت' : 'Biosecurity & Quarantine Protocols',
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                        Expanded(
+                          child: Text(
+                            isUrdu ? 'بائیو سیکیورٹی اور شیڈ کی حفاظت' : 'Biosecurity & Quarantine Protocols',
+                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5),
+                          ),
                         ),
                       ],
                     ),
@@ -330,9 +336,11 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                     children: [
                       Icon(Icons.psychology_outlined, size: 22, color: AppColors.primary),
                       SizedBox(width: 8),
-                      Text(
-                        'Explainable Clinical Advisory Rules',
-                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5),
+                      Expanded(
+                        child: Text(
+                          'Explainable Clinical Advisory Rules',
+                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5),
+                        ),
                       ),
                     ],
                   ),
@@ -378,7 +386,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Provide Farmer Feedback',
+                    'Provide Field Feedback',
                     style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5),
                   ),
                   const SizedBox(height: 4),
@@ -436,8 +444,8 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                   CheckboxListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text(
-                      'Confirmed by Licensed Veterinarian',
-                      style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
+                      'Confirmed by Licensed Poultry Veterinarian',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
                     value: _confirmedByVet,
                     activeColor: AppColors.primary,
@@ -453,7 +461,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                         labelText: 'Confirmed Disease by Vet',
                         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
-                      value: _actualClass ?? diseaseCode,
+                      initialValue: _actualClass ?? diseaseCode,
                       items: const [
                         DropdownMenuItem(value: 'coccidiosis', child: Text('Coccidiosis')),
                         DropdownMenuItem(value: 'ncd', child: Text('Newcastle Disease')),
@@ -488,7 +496,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
 
             // Thumb Zone Action Buttons (FR-13)
             CustomButton(
-              text: 'Scan Another Dropping',
+              text: 'Scan Another Specimen',
               icon: Icons.camera_alt_outlined,
               onPressed: () {
                 Navigator.pop(context);
@@ -508,22 +516,27 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
   }) {
     return Column(
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            color: badgeColor,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              color: badgeColor,
+            ),
           ),
         ),
         const SizedBox(height: 2),
         Text(
           label,
+          textAlign: TextAlign.center,
           style: const TextStyle(
-            fontSize: 11,
+            fontSize: 10.5,
             color: AppColors.textMutedLight,
             fontWeight: FontWeight.w600,
           ),
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );

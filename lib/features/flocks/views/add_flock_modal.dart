@@ -58,7 +58,7 @@ class _AddFlockModalState extends State<AddFlockModal> {
     if (success && mounted) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('New flock registered successfully!')),
+        const SnackBar(content: Text('New poultry flock registered successfully!')),
       );
     }
   }
@@ -82,9 +82,12 @@ class _AddFlockModalState extends State<AddFlockModal> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Register Farm Flock / Shed',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+                  const Expanded(
+                    child: Text(
+                      'Register Farm Flock / Shed',
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -117,9 +120,9 @@ class _AddFlockModalState extends State<AddFlockModal> {
                   Expanded(
                     child: CustomTextField(
                       controller: _breedController,
-                      label: 'Breed',
-                      hint: 'e.g. Ross 308, Desi',
-                      prefixIcon: Icons.pets_outlined,
+                      label: 'Poultry Breed',
+                      hint: 'e.g. Cobb 500, Desi',
+                      prefixIcon: Icons.egg_outlined,
                     ),
                   ),
                 ],

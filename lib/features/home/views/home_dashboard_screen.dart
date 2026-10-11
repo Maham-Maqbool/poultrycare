@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_image_view.dart';
 import '../../../core/widgets/audio_player_widget.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../auth/controllers/auth_controller.dart';
@@ -39,29 +40,32 @@ class HomeDashboardScreen extends StatelessWidget {
               child: const Icon(Icons.egg_alt_rounded, color: AppColors.primary, size: 20),
             ),
             const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'PoultryCare',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'PoultryCare',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-                Text(
-                  user.displayName ?? 'Guest Farmer',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    color: isDark ? AppColors.textMutedDark : AppColors.textSecondaryLight,
+                  Text(
+                    user.displayName ?? 'Poultry Farm Specialist',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: isDark ? AppColors.textMutedDark : AppColors.textSecondaryLight,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
         actions: [
           IconButton(
-            tooltip: 'Scan History',
+            tooltip: 'Diagnostic History',
             icon: const Icon(Icons.history_rounded),
             onPressed: () {
               Navigator.pushNamed(context, AppRoutes.history);
@@ -91,9 +95,9 @@ class HomeDashboardScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
+                  color: isDark ? const Color(0xFF2D1515) : const Color(0xFFFEF2F2),
                   borderRadius: AppDimensions.borderRadiusLarge,
-                  border: Border.all(color: AppColors.severe.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.severe.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -111,7 +115,7 @@ class HomeDashboardScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Regional Newcastle Advisory',
+                            'Regional Newcastle Disease Alert',
                             style: TextStyle(
                               color: AppColors.severe,
                               fontWeight: FontWeight.w800,
@@ -120,8 +124,8 @@ class HomeDashboardScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 2),
                           Text(
-                            'Green watery droppings reported in southern sheds. Inspect flocks daily.',
-                            style: TextStyle(fontSize: 11.5, color: Color(0xFF7F1D1D)),
+                            'Green watery feces reported in regional sheds. Perform daily AI specimen checks.',
+                            style: TextStyle(fontSize: 11.5, color: Color(0xFF991B1B)),
                           ),
                         ],
                       ),
@@ -148,11 +152,11 @@ class HomeDashboardScreen extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Text(
-                                  'MobileNetV3 AI Engine',
+                                  'MobileNetV3 Edge Inference',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 11,
@@ -162,20 +166,20 @@ class HomeDashboardScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               const Text(
-                                'Check Dropping Health',
+                                'Check Chicken Fecal Health',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: 17.5,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Take a photo of chicken fecal droppings for instant disease & clinical severity grading.',
+                                'Capture or upload chicken fecal droppings for instant multi-class classification and severity triage.',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.85),
+                                  color: Colors.white.withValues(alpha: 0.88),
                                   fontSize: 12.5,
-                                  height: 1.4,
+                                  height: 1.35,
                                 ),
                               ),
                             ],
@@ -185,13 +189,13 @@ class HomeDashboardScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
                             Icons.camera_enhance_rounded,
                             color: Colors.white,
-                            size: 36,
+                            size: 34,
                           ),
                         ),
                       ],
@@ -225,7 +229,7 @@ class HomeDashboardScreen extends StatelessWidget {
 
               // Farm Vitals Summary Grid
               const Text(
-                'Farm Health Overview',
+                'Poultry Farm Telemetry & Vitals',
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               ),
               const SizedBox(height: 10),
@@ -276,7 +280,7 @@ class HomeDashboardScreen extends StatelessWidget {
 
               // Daily Audio Advisory Tip
               const AudioPlayerWidget(
-                title: 'Daily Tip: Litter Moisture Control',
+                title: 'Daily Advisory: Broiler Litter Moisture Control',
                 durationText: '0:45',
               ),
               const SizedBox(height: AppDimensions.space20),
@@ -285,9 +289,12 @@ class HomeDashboardScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Recent Diagnostic Checks',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                  const Expanded(
+                    child: Text(
+                      'Recent Diagnostic Screenings',
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   TextButton(
                     onPressed: () {
@@ -315,27 +322,25 @@ class HomeDashboardScreen extends StatelessWidget {
                   },
                   child: Row(
                     children: [
-                      ClipRRect(
+                      AppImageView(
+                        imagePath: scan.imagePath,
+                        width: 54,
+                        height: 54,
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          scan.imagePath,
-                          width: 52,
-                          height: 52,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            width: 52,
-                            height: 52,
-                            color: AppColors.primaryContainerLight,
-                            child: const Icon(Icons.image, color: AppColors.primary),
-                          ),
-                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            StatusBadge.forDisease(disease),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: [
+                                StatusBadge.forDisease(disease),
+                                StatusBadge.forSeverity(pred.severity),
+                              ],
+                            ),
                             const SizedBox(height: 4),
                             Text(
                               '${AppFormatters.formatConfidence(pred.calibratedConfidence)} confidence',
@@ -348,7 +353,11 @@ class HomeDashboardScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      StatusBadge.forSeverity(pred.severity),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 14,
+                        color: AppColors.textMutedLight,
+                      ),
                     ],
                   ),
                 );
@@ -374,7 +383,7 @@ class HomeDashboardScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 22),
@@ -399,6 +408,7 @@ class HomeDashboardScreen extends StatelessWidget {
                     color: AppColors.textSecondaryLight,
                     fontWeight: FontWeight.w600,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
