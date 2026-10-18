@@ -54,4 +54,10 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
   - Implemented `backend/test_inference.py` and verified all 4 pipeline checks passed with 100% success rate.
   - Connected Flutter frontend via `DiagnosticRepository._callInferenceApi` with seamless local fallback to preserve existing UI state and offline stability.
   - Verified with `flutter test` (4/4 tests passed) and `dart analyze` (0 issues).
+- Phase 6 Complete (Physical Device Installation & Storage Optimization):
+  - Diagnosed `INSTALL_FAILED_INSUFFICIENT_STORAGE` on physical Realme device (RMX3268).
+  - ADB diagnostics revealed device internal storage was 99% full (only 777 MB available out of 48 GB).
+  - Universal debug APK (167 MB) exceeded Android safety installation buffer.
+  - Resolved by building architecture-specific split APK (`flutter build apk --split-per-abi --debug`), reducing size to 93 MB for ARM64 (`app-arm64-v8a-debug.apk`).
+  - Successfully installed APK onto device via ADB and launched `com.example.poultrycare/.MainActivity`.
 
