@@ -73,4 +73,22 @@ void main() {
     );
     expect(controller.suddenMortality, 'Multiple birds died');
   });
+
+  test('DiagnosticRepository executes diagnosis with triage escalation', () async {
+    final diagnosticRepo = DiagnosticRepository();
+    final record = await diagnosticRepo.runDiagnosis(
+      imagePath: 'assets/images/sample.jpg',
+      flockSignals: {
+        'lethargy': 'Over 10% of birds',
+        'intakeDrop': 'Normal',
+        'suddenMortality': 'Multiple birds died',
+      },
+      forcedDisease: 'coccidiosis',
+    );
+
+    expect(record.prediction.predictedClass, 'coccidiosis');
+    expect(record.prediction.severity, 'severe');
+    expect(record.prediction.urgency, 'vet_now');
+    expect(record.prediction.probabilities.isNotEmpty, isTrue);
+  });
 }

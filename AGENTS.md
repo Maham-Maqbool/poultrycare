@@ -44,3 +44,14 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
 - Phase 4 Complete (Android Build & Gradle Cache Fix):
   - Resolved `image_picker_android:compileDebugKotlin` incremental cache lock on Windows by disabling `kotlin.incremental` in `android/gradle.properties` and adding `--enable-native-access=ALL-UNNAMED`.
   - Verified full APK build: `flutter build apk --debug` succeeded (`Built build/app/outputs/flutter-apk/app-debug.apk`).
+- Phase 5 Complete (Colab ML Model & Inference Pipeline Integration):
+  - Inspected Colab training notebook (`project-docs/poultry_training.ipynb`) and PDF execution log (`project-docs/poultry_training.ipynb - Colab.pdf`).
+  - Extracted exact model contract: MobileNetV2 architecture, input shape `[1, 224, 224, 3]`, float32, RGB, values `0..255` (internal rescaling layer `1/127.5, offset -1`), direct resize to 224x224, EXIF orientation transpose.
+  - Extracted class index mapping: 0: Coccidiosis, 1: Healthy, 2: Newcastle, 3: Salmonella.
+  - Extracted calibrated severity assessment rules: `uncertain_below: 0.50`, `mild_max: 0.67`, `moderate_max: 0.83`, with Newcastle class floor (`Moderate`) and sudden mortality triage escalation.
+  - Created `resources/` directory containing `labels.txt`, `severity_config.json`, `model_meta.json`, and `README.md`.
+  - Implemented `backend/inference_server.py` serving HTTP inference on `http://0.0.0.0:8000/api/diagnose` supporting multipart and JSON payloads.
+  - Implemented `backend/test_inference.py` and verified all 4 pipeline checks passed with 100% success rate.
+  - Connected Flutter frontend via `DiagnosticRepository._callInferenceApi` with seamless local fallback to preserve existing UI state and offline stability.
+  - Verified with `flutter test` (4/4 tests passed) and `dart analyze` (0 issues).
+

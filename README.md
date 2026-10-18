@@ -33,8 +33,29 @@ To run automated unit and widget tests:
 flutter test
 ```
 
+## Machine Learning & Inference Service
+- **Model Architecture**: MobileNetV2 with transfer learning (ImageNet base) trained on Kaggle/Zenodo poultry fecal image dataset.
+- **Preprocessing Contract**: Input shape `[1, 224, 224, 3]`, RGB, `float32`, raw pixel values `0..255` (normalization embedded in model head). Direct resize to 224x224 with bilinear interpolation and EXIF orientation transpose.
+- **Output Classes (0..3)**: 0: Coccidiosis, 1: Healthy, 2: Newcastle, 3: Salmonella.
+- **Severity Assessment**: Calibrated thresholds (`severity_config.json`) with Newcastle floor protection and flock triage escalation.
+- **Backend Inference API**: Python HTTP microservice located at `backend/inference_server.py` listening on `http://0.0.0.0:8000/api/diagnose`.
+- **Resources Directory**: Located at `resources/` containing `labels.txt`, `severity_config.json`, `model_meta.json`, and model `.tflite` artifacts.
+
+To start the local ML backend inference service:
+```bash
+python backend/inference_server.py
+```
+
+To run ML verification tests:
+```bash
+python backend/test_inference.py
+```
+
 ## Directory Structure
 - `lib/core/`: Design system, themes (Light & Dark), Plus Jakarta Sans typography, custom buttons, text fields, cards, status badges, AppImageView, and audio narration simulator.
 - `lib/data/`: Models reflecting Chapter 5 schema, mock repositories, and clinical triage rules engine.
 - `lib/features/`: Feature modules (Auth, Dashboard, Scanner Studio, Flocks, History, Encyclopedia, Profile/Settings).
 - `lib/routes/`: Declarative AppRouter with named routes.
+- `resources/`: Model metadata, labels, severity config, and exported model artifacts.
+- `backend/`: Inference server, test suite, and client verification scripts.
+- `project-docs/`: FYP documentation, training notebook, and Colab evaluation results.
