@@ -1,0 +1,28 @@
+{
+  "model": "PoultryCare Neural Vision Engine",
+  "file": "poultry_neural_vision_fp16.tflite",
+  "variant": "fp16",
+  "labels": [
+    "Coccidiosis",
+    "Healthy",
+    "Newcastle",
+    "Salmonella"
+  ],
+  "input": {
+    "shape": [
+      1,
+      224,
+      224,
+      3
+    ],
+    "dtype": "float32",
+    "color_order": "RGB",
+    "value_range": "0-255 (NO extra normalisation)",
+    "resize": "direct resize to 224x224, no crop / no padding, use area/average interpolation when shrinking"
+  },
+  "output": "softmax probabilities, same order as labels",
+  "calibration_temperature_baked_in": 0.6741022502307773,
+  "test_accuracy": 0.9772256728778468,
+  "test_macro_f1": 0.963850328028387,
+  "dataset_split_seed": 42
+}

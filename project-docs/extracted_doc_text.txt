@@ -1,0 +1,1888 @@
+Poultry Disease Detection and Severity Assessment from Fecal Images
+Submitted By
+Isha Ishtiaq
+Maham Maqbool
+2023-2027
+Institute of Computer Science
+Khwaja Fareed University of Engineering & Information Technology
+Rahim Yar Khan
+2026
+Poultry Disease Detection and Severity Assessment from Fecal Images
+Submitted to
+Dr. Shahzad Hussain
+Institute of Computer Science
+In partial fulfilment of the requirements
+For the degree of
+Bachelor’s in Computer Science
+By
+Isha Ishtiaq
+COSC232101047
+Maham Maqbool
+COSC232101029
+2023-2027
+Khwaja Fareed University of Engineering & Information Technology
+Rahim Yar Khan
+2026
+DECLARATION
+We hereby declare that this project report is based on our original work except for citations and quotations which have been duly acknowledged. We also declare that it has not been previously and concurrently submitted for any other degree or award at Khwaja Fareed University of engineering & Information Technology or other institutions.
+Reg No       :
+COSC232101047
+Reg No      :
+COSC232101029
+Name        :
+Isha Ishtiaq
+Name        :
+Maham Maqbool
+Signature  :
+_________________________
+Signature  :
+_________________________
+Date          :
+_________________________
+Date          :
+_________________________
+APPROVAL FOR SUBMISSION
+we certify that this project report entitled Poultry Disease Detection and Severity Assessment from Fecal Images was prepared by Isha Ishtiaq and Maham Maqbool has met the required standard for submission in partial fulfilment of the requirements for the award of Bachelor’s in Computer Science at Khwaja Fareed University of Engineering & Information Technology.
+Approved by:
+Signature:   _________________________
+Supervisor :   Dr. Shahzad Hussain                 
+                             
+Date            :   _________________________
+MEETING LOG
+Meeting No.
+Date
+Outcome
+Signature of Supervisor
+1
+21/1/2026
+Initial project ideas were discussed with the supervisor. The project domain of poultry disease detection using fecal images was proposed and finalized.
+2
+23/1/2026
+The project title and objectives were discussed in detail. The supervisor approved the concept of poultry disease detection and severity assessment through fecal image analysis.
+3
+28/1/2026
+A detailed discussion was conducted regarding the project problem domain. The importance of poultry disease monitoring and fecal image analysis was explored.
+4
+30/1/2026
+The dataset requirements for the proposed system were discussed, and potential sources for collecting fecal image datasets were identified.
+5
+4/2/2026
+Relevant research papers were collected, and the literature review process was initiated to understand current research trends.
+6
+6/2/2026
+Existing research studies and machine learning approaches for poultry disease detection were reviewed and analyzed.
+7
+11/2/2026
+The working mechanisms of existing systems were studied, and their limitations were identified for further analysis.
+8
+13/2/2026
+A comparative analysis of existing systems was discussed, and the framework for the comparative table was prepared.
+9
+27/2/2026
+Chapter 1 was reviewed with the supervisor, and the required modifications and improvements were discussed.
+10
+4/3/2026
+Chapter 2 documentation was started, covering the analysis of existing systems relevant to the proposed project.
+11
+13/3/2026
+Chapter 3 on Requirement Engineering was initiated, and the proposed system requirements were discussed.
+12
+18/3/2026
+Functional and non-functional requirements were identified and documented for the proposed system
+13
+20/3/2026
+Requirement analysis, need-to-feature mapping, and requirement documentation were completed.
+14
+25/3/2026
+Chapter 4 was initiated with the discussion of the software process model and overall system design approach.
+15
+27/3/2026
+The system design methodology, UML diagrams, and Chapter 4 documentation were completed and reviewed.
+16
+1/4/2026
+Chapter 4 documentation was reviewed with the supervisor, and improvements in the system design section were discussed.
+17
+3/4/2026
+The UML diagrams prepared in Chapter 4 were refined according to the supervisor’s recommendations.
+18
+8/4/2026
+The project methodology and design workflow were reviewed to ensure alignment with the proposed objectives.
+19
+10/4/2026
+Necessary revisions were made in Chapter 4 documentation, and incomplete design details were updated.
+20
+22/4/2026
+Preparations for the next implementation phase were discussed, including dataset organization and model planning.
+21
+27/4/2026
+Overall progress up to Chapter 4 was evaluated with the supervisor, and guidance was provided for proceeding toward the implementation phase.
+ACKNOWLEDGEMENT
+We would like to thank everyone who had contributed to this project. We would like to express our gratitude to our Project supervisor, Dr. Shahzad Hussain for his invaluable advice, guidance, and his enormous patience throughout the development of the project.
+In addition, we would also like to express our gratitude to our loving parents and friends who had helped and given us encouragement. 
+ABSTRACT
+The poultry sector is a major contributor to Pakistan's economy and food security [1], yet it continues to face disease-related production losses that can escalate quickly when diagnosis is delayed. Smallholder farmers, particularly in rural areas, often lack immediate access to qualified veterinarians, so even short delays between the appearance of symptoms in fecal droppings and professional diagnosis can allow outbreaks to spread across a flock [2] . This project addresses that gap by developing an Android mobile application that uses deep learning to classify poultry diseases directly from photographs of fecal droppings captured by the farmer.
+The application accepts an image from the device camera or gallery, performs automated preprocessing, and passes the image to a trained deep learning classifier that distinguishes between Coccidiosis, Newcastle Disease, Salmonella, and Healthy droppings. Recent studies show that AI-assisted and smartphone-accessible fecal-image systems can support early-stage poultry disease screening in practical farm settings, especially when lightweight or mobile-deployable models are used [3], [4], [5], [6]. The model's confidence score is combined with a rule-based severity estimator to produce a Mild, Moderate, or Severe severity label, which is then mapped to a curated treatment recommendation that includes medicines, basic care steps, and guidance on whether an immediate veterinary consultation is required. The results are displayed on a single, easy-to-read screen tailored for users with limited technical background.
+Training is performed using the publicly available Poultry Disease Dataset, which comprises approximately 6,812 labelled farm images across four classes: Healthy, Salmonella, Coccidiosis, and Newcastle disease [3]. Data augmentation techniques, including blur, brightness variation, and controlled noise, are applied during training to improve model robustness under real-world capture conditions. The application is implemented in Flutter and targets Android smartphones, which are the most common devices available to the target user base. By combining computer vision, mobile application development, and careful rule-based domain logic, the project delivers a first-response assistive tool that is accessible, privacy-respecting, and complementary to professional veterinary care.
+TABLE OF CONTENTS
+Chapter 112
+INTRODUCTION12
+1.1. Background12
+1.2. Introduction13
+1.3. Problem Statement14
+1.4. Objective14
+1.5. Project Scope14
+1.6. Advantages of the System15
+1.7. Relevance to the Study Program15
+1.8. Chapter Summary16
+Chapter 217
+EXISTING SYSTEMS17
+2.1. Existing Systems17
+2.2. Drawbacks in Existing Systems20
+2.3. Examples of Existing Systems21
+2.4. Need to Replace Existing Systems21
+2.5. Chapter Summary22
+Chapter 323
+REQUIREMENT ENGINEERING23
+3.1. Proposed System23
+3.2. Understanding the System23
+3.2.1. User Involvement23
+3.2.2. Stakeholders23
+3.2.3. Domain24
+3.2.4. Needs of System24
+3.3. Requirement Specification25
+3.3.1. Functional Requirements25
+3.3.2. Non-Functional Requirements31
+3.3.3. Requirements Baseline35
+3.3.4. Need to Feature Mapping35
+3.4. Gantt Chart36
+3.5. Hurdles in Optimizing the Current System36
+3.6. Chapter Summary36
+Chapter 438
+DESIGN38
+4.1. Software Process Model38
+4.1.1. Benefits of Selected Model38
+4.1.2. Limitations of Selected Model38
+4.2. System Design39
+4.2.1. Methodology of the Proposed System39
+4.2.2. Entity Relationship Diagram41
+4.2.3. UML Diagrams42
+4.2.3.1. Use Case Diagram of the System42
+4.2.3.2. Class Diagram of the System43
+4.2.3.3. Activity Diagram of the System45
+4.2.3.4. Sequence Diagram of the System47
+4.2.3.5. Component Diagram of the System48
+4.3. Chapter Summary49
+Chapter 550
+DATABASE50
+5.1. Database Introduction50
+5.2. Selected Database51
+5.2.1. Reasons for Selection of the Database52
+5.2.2. Benefits of the Selected Database52
+5.2.3. Limitations of the Selected Database53
+5.3. Database Queries54
+5.3.1. Schema Creation and Seeding Queries54
+5.3.2. Diagnosis Write-Path Queries55
+5.3.3. Retrieval and Monitoring Queries56
+5.3.4. Administrative and Audit Queries57
+5.4. Database Tables58
+5.4.1. Database Overview and Enumerated Types58
+5.4.2. Users Table59
+5.4.3. Sessions Table60
+5.4.4. Flocks Table60
+5.4.5. Diseases Table60
+5.4.6. Treatments Table61
+5.4.7. Model Versions Table62
+5.4.8. Scans Table63
+5.4.9. Predictions Table64
+5.4.10. Feedback Table65
+5.4.11. Audit Logs Table66
+5.4.12. Index Strategy67
+5.5. Database Schema Diagram67
+5.6. Chapter Summary68
+REFERENCES70
+T OF FIGURES
+Figure 3.1 Gantt Chart of Project Activities25
+Figure 4.1 Methodology Flow of the Proposed System27
+Figure 4.2 Entity Relationship Diagram28
+Figure 4.3 Use Case Diagram of the System29
+Figure 4.4 Class Diagram of the System30
+Figure 4.5 Activity Diagram of the System31
+Figure 4.6 Sequence Diagram of the System31
+Figure 4.7 Component Diagram of the System32
+Figure 5.1 Write Path of One Diagnosis56
+Figure 5.2 Database Schema Diagram68
+LIST OF TABLES
+Table 2. 1:Comparative Review of Poultry Disease Detection24
+Table 3. 1:User Needs of System30
+Table 3. 2:Functional Requirement 0132
+Table 3. 3:Functional Requirement 0232
+Table 3. 4:Functional Requirement 0333
+Table 3. 5:Functional Requirement 0433
+Table 3. 6:Functional Requirement 0533
+Table 3. 7:Functional Requirement 0634
+Table 3. 8:Functional Requirement 0734
+Table 3. 9:Functional Requirement 0835
+Table 3. 10:Functional Requirement 0935
+Table 3. 11:Functional Requirement 1036
+Table 3. 12:Functional Requirement 1136
+Table 3. 13:Functional Requirement 1237
+Table 3. 14:Functional Requirement 1337
+Table 3. 15:Non-Functional Requirement 0139
+Table 3. 16:Non-Functional Requirement 0240
+Table 3. 17:Non-Functional Requirement 0340
+Table 3. 18:Non-Functional Requirement 0441
+Table 3. 19:Non-Functional Requirement 0541
+Table 3. 20:Non-Functional Requirement 0642
+Table 3. 21:Non-Functional Requirement 0742
+Table 3. 22:Non-Functional Requirement 0843
+Table 3. 23:Non-Functional Requirement 0943
+Table 5. 1:Database Technology Stack51
+Table 5. 2:Comparison of Candidate Data Stores52
+Table 5. 3:Summary of Database Objects58
+Table 5. 4:Inventory of Database Tables58
+Table 5. 5:Enumerated Types59
+Table 5. 6:Structure of the users Table59
+Table 5. 7:Structure of the sessions Table60
+Table 5. 8:Structure of the flocks Table60
+Table 5. 9:Structure of the diseases Table60
+Table 5. 10:Structure of the treatments Table61
+Table 5. 11:Structure of the model_versions Table63
+Table 5. 12:Structure of the scans Table64
+Table 5. 13:Structure of the predictions Table64
+Table 5. 14:Structure of the feedback Table65
+Table 5. 15:Structure of the audit_logs Table66
+Table 5. 16:Index Strategy67
+Table 5. 17:Relationships and ON DELETE Policy68
+INTRODUCTION
+Background
+The poultry sector is one of the largest and most important agricultural industries in Pakistan [7] and in many developing countries around the world. It provides an affordable and readily available source of animal protein to the population, generates rural employment, and contributes substantially to national food security [8]. A significant proportion of poultry is reared by smallholder farmers, who operate small to medium flocks and depend on timely disease detection in order to protect their income and their animals' welfare [9]. Any outbreak of disease that is not identified and treated quickly can spread rapidly through a flock and cause large-scale mortality within a matter of days [3].
+Among the diseases that most commonly affect poultry, Coccidiosis, Newcastle Disease, and Salmonella infections [10], [11] are known to cause serious economic losses every year in poultry production, while delayed diagnosis increases mortality and management costs . These diseases are often first observed through visible changes in the appearance [12] of the birds' fecal droppings, including abnormal colour, consistency, and the presence of blood or mucus. Experienced veterinarians are capable of identifying such changes and initiating appropriate treatment, but in rural areas where veterinary services are not readily accessible, farmers frequently have to rely on personal judgement, wait for external help, or travel considerable distances to obtain a diagnosis.
+Recent advances in computer vision and deep learning have made it practical to train image classification models that recognise visual patterns associated with specific diseases [3], [6], [13], [14]. Publicly available datasets, including the Poultry Disease Dataset with  6,812 annotated farm images across four classes— Coccidiosis (2,103), Newcastle Disease (376), Salmonella (2,276), and Healthy (2,057—have made it possible for academic projects to build realistic, data-driven diagnostic tools [3], [4]. At the same time, the widespread availability of Android smartphones in rural areas has created an accessible delivery channel through which such tools can reach farmers directly, without the need for specialised hardware.
+The proposed project,combines these opportunities in the form of a mobile application. The farmer uses a smartphone camera to capture an image of fecal droppings. The image is then processed by a trained deep learning model that identifies the disease, estimates its severity, and returns a clear treatment recommendation. The application is designed to be simple, respectful of the user’s limited bandwidth and device capabilities, and trustworthy enough to serve as a useful first-response tool while the farmer arranges to consult a qualified veterinarian.
+Introduction
+Poultry Disease Detection and Severity Assessment from Fecal Images is an applied final year project that develops an Android-based mobile application capable of classifying poultry diseases from a photograph of chicken fecal droppings. The application allows the user to upload an image from the device camera or gallery, applies the necessary preprocessing, and forwards the image to a deep learning classification model that has been trained on a labelled dataset of fecal images. The model outputs a predicted class along with a confidence score, which the application then combines with a rule-based severity estimator and a mapped treatment recommendation before presenting the final results on a single, easy-to-read screen.
+The project targets four specific classes that are important in the context of poultry health: Coccidiosis, Newcastle Disease, Salmonella infection, and Healthy droppings. For each diseased class, the system presents a severity label — Mild, Moderate, or Severe — derived from the confidence score of the prediction. The severity label is then linked to a predefined treatment guideline that includes commonly used medicines, basic care steps, and an explicit indication of whether immediate veterinary consultation is required. In this way, the application functions as an early-warning and first-response tool rather than as a replacement for professional veterinary care.
+From an engineering perspective, the project is structured around three principal components: a Flutter-based Android mobile application for image capture and result display, a deep learning image classification pipeline implemented in Python and trained using Google Colab, and a supporting dataset augmented through common image transformations such as blur, brightness variation, and the addition of controlled noise. This applied scope is aligned with recent journal and conference work on mobile, lightweight, and field-usable poultry disease detection systems published between 2022 and 2025  [4], [5], [6], [13], [15].
+Problem Statement
+ In many parts of Pakistan, particularly in rural and peri-urban districts, smallholder poultry farmers face considerable difficulty obtaining timely and accurate disease diagnosis for their flocks, as qualified veterinarians are often located far away and their services may be unaffordable or unavailable on short notice — meaning diseases such as Coccidiosis, Newcastle Disease, and Salmonella are frequently identified only after visible symptoms and deaths have already begun to affect the flock, at which stage intervention is both more expensive and less effective. Since fecal droppings are one of the earliest indicators of poultry health, this project addresses the clear opportunity they present by developing a reliable, mobile-deployable computer-vision system that classifies common poultry diseases from fecal images with sufficient accuracy to support real-world decision making, while simultaneously presenting the output in a form that is immediately actionable by the farmer — including a severity level and a first-response treatment recommendation — all within an Android application designed to be accessible to users with limited technical background and suitable for the constraints of commonly available devices.
+Objective
+ The principal objective of the project is to design and develop an Android mobile application that allows a smallholder poultry farmer to upload a photograph of chicken fecal droppings and, in response, receive an automated disease classification, a severity assessment, and a clear treatment recommendation. To achieve this overall aim, the following specific objectives have been defined.
+To develop a high-quality, curated image dataset of poultry fecal droppings representing Coccidiosis, Newcastle Disease, Salmonella, and Healthy classes, and to enhance its effectiveness through appropriate data augmentation techniques for improved model generalisation
+To design, train, and evaluate a robust deep learning–based image classification model capable of accurately identifying the four target classes with reliable performance under practical conditions.
+To implement the trained model within a Flutter-based Android mobile application that enables users to capture or upload images, performs automatic preprocessing and inference, and presents the predicted disease, confidence score, severity level, and treatment guidance in a clear and user-friendly manner.
+To deliver a complete, privacy-conscious, and well-documented engineering solution, validated through informal real-world usability testing, that satisfies the academic and practical expectations of an undergraduate Final Year Project in Computer Science.
+Project Scope
+The scope of this project is focused on delivering a practical and well-engineered solution within the available timeframe by developing a Flutter-based Android application that allows users to capture or upload poultry fecal images and receive clear diagnostic results. It includes training and evaluating a machine learning model on the Poultry Disease Dataset of  6,812 labelled images across four classes—Coccidiosis (2,103), Newcastle Disease (376), Salmonella (2,276), and Healthy (2,057)—while incorporating data augmentation, confidence-based severity estimation, and predefined treatment recommendations. The system is developed and trained using standard machine learning tools, with the final model prepared for mobile deployment, and it also includes essential usability features such as image selection, camera support, and basic error handling. To maintain quality and feasibility, the project does not cover additional diseases, long-term flock monitoring, veterinary service integration, non-image diagnostic inputs, or iOS deployment at this stage, as these are reserved for future improvement.
+Advantages of the System
+The proposed application offers a number of practical advantages for farmers, extension workers, and the wider poultry ecosystem. By combining computer vision with a mobile user interface and rule-based treatment guidance, it converts an expert-intensive diagnostic workflow into a tool that can be used directly by non-experts in the field. The main advantages are summarised below.
+Accessibility: the application runs on standard Android smartphones, which are already widely available among smallholder farmers, and does not require any specialised hardware.
+Timeliness: diagnosis can be performed as soon as symptoms appear in the fecal droppings, which enables earlier intervention and reduces the risk of flock-wide outbreaks.
+Actionable output: the result screen presents a disease label, a severity level, and a concrete treatment recommendation together, rather than presenting classification alone.
+Affordability: the application is free to use on the farmer’s existing device and does not require a subscription, which is particularly important in cost-sensitive rural contexts.
+Privacy: uploaded images are used only for prediction and are automatically deleted afterwards, which ensures that the farmer’s data is not retained unnecessarily.
+Consistency: every user receives the same classification logic and the same treatment mapping, which reduces the variability inherent in informal, self-assessed diagnosis.
+Complementarity with veterinary services: the application is designed as a first-response tool and explicitly indicates when immediate veterinary consultation is required, rather than replacing professional care.
+Extensibility: the modular architecture allows additional disease classes, languages, and platforms to be added in future versions without redesigning the core pipeline.
+Relevance to the Study Program
+The project is highly relevant to the Bachelor of Science in Computer Science programme offered at the Institute of Computer Science, Khwaja Fareed University of Engineering and Information Technology, as it integrates knowledge from several core and advanced areas of the curriculum and applies them to a real-world, socially meaningful problem. In the area of Computer Vision and Image Processing, the project requires image preprocessing, augmentation, and classification, directly applying material from vision-related courses; in Machine Learning and Deep Learning, training an image classification model, tuning hyperparameters, and evaluating performance are all central activities; and in Software Engineering, the work follows a disciplined process covering requirements engineering, design, implementation, and testing, supported by proper documentation and version control. The Android client is implemented using Flutter, applying mobile development principles and cross-platform UI design, while preparing a clean, balanced, and augmented training dataset from publicly available sources constitutes an essential Data Engineering activity within the project. Designing a clear, non-technical interface for rural users with limited technical background reflects applied knowledge of Human-Computer Interaction and usability design, and the project as a whole demonstrates how artificial intelligence can be deployed responsibly to support smallholder farmers, aligning with the broader social objectives of Applied AI for Social Good.
+Chapter Summary
+This chapter has introduced the Poultry Disease Detection and Severity Assessment from Fecal Images project, explained its motivation in the context of Pakistan’s poultry sector, and clearly framed the problem that it addresses. It has presented the overall objective of the system, listed specific sub-objectives, defined the scope of the initial version, and enumerated the advantages offered to farmers and other stakeholders. Finally, it has mapped the work of the project onto the core areas of the Computer Science study programme in order to establish its academic relevance. The remaining chapters of this report will present a review of existing systems, a detailed requirement engineering section, the proposed design and architecture, and the plans for database, development, and testing.
+EXISTING SYSTEMS
+Existing Systems
+ The automated detection of poultry diseases from fecal images has evolved rapidly, progressing from controlled laboratory systems toward mobile, field-deployable tools. Wang et al. pioneered this direction by applying Faster R-CNN to broiler dropping images, achieving 99.1% recall and 93.3% mAP respectively, thereby establishing that CNN-based screening can reliably identify digestive disease from fecal appearance [8]. The landmark contribution of Machuve et al. made this research practically accessible: they assembled 1,255 PCR-verified and 6,812 farm-collected fecal images across four classes — Healthy, Salmonella, Coccidiosis, and Newcastle disease — and demonstrated that MobileNetV2, achieving 98.02% accuracy after fine-tuning, is the preferred model for lightweight smartphone deployment [3]. Their dataset has since become the standard benchmark for all subsequent work in the field [17], [18], [19], [20]
+Building on this foundation, several studies explored on-site and smartphone-based deployment. Li et al. embedded a modified MobileNetV2 into a local server pipeline, enabling farmers to receive four-class predictions from a mobile device in under one second with accuracy above 90% [4]. Degu and Simegn extended this with a two-stage pipeline combining YOLO-V3 for region-of-interest detection (mAP 87.48%) and ResNet50 for classification (98.7% accuracy), and coupled it with a mobile application interface [5]. Gourisaria et al. further benchmarked seven custom CNN architectures against transfer-learning models on an 8,067-image Kaggle dataset, with their best network achieving 94.49% test accuracy and 98.61% recall, confirming that lightweight custom models can rival heavier pre-trained alternatives in resource-constrained settings [23].
+Accuracy improvements through architectural innovation were demonstrated by Chen and Yang, who embedded a triple attention mechanism into a ResNeXt50 backbone — the ResNeXt50-3A model — achieving 97.4% test accuracy on a four-class manure dataset and outperforming Vision Transformer [12] by 28.6 percentage points [24]. Huda et al. fused EfficientNetV2B0 and DenseNet121 with custom group normalisation layers, reaching 97.78% accuracy on the Tanzania benchmark with strong precision, recall, and F1-score across all classes [6]. Pranta pushed lightweight deployment further by pairing MobileNetV2 feature extraction with an SVM classifier, achieving 96.17% accuracy with 61-millisecond inference on standard hardware and deploying the result as a publicly accessible web application — demonstrating that clinical-grade accuracy is attainable in resource-limited environments without GPU infrastructure [15].
+The most recent studies have shifted focus toward robustness and end-to-end integration. Chidziwisano et al. conducted the first cross-regional evaluation, finding that MobileNet and DenseNet binary classifiers dropped from 98% accuracy on Tanzania test data to 82% and 80% respectively on unseen Malawi data, underscoring that regional diversity, camera quality, and breed differences significantly limit model transferability [13]. Dhungana et al. addressed the end-to-end workflow by combining YOLOv11n for fecal detection (mAP@0.5 = 0.881) with EfficientNet-B0 for classification (99.12% accuracy, 25.8 ms inference) and deploying a Streamlit web interface for accessibility [14]. Taken together, these  studies confirm that strong classification models exist, but a unified native mobile application combining multi-class diagnosis, confidence-aware severity assessment, explicit treatment guidance, and farmer-friendly interaction in a single lightweight tool remains an unmet need [3], [4], [5], [6], [13], [14], [15].
+Table 2. 1:Comparative Review of Poultry Disease Detection
+Reference
+Dataset/ Setting
+Model/ Approach
+Main Result
+Research Gap Relevant to This FYP
+[8]
+7,637 labelled fecal images from 10,000 Ross broilers; 5 classes; controlled conveyor-belt collection
+Faster R-CNN (RPN + ResNet backbone) and YOLO-V3; image augmentation; K=9 anchor boxes
+Faster R-CNN: 99.1% recall, 93.3% mAP;YOLO-V3: 88.7% recall, 84.3% mAP
+Not designed as a mobile farmer-facing advisory system; requires specialised hardware
+[3]
+1,255 PCR-verified lab images + 6,812 farm-labeled fecal images; 4 classes (Healthy, Salmonella, Coccidiosis, Newcastle); Tanzania farms
+Transfer learning (VGG16, InceptionV3, MobileNetV2, Xception); batch normalisation freezing; ODK-based collection
+MobileNetV2: 98.02%;
+Xception: 98.24%;
+F1 > 75% across all classes
+Focuses on disease classification only; lacks farmer-oriented severity assessment and treatment workflow
+[4]
+Open-access four-class fecal dataset (Machuve et al.); Tanzania farms
+Modified MobileNetV2 + additional ANN layers; IoT-connected mobile-to-server pipeline; 6 models compared
+Classification accuracy: >90%;
+Inference time: <1 second per image
+Proof-of-concept deployment; not tailored to low-literacy farmer workflows; no severity or treatment guidance
+[23]
+Kaggle dataset; 8,067 images; 4 classes (Coccidiosis, Salmonella, Newcastle, Healthy); 224x224 px RGB
+7 custom CNN architectures (ChicNetV1-V6 + best); transfer learning models; 70/15/15 train/val/test split; augmentation
+Best CNN (ChicNetV6): 94.49% accuracy, 98.61% recall;
+Xception: 95.89%;
+InceptionResNetV2: 96.87%
+Evaluation is model-focused; no farmer-oriented workflow, severity estimation, or treatment guidance provided
+[24]
+Kaggle dataset; 8,067 manure images; 4 classes; 224x224 px RGB; labels in CSV
+ResNeXt50 with triple attention mechanism (3A): channel + spatial + mixed attention; evaluated against 4 baselines
+ResNeXt50-3A: 97.4% test accuracy;
++17.3% vs RegNetY; +28.6% vs ViT; +1.5% vs baseline ResNeXt50
+Architecture complexity not evaluated for lightweight mobile deployment; no farmer-facing interface or treatment guidance
+[5]
+8,067 fecal images from Zenodo; 4 classes; Tanzania; oversampling (ROS + SMOTE) for class imbalance
+YOLO-V3 (ROI detection) + ResNet50 (classification); oversampling; mobile app interface
+YOLO-V3 ROI mAP: 87.48%;
+ResNet50 accuracy: 98.7%;
+Smartphone mobile app developed
+Needs explicit treatment guidance, transparent field interaction, and confidence-aware severity interpretation
+[6]
+Four-class fecal image dataset (Tanzania benchmark); Healthy, Coccidiosis, Salmonella, Newcastle
+Fusion of EfficientNetV2B0 + DenseNet121; custom group normalisation; early stopping to limit compute cost
+Test accuracy: 97.78%;
+Strong precision, recall, F1-score, confusion matrix, and ROC curve results
+Higher model complexity challenges deployment on mid-range Android phones; no severity or treatment workflow
+[15]
+6,436 balanced fecal images; 3 classes (Coccidiosis, Salmonella, Healthy); PCR-verified labels (Tanzania)
+MobileNetV2/V3Small as CNN feature extractors + classical ML classifiers (SVM, LR, KNN); web application deployment
+MobileNetV2-SVM: 96.17% accuracy;
+Precision, Recall, F1 all ~96%;
+Inference:61 ms/image;
+Deployed as web app
+Web-based only; no native Android app; three-class only; lacks severity assessment and escalation-to-vet guidance
+[13]
+Tanzania dataset (8,067 images) + new Malawi dataset; binary and multiclass setups; cross-regional evaluation
+Transfer learning (MobileNet, DenseNet, ResNet); augmentation (vertical flip); oversampling for Newcastle class
+Tanzania: MobileNet binary 0.98, multiclass 0.91;
+Malawi: MobileNet binary 0.82, multiclass 0.69
+Models lose significant accuracy across regions; confirms that single-locality training is insufficient for real deployment
+[14]
+6,812 PCR-verified fecal images; 4 classes; Tanzania farms; severe class imbalance (Newcastle: 376 vs others: >2,000)
+YOLOv11n for fecal detection + EfficientNet-B0 for classification; augmentation for class imbalance; Streamlit web interface
+YOLOv11n mAP@0.5: 0.881;
+EfficientNet-B0 accuracy: 99.12%;
+Newcastle precision: 1.00;
+Inference: 25.8 ms
+Web-based interface requires connectivity; no native mobile UX; lacks explicit farmer-friendly severity advice and treatment mapping
+Drawbacks in Existing Systems
+A close reading of the reviewed systems reveals several recurring weaknesses. These weaknesses explain why high classification accuracy alone is not sufficient for field adoption and why the proposed project must be engineered as a complete user-facing workflow rather than as a model demonstration only.
+Limited deployment readiness: many studies remain at prototype level, with code notebooks or web demos that are difficult for farmers to use directly in low-resource settings [4], [14].
+Weak actionability: several systems stop at disease prediction and do not convert output into a severity level and conservative first-response treatment guidance [3], [5], [6].
+Generalisation risk: models trained on one dataset or one geographic setting may lose performance when lighting, flooring, camera angle, or farm conditions change [13].
+Insufficient localisation or image-quality control: background clutter, blur, poor framing [26], and multiple droppings in one image can reduce trustworthiness if the system lacks a quality gate or feces-region focus [5], [27].
+Limited interpretability and transparency: users often receive only a label or confidence value, with little help in understanding how the decision should be interpreted in practice [5], [28]
+Resource constraints on mobile devices: highly accurate but heavy models may be unsuitable for mid-range Android phones [29] commonly used in rural environments [3], [6].
+Privacy and workflow issues: many prototype systems do not clearly address temporary image handling, deletion policies, or farmer-oriented error recovery.
+Incomplete decision support: current tools rarely combine diagnosis, severity, treatment, and referral guidance in one screen, even though that is the information most useful to end users. 
+Limited field validation with intended users: strong offline metrics do not automatically translate into a usable system without simple UX and understandable outputs [4], [15].
+Examples of Existing Systems
+To make the review concrete, representative examples from the literature can be grouped into a small number of system types. Each type contributes something valuable, but none fully resolves the full deployment problem targeted by this project.
+ Benchmark research systems: studies such as Machuve et al. [3] provide the core four-class dataset and strong transfer-learning baselines [16] that made later mobile work possible.
+ On-site and smartphone proof-of-concept systems: Li et al. [4] and Degu & Simegn [5] move closer to practical use by connecting image capture to fast classification in the field.
+Accuracy-oriented multiclass classifiers: Gourisaria et al. [23], Chen and Yang [24], and Huda et al. [6] focus on improving recognition performance through better architectures and feature fusion.
+Real-scene detection systems: Zhou et al. [27] address the difficulty of locating abnormal droppings in complex farm environments rather than assuming perfectly cropped inputs.
+Generalisation and integrated workflow studies: Chidziwisano et al. [13] and Dhungana et al. [14] show that robustness across conditions and end-to-end design are now central research concerns.
+Need to Replace Existing Systems
+The main research gap identified from the reviewed systems is that existing work still treats poultry fecal-image diagnosis as a classification task more often than as a complete farmer-support workflow. In other words, the literature contains strong models, useful datasets, and promising mobile prototypes, but it rarely combines all the following in one compact system: mobile accessibility, multi-class diagnosis, confidence-aware severity interpretation, explicit treatment guidance, privacy-respecting image handling, and clear escalation to veterinary care. The proposed project is designed to address this gap by integrating a trained machine learning classifier with a Flutter-based mobile interface and a rule-based advisory layer. This makes the system more aligned with what a smallholder farmer actually needs at the point of first observation: a quick, understandable, and actionable response. Accordingly, the value of the present system lies not merely in predicting a label, but in turning recent research advances into a practical first-response tool that is academically defensible and operationally usable in the field.
+Chapter Summary
+This chapter has presented an evidence-based review of representative poultry disease detection systems and has identified the specific research gap that motivates the proposed project. It has shown that although recent studies report strong model performance, a unified mobile system that combines classification, severity assessment, treatment guidance, and farmer-friendly usability is still missing. The next chapter translates this gap into formal system requirements.
+REQUIREMENT ENGINEERING
+Proposed System
+The proposed system is a Flutter-based Android application that captures or accepts an image of chicken fecal droppings and returns a structured diagnostic report containing the predicted disease class, confidence score, severity level, and a mapped treatment recommendation. The underlying machine learning model is trained on the publicly reported Poultry Disease Dataset and is prepared for lightweight deployment suitable for farmer-facing mobile use.
+Image acquisition, preprocessing, and result presentation are handled inside the mobile application, while the classification model is invoked either through on-device inference or a lightweight prediction service depending on deployment constraints. A rule-based advisory layer converts the prediction into severity and treatment guidance so that the output remains understandable and immediately useful to the end user.
+The complete system is designed for the realities of rural poultry farming: mid-range Android phones [29], intermittent connectivity, limited technical expertise, and the need for short, trustworthy results. For that reason, usability, modularity, and privacy are treated as core requirements rather than optional extras.
+Understanding the System
+Before moving to a formal list of requirements, it is important to understand the context in which the system will operate. This section clarifies who the users are, which stakeholders have an interest in its success, what domain knowledge informs its design, and what compact set of user needs must be satisfied.
+User Involvement
+The primary users of the system are smallholder poultry farmers who manage flocks of varying sizes and who are responsible for monitoring the daily health of their birds. These users are assumed to have basic familiarity with an Android smartphone but not necessarily with technical concepts such as confidence scores or model architectures. The application’s user experience has therefore been designed around simple, recognisable actions: open the application, take or upload a photo, read the clearly formatted result, and follow the suggested treatment guidance or consult a veterinarian if recommended.
+A secondary category of users consists of veterinary extension workers and community animal-health personnel who may use the application as an assistive tool during field visits. These users can benefit from a fast, consistent pre-screening step that helps them prioritise which flocks need deeper investigation. Feedback from both primary and secondary users has informed the list of error categories, the simplicity of the result screen, and the explicit recommendation to seek veterinary attention when the detected severity is high.
+Stakeholders
+                       A stakeholder is any individual or group that is directly or indirectly affected by the system. In this project, the stakeholders include not only the farmers themselves but also several supporting groups.
+Smallholder farmers: the primary end users, who directly benefit from faster, more accessible first-response disease diagnosis [30].
+Veterinarians and animal-health professionals: secondary stakeholders whose workflows are complemented by the application and who ultimately take responsibility for confirmed diagnosis and treatment.
+Agricultural extension agencies: organisations that may recommend or distribute the application as part of their broader support for rural poultry farming.
+Dataset providers and researchers: the authors of the Poultry Disease Dataset and related academic work, whose efforts make this project possible.
+Project supervisor and evaluators: academic stakeholders who assess the engineering quality, design rigour, and documentation of the project.
+Development team: the student developers responsible for implementing, testing, and documenting the system throughout its life cycle.
+Domain
+The project sits at the intersection of computer vision, machine learning, mobile application development, and agricultural technology. From a technical standpoint, the most relevant areas are image preprocessing and augmentation, convolutional neural networks for image classification, mobile deployment of trained models, and mobile user experience design. From a subject-matter standpoint, the project requires basic familiarity with the main poultry diseases that can be detected from fecal appearance and with the types of treatment guidance that are conventionally applied in each case. The domain knowledge embedded in the system is not intended to replace veterinary expertise; it is used to provide safe, conservative first-response guidance that encourages proper follow-up care.
+Needs of System
+The high-level needs of the system, viewed from the users’ perspective, translate into a compact set of capabilities that the application must offer. These needs are summarised in Table 3.1 and are subsequently refined into detailed functional requirements.
+Table 3. 1:User Needs of System
+SR #
+Needs
+Need ID
+1
+The user shall be able to upload a photograph of chicken fecal droppings from the phone camera or gallery.
+N-01
+2
+The system shall automatically preprocess the uploaded image before inference.
+N-02
+3
+The system shall classify the disease shown in the image among Coccidiosis, Newcastle Disease, Salmonella, or Healthy.
+N-03
+4
+The system shall display the confidence score and derived severity level of the prediction.
+N-04
+5
+The system shall provide a treatment recommendation, including medicines, care steps, and veterinary guidance.
+N-05
+6
+The system shall present the disease, severity, and treatment on a single consolidated result screen.
+N-06
+7
+The system shall be delivered as an Android-compatible Flutter mobile application.
+N-07
+8
+The system shall apply data augmentation during training to improve robustness.
+N-08
+9
+The system shall validate image format and size, and guide the user to retake or re-upload when necessary.
+N-09
+10
+The system shall store uploaded images only temporarily and delete them after processing.
+N-10
+Requirement Specification
+Requirement engineering translates user needs into a precise, testable, and traceable specification. In this project, that specification ensures that every important user expectation—from image upload to treatment recommendation—can later be mapped to design components, implementation modules, and test cases.
+Functional Requirements
+The functional requirements have been derived directly from the user needs listed in Table 3.1 and from the project registration form. A representative detailed specification is given for FR-01 in Table 3.2, and the complete set of functional requirements is enumerated in the bulleted list that follows.
+Table 3. 2:Functional Requirement 01
+Functional Requirement ID
+FR-01
+Name
+Image Upload
+Description
+Allow the user to upload a chicken fecal photo from the camera or gallery.
+Input
+User selects camera or gallery; system receives the chosen image file.
+Output
+A selected  image file  ready for preprocessing, stored temporarily on the device.
+Precondition
+App is installed, permissions granted, and device has sufficient storage.
+Postcondition
+A valid image is selected and passed to the preprocessing pipeline.
+Table 3. 3:Functional Requirement 02
+Functional Requirement ID
+FR-02
+Name
+Image Preprocessing
+Description
+The system shall automatically resize and normalise the uploaded image before passing it to the deep learning model.
+Input
+Validated raw image produced by FR-01.
+Output
+A preprocessed tensor (resized and normalised) ready for model inference.
+Precondition
+A valid image has been selected and passed by the upload module.
+Postcondition
+The image is in the tensor format expected by the deep learning model.
+Table 3. 4:Functional Requirement 03
+Functional Requirement ID
+FR-03
+Name
+Disease Classification
+Description
+The deep learning model shall classify the input image into one of four classes: Coccidiosis, Newcastle Disease, Salmonella, or Healthy.
+Input
+Preprocessed image tensor produced by FR-02.
+Output
+A predicted disease class label and a numerical confidence score.
+Precondition
+The trained model is loaded and the input tensor is valid.
+Postcondition
+A class label with its associated confidence is available for downstream processing.
+Table 3. 5:Functional Requirement 04
+Functional Requirement ID
+FR-04
+Name
+Confidence Score
+Description
+The system shall display the model's prediction confidence as a percentage on the result screen.
+Input
+Confidence score produced by FR-03.
+Output
+The confidence value formatted as a percentage and shown to the user.
+Precondition
+Classification has completed successfully.
+Postcondition
+The user can clearly see how confident the model is about the prediction.
+Table 3. 6:Functional Requirement 05
+Functional Requirement ID
+FR-05
+Name
+Severity Assessment
+Description
+The system shall report a severity level (Mild, Moderate, or Severe) derived from the confidence score and predicted class.
+Input
+Confidence score and predicted disease class.
+Output
+A severity label: Mild, Moderate, or Severe.
+Precondition
+A non-Healthy disease has been predicted with a valid confidence value.
+Postcondition
+A severity level is bound to the prediction record.
+Table 3. 7:Functional Requirement 06
+Functional Requirement ID
+FR-06
+Name
+Treatment Recommendation
+Description
+The system shall provide a treatment recommendation based on the detected disease and the assessed severity level.
+Input
+Predicted disease class and severity label.
+Output
+A treatment recommendation entry mapped from the curated knowledge base.
+Precondition
+A severity level has been computed for a non-Healthy class.
+Postcondition
+A treatment recommendation is ready to be displayed to the user.
+Table 3. 8:Functional Requirement 07
+Functional Requirement ID
+FR-07
+Name
+First-Response Guidance
+Description
+The recommendation shall include commonly used medicines, basic care steps, and an explicit indication of whether immediate veterinary consultation is required.
+Input
+Treatment recommendation entry produced by FR-06.
+Output
+Structured guidance covering medicines, care steps, and a vet-consultation flag.
+Precondition
+A treatment entry exists for the detected disease and severity.
+Postcondition
+Farmer receives clear, actionable first-response guidance.
+Table 3. 9:Functional Requirement 08
+Functional Requirement ID
+FR-08
+Name
+Consolidated Result Screen
+Description
+The disease name, severity level, and treatment recommendation shall be displayed together on a single result screen.
+Input
+Disease label, severity, treatment guidance, and confidence score.
+Output
+A single results page rendering all diagnostic outputs together.
+Precondition
+All earlier pipeline steps (FR-01 to FR-07) have completed successfully.
+Postcondition
+Farmer can read the full diagnosis on a single screen without further navigation.
+Table 3. 10:Functional Requirement 09
+Functional Requirement ID
+FR-09
+Name
+Android Accessibility
+Description
+The application shall be accessible through a Flutter-based mobile application compatible with Android devices.
+Input
+Standard Android touch input on the Flutter-rendered user interface.
+Output
+A working application interface running on the user’s Android device.
+Precondition
+The user has installed the application on a supported Android device.
+Postcondition
+The application is running and ready for user interaction.
+Table 3. 11:Functional Requirement 10
+Functional Requirement ID
+FR-10
+Name
+Data Augmentation
+Description
+The training pipeline shall apply data augmentation (blur, brightness variation, and controlled noise) to improve model robustness in real-world conditions.
+Input
+Original training images from the Poultry Disease Dataset.
+Output
+An augmented dataset suitable for training a robust classifier.
+Precondition
+The original labelled dataset is available locally or in Google Colab.
+Postcondition
+The trained model generalises better under varied real-world capture conditions.
+Table 3. 12:Functional Requirement 11
+Functional Requirement ID
+FR-11
+Name
+Input Validation
+Description
+The system shall display a clear, user-friendly error message when the uploaded image format is unsupported or the file size is too large.
+Input
+A user-selected image file of any format and size.
+Output
+Either a pass-through of valid images, or a friendly error dialog for invalid input.
+Precondition
+The user has attempted to submit an image.
+Postcondition
+Only valid images proceed to preprocessing; invalid ones return the user to the upload screen.
+Table 3. 13:Functional Requirement 12
+Functional Requirement ID
+FR-12
+Name
+Privacy-Respecting Storage
+Description
+Uploaded images shall be stored only temporarily for prediction and shall be deleted automatically after processing.
+Input
+Image file passed through the prediction pipeline.
+Output
+A prediction result on screen and a cleaned-up storage location on the device.
+Precondition
+An image has been used for inference.
+Postcondition
+The temporary image file is removed from device storage after the result is shown.
+Table 3. 14:Functional Requirement 13
+Functional Requirement ID
+FR-13
+Name
+Retake or Re-upload
+Description
+The system shall allow the user to retake or re-upload an image when the prediction quality is unsatisfactory.
+Input
+User decision after viewing the result screen.
+Output
+Return to the image capture or selection screen for a fresh attempt.
+Precondition
+A prediction result is currently being shown to the user.
+Postcondition
+A fresh image is captured or selected and the prediction pipeline restarts.
+Non-Functional Requirements
+Table 3. 15:Non-Functional Requirement 01
+Non-Functional Requirement ID
+NFR-01
+Name
+Performance
+Description
+Classification results shall be returned within a time that feels responsive during normal use on a mid-range Android device.
+Input
+Image submission and inference request from the user.
+Output
+Predicted result delivered within an acceptable response time on mid-range hardware.
+Precondition
+The application is running and the trained model is loaded.
+Postcondition
+The user sees the prediction result without noticeable delay.
+Table 3. 16:Non-Functional Requirement 02
+Non-Functional Requirement ID
+NFR-02
+Name
+Accuracy
+Description
+The trained model shall achieve acceptable classification accuracy on the held-out validation set of the Poultry Disease Dataset.
+Input
+Held-out validation images from the Poultry Disease Dataset.
+Output
+Validation accuracy meeting the agreed acceptance threshold.
+Precondition
+The model has been trained on the augmented training set.
+Postcondition
+Reported accuracy and confusion matrix are recorded for evaluation.
+Table 3. 17:Non-Functional Requirement 03
+Non-Functional Requirement ID
+NFR-03
+Name
+Usability
+Description
+The interface shall be simple enough for non-technical users, requiring minimal text input and providing clearly visible controls.
+Input
+A first-time user interaction with the application.
+Output
+Successful task completion (capture, view result, follow guidance) with minimal errors.
+Precondition
+The user has installed the application on their Android device.
+Postcondition
+The user can navigate the application without external assistance.
+Table 3. 18:Non-Functional Requirement 04
+Non-Functional Requirement ID
+NFR-04
+Name
+Reliability
+Description
+The application shall handle unsupported files, oversized images, and network issues gracefully without crashing.
+Input
+Unexpected runtime conditions such as bad files or transient connectivity issues.
+Output
+A friendly error message and a stable, recoverable application state.
+Precondition
+The user is interacting with the application.
+Postcondition
+The application continues running and the user is guided to recover.
+Table 3. 19:Non-Functional Requirement 05
+Non-Functional Requirement ID
+NFR-05
+Name
+Scalability
+Description
+The system design shall allow additional users and new disease classes to be added in future versions without major rework.
+Input
+New requirements such as additional disease classes or extended user base.
+Output
+Extended system functionality without breaking the existing pipeline.
+Precondition
+The modular architecture is in place and documented.
+Postcondition
+New features are available to all users with minimal disruption.
+Table 3. 20:Non-Functional Requirement 06
+Non-Functional Requirement ID
+NFR-06
+Name
+Maintainability
+Description
+The codebase shall be organised into clearly separated modules (UI, inference, severity estimation, treatment mapping) to ease future updates.
+Input
+A code-change request such as a bug fix or new feature.
+Output
+Targeted edit confined to the responsible module without side effects.
+Precondition
+The codebase follows the agreed modular structure.
+Postcondition
+The change is integrated and tested with minimal impact on other modules.
+Table 3. 21:Non-Functional Requirement 07
+Non-Functional Requirement ID
+NFR-07
+Name
+Security
+Description
+Uploaded images and any associated metadata shall be transmitted securely and deleted automatically after processing, with no unnecessary retention.
+Input
+Image submission and any associated metadata.
+Output
+Secured handling during inference and complete deletion afterwards.
+Precondition
+The user has granted the required permissions and accepted the privacy notice.
+Postcondition
+No image or metadata is retained beyond the prediction lifecycle.
+Table 3. 22:Non-Functional Requirement 08
+Non-Functional Requirement ID
+NFR-08
+Name
+Portability
+Description
+The application shall run on a wide range of Android devices representative of the target user base, including Android 8.0 and above.
+Input
+A supported Android device (Android 8.0+) running the application.
+Output
+A working application interface across the supported device range.
+Precondition
+The device meets the minimum hardware and operating system requirements.
+Postcondition
+The user can use all features regardless of the specific device model.
+Table 3. 23:Non-Functional Requirement 09
+Non-Functional Requirement ID
+NFR-09
+Name
+Responsibility
+Description
+The system shall clearly state that it is a first-response assistive tool and does not replace the advice of a qualified veterinarian.
+Input
+A user reading the application’s diagnostic result and guidance.
+Output
+A clear disclaimer notice presented alongside the diagnostic outputs.
+Precondition
+A diagnostic result is being shown to the user.
+Postcondition
+The user understands the assistive nature of the tool and the value of professional veterinary advice.
+Requirements Baseline
+The requirements baseline for this project consists of the approved set of user needs, functional requirements, and non-functional requirements. It serves as the control point for scope, ensuring that later design and implementation decisions remain aligned with the supervisor-approved objectives of the project.
+Need to Feature Mapping
+Need-to-feature mapping is maintained so that each user need can be traced to concrete requirements and then to a specific module of the proposed system. This traceability strengthens implementation planning and makes later validation more systematic.
+Table 3.3 Need to Feature Mapping
+Need ID
+Mapped Requirement(s)
+Implementation Module
+N-01
+FR-01, FR-11
+Image picker and validation module
+N-02
+FR-02
+Preprocessing pipeline
+N-03
+FR-03, FR-04
+Disease classification engine
+N-04
+FR-05
+Severity estimation module
+N-05
+FR-06, FR-07, FR-08
+Treatment mapping and result screen
+N-06
+FR-09, FR-12, FR-13
+Android deployment, privacy, and retry flow
+Gantt Chart
+The project schedule is organised over the normal two-semester FYP life cycle. Early work focuses on literature review, requirements, dataset preparation, and baseline experimentation, while later work concentrates on integration, optimisation, testing, and final documentation.
+Figure 3.1 presents the visual Gantt chart used to monitor project progress against milestones agreed with the supervisor. The chart is intended to support realistic workload distribution and early identification of slippage.
+Figure 3.1 Gantt Chart of Project Activities
+Hurdles in Optimizing the Current System
+Several hurdles must be managed in order to optimise the proposed system. The first is dataset realism: field images may differ from training images in lighting, focus, and framing, which makes robust preprocessing and evaluation essential.
+The second hurdle is the trade-off between model accuracy and mobile efficiency; the third is the need to generate conservative and responsible treatment guidance; the fourth is scope control within the academic timeline; and the fifth is maintaining usability under real farm conditions. Together, these constraints shape the engineering decisions taken in the project.
+Chapter Summary
+This chapter has defined the proposed system in requirements-engineering terms, identified its users and stakeholders, and formalised the functional and non-functional expectations that will guide implementation. It also documented traceability and scheduling artefacts needed for disciplined project control. The next chapter converts these requirements into a concrete design blueprint.
+DESIGN
+Software Process Model
+The software process model selected for this project is Iterative and Incremental development with regular review cycles. This choice is appropriate because the project combines three tightly connected workstreams—machine learning, mobile development, and rule-based decision support—that benefit from repeated prototyping and refinement rather than a single linear pass.
+Each iteration delivers a working subset of the system, such as a baseline classifier, a usable image-upload workflow, or an integrated result screen. This staged approach reduces technical risk, allows supervisor feedback to be incorporated early, and makes final integration more controlled.
+Benefits of Selected Model
+The Iterative and Incremental model offers a number of practical benefits for a project of this kind.
+Early risk reduction: the technically uncertain areas, including model accuracy on noisy field images and mobile inference performance, are tackled in the early iterations.
+Continuous integration: because each iteration delivers a working slice of the system, integration issues are identified and resolved incrementally rather than piling up at the end.
+Responsive to feedback: supervisor and user feedback can be incorporated between iterations, keeping the system aligned with stakeholder expectations without large late-stage redesigns.
+Manageable complexity: splitting the work into iterations keeps the workload manageable for a small student team and supports predictable progress.
+Clear progress tracking: working deliverables at the end of each iteration provide concrete evidence of progress during reviews and evaluations.
+Limitations of Selected Model
+At the same time, the Iterative and Incremental model has limitations that have been acknowledged and that must be actively managed throughout the project.
+Need for disciplined planning: frequent iterations require careful planning; without it, the team may drift into reactive short-term work without a coherent long-term direction.
+Risk of architectural drift: early prototypes may sacrifice architectural cleanliness, and without regular refactoring the accumulated technical debt can slow later iterations.
+Scope management pressure: flexibility may invite continuous scope expansion, which must be resisted in order to meet fixed academic deadlines.
+Testing overhead: as functionality accumulates, regression testing grows heavier, which requires a robust test strategy from an early stage.
+Coordination demand: frequent integrations require strong coordination between the developers responsible for the machine learning model and the mobile application.
+System Design
+System design explains how the requirements defined in Chapter 3 are transformed into concrete software components, data structures, and interaction flows. The design is presented through a methodology flow, an ERD, and a set of UML diagrams so that both structural and behavioural aspects of the system are clearly documented.
+Methodology of the Proposed System
+Figure 4.1 outlines the high-level methodology flow of the proposed poultry disease detection system, presenting a structured end-to-end pipeline from data acquisition to final results. The process is designed to ensure efficient data transition and accurate diagnostic generation through the following stages:
+Input Phase: The workflow initiates with the acquisition of poultry fecal images. The user provides this input by capturing a real-time photo through the mobile camera or selecting an existing image from the device gallery.
+Preprocessing Phase: Once the image is received, it undergoes essential preprocessing transformations. This stage involves operations such as resizing, normalization, and noise reduction to ensure the image data is optimized for the deep learning architecture.
+Model Phase: The preprocessed data is then passed to the core AI model for analysis. This deep learning classifier extracts relevant features from the input image to perform automated disease identification and classification.
+Output Phase: In the final stage, the system generates the diagnostic results. This output provides the farmer with actionable information, including the identified disease name and specific treatment recommendations, completing the diagnostic cycle.Figure 4.1 outlines the high-level methodology flow of the proposed poultry disease detection system, presenting a structured end-to-end pipeline from data acquisition to final results. 
+Figure 4.1 Methodology Flow of the Proposed System
+.
+Entity Relationship Diagram
+Figure 4.2 presents the Entity Relationship Diagram of the proposed system and explains the logical relationship among the core information elements used in the application. Although the current implementation is not based on a large transactional database, the ERD is still highly useful because it provides a conceptual representation of how disease-related information is organized and linked. The diagram models the main entities involved in the system, including disease categories, severity levels, treatment recommendations, and prediction results. These entities collectively represent the knowledge structure that enables the application to produce meaningful and organized outputs for the user.
+In the proposed design, each disease category is associated with one or more severity levels, while each disease-severity combination is connected to an appropriate treatment recommendation. This relationship is important because the same disease may require a different response depending on its detected severity. The ERD also connects prediction results with disease class and severity so that the output produced by the deep learning model can be translated into actionable guidance. In addition, the report indicates that the ERD can support future extension of the system, such as user accounts, prediction history, and farm-level analytics, even if these features are not fully implemented in the current version.
+Therefore, the ERD should be understood not only as a database representation but also as a structural model of the information flow within the system. It formalizes how disease detection results are connected with severity assessment and treatment knowledge, thereby strengthening the design and maintainability of the proposed application.
+Figure 4.2 Entity Relationship Diagram
+UML Diagrams
+The UML diagrams complement the textual design by showing how actors interact with the application, how major classes collaborate, how activities flow during prediction, how messages are exchanged over time, and how the software is decomposed into deployable components.
+Use Case Diagram of the System
+ Figure 4.3 illustrates the Use Case Diagram of the proposed system and provides an external view of how different actors interact with the application. According to the project design, the primary actor is the Farmer, who uses the mobile application to perform the main operational tasks of the system. These tasks include capturing or uploading an image of poultry fecal droppings, viewing the diagnostic result generated by the model, and reading the corresponding treatment recommendation. The farmer interacts with the system in a straightforward way, which reflects the project’s emphasis on ease of use and accessibility for non-technical users.
+The diagram also includes an Administrative Actor, whose role is more technical and supportive in nature. This actor is responsible for model maintenance and system updates. Such a role is important because AI-based systems may require periodic improvement, retraining, or updating in order to remain accurate and relevant over time. By including both the Farmer and the Administrative Actor, the use case diagram captures the two major perspectives of the system: one related to daily use and another related to system management and sustainability
+Figure 4.3 Use Case Diagram of the System
+Class Diagram of the System
+Figure 4.4 represents the Class Diagram of the proposed poultry disease detection system. This diagram provides the static structural view of the application by showing the major classes or software modules involved in processing an image and producing the final advisory result. According to the report, the class-level design includes modules responsible for image handling, validation, preprocessing, prediction, severity estimation, treatment mapping, result presentation, and cleanup. Each of these classes has a specific responsibility, and together they form a modular system architecture.
+The image handling class is responsible for receiving input from the camera or gallery, while the validation class ensures that only supported images proceed further into the workflow. The preprocessing class performs resizing, normalization, and conversion of the image into the format required by the classification model. After this, the inference or classifier class interacts with the deep learning model to generate the predicted disease class and confidence score. The severity estimation module takes these outputs and translates them into a meaningful severity label using rule-based logic. The treatment mapping class then uses the disease and severity combination to retrieve the most appropriate recommendation from the knowledge base. Finally, the result presentation class displays all information to the user, and the cleanup module removes temporary image files after processing
+Figure 4.4 Class Diagram of the System
+Activity Diagram of the System
+ Figure 4.5 shows the Activity Diagram of the proposed system and explains the behavioral flow of one complete prediction cycle. The process starts when the user selects or captures an image of poultry fecal droppings. This image then enters the validation stage, where the system checks whether the file is acceptable in terms of format and size. If the image is invalid, the diagram includes a decision point that redirects the flow back to the image acquisition stage, allowing the user to retry. This retry path is important because it makes the system more robust and user-friendly by handling incorrect input gracefully.
+If the image passes validation, the flow moves forward to preprocessing, where the image is resized, normalized, and converted into a format suitable for model inference. The next activity is classification, in which the deep learning model predicts the disease class and generates a confidence score. This output is then passed to the severity estimation stage, where the system determines whether the detected condition is Mild, Moderate, or Severe. After that, the treatment mapping process selects the corresponding medicine or care instructions based on the disease and severity. The activity ends when the result screen is shown to the user and the temporary image data is cleaned from storage.
+This activity diagram is important because it demonstrates the logical flow of operations and decision-making within the application. It not only represents normal system behavior but also captures how the application responds to invalid input. As a result, it provides a complete behavioral picture of how a user request is processed from start to finish.
+Figure 4.5 Activity Diagram of the System
+Sequence Diagram of the System
+ Figure 4.6 presents the Sequence Diagram of the system and explains how messages are exchanged among the main participating components during a single prediction request. The diagram includes the User, Mobile Interface, Validation Component, Classifier, and Result Module. The interaction begins when the user submits an image through the mobile interface. The interface then forwards the selected image to the validation component, which verifies whether the image is acceptable for further processing. Once validation is completed, the result of that check is sent back to the mobile interface.
+If the image is valid, the mobile interface sends it to the classifier, which performs model inference and returns the predicted disease class along with the confidence score. This prediction information is then transferred to the result module, where severity assessment and treatment recommendation logic are applied. After all required processing is completed, the result module sends the final consolidated output back to the mobile interface, which then displays it to the user. In this way, the sequence diagram captures the temporal order of interactions among the system components and clarifies how one request is handled step by step.
+The significance of the sequence diagram lies in its ability to show dynamic collaboration among system parts. While the class diagram focuses on static structure, the sequence diagram highlights timing, coordination, and message flow. This makes it especially useful for understanding how different modules work.
+Figure 4.6 Sequence Diagram of the System
+Component Diagram of the System
+The Component Diagram presents the high-level deployable architecture of the system, including the Flutter mobile application, the inference engine, the severity and treatment rules module, and supporting update or knowledge components. Figure 4.7 gives this component-level perspective.
+Figure 4.7 Component Diagram of the System
+Chapter Summary
+This chapter has translated the project requirements into a professional design specification. It documented the selected process model, the end-to-end methodology, the conceptual data structure, and the key UML views required to guide implementation. These artefacts provide a coherent blueprint for the development work that follow.
+DATABASE
+Database Introduction
+A database is an organised collection of structured data that is stored, retrieved and protected by a database management system (DBMS). In the relational model, data is arranged in tables whose rows are identified by keys and linked to one another through foreign keys, so that the DBMS itself, rather than the application code alone, can guarantee that stored facts remain consistent [31], [32]. This property is particularly valuable for an application that records diagnoses and recommends medicines, because an inconsistent or silently corrupted record could translate directly into poor advice.
+Chapter 4 presented a conceptual Entity Relationship Diagram (Figure 4.2) that modelled disease categories, severity levels, treatment recommendations and prediction results, and noted that user accounts, prediction history and farm-level analytics could be added later. This chapter documents the physical database that realises and extends that design. It is a PostgreSQL database consisting of ten tables and seven enumerated types. Besides the knowledge structure described in Chapter 4, it stores optional user accounts and sessions, named flocks, a registry of the machine-learning models that have produced answers, the individual diagnosis attempts and the system’s decisions about them, farmer feedback, and an audit trail of administrative changes.
+The database serves four groups of information in the system:
+Reference content: bilingual (English and Urdu) disease descriptions and treatment guidance, seeded into the database and editable by an administrator rather than hard-coded in the program.
+Diagnosis records: one record per scan, together with the model’s prediction, the rule-based severity and urgency, and any feedback given by the farmer.
+Identity and organisation: optional accounts, sessions and named flocks, which give a farmer a history that survives a change of phone.
+Governance: a model registry that attributes every result to the model that produced it, and an audit log that makes every change to medical guidance traceable.
+Two constraints shape the whole schema. The first is that image bytes are never stored: no column in the database is capable of holding an uploaded photograph, whether as binary data or as encoded text. A scan keeps only a perceptual hash, the image dimensions, the prediction and the timings, and the photograph itself is discarded as soon as inference returns. The privacy statement shown to the user is therefore enforced by the data model rather than merely asserted by the interface. The second constraint is that treatment guidance is content, not code. Because the application recommends medicines to people who will act on the advice, that guidance is held in a versioned table with a reviewer field, and the interface warns the user that the guidance has not been reviewed by a veterinarian for as long as that field is empty.
+A further design principle is that accounts are optional. A farmer who suspects that birds are sick must be able to obtain a diagnosis immediately, so every user-related column that links a scan to a person is nullable and guest use is a first-class path. This is consistent with earlier work showing that farmer-oriented poultry diagnostic tools are most useful when they are simple to reach and deployable in resource-constrained settings [15], [5]. The remainder of this chapter justifies the selected database technology, presents representative queries, describes every table, enumerated type and index, and closes with the schema diagram and the referential integrity policy.
+Selected Database
+The selected database management system is PostgreSQL 17, run from the Alpine-based container image and pinned by image digest in the deployment configuration so that every machine that starts the system receives exactly the same database engine [33]. The schema is declared in TypeScript using Drizzle ORM [34], which is the single source of truth: the SQL migration that creates the database is generated from the TypeScript schema by the drizzle-kit tool and is never edited by hand. The application connects through the standard postgres-js driver. Table 5.1 summarises the database technology stack.
+Table 5. 1:Database Technology Stack
+Component
+Selected Technology
+Role in the System
+DBMS
+PostgreSQL 17 (Alpine image, pinned by digest)
+Primary relational data store for all ten tables.
+ORM
+Drizzle ORM (TypeScript, schema-first)
+Declares the schema in code and provides typed queries to the application.
+Driver
+postgres-js (standard PostgreSQL driver)
+Connects to a local container or to any managed PostgreSQL service without a code change.
+Migration tool
+drizzle-kit
+Generates the SQL migration (0000_keen_sabra.sql) from the TypeScript schema.
+Schema source
+packages/db/src/schema.ts
+Single source of truth for tables, columns, enumerated types, indexes and foreign keys.
+Seed content
+packages/db/src/seed-data.ts
+Typed disease and treatment records, read by the seed script and by the demonstration mode.
+Runtime connection
+DATABASE_URL environment variable
+Selects the database at deployment time; no connection details are written in code.
+Migration connection
+DIRECT_DATABASE_URL (preferred when set)
+Gives migrations a direct, unpooled endpoint if a transaction-mode connection pooler is used.
+Connection strategy
+Lazy connection
+The connection opens on first query rather than at import time, so unit tests and demonstration mode need no database.
+The standard postgres-js driver was chosen deliberately instead of a serverless or HTTP-based driver. It communicates with a local container and with any managed PostgreSQL service, including Neon, without code changes, so the deployment target becomes an environment variable rather than a rewrite. The migration configuration prefers the DIRECT_DATABASE_URL variable over DATABASE_URL because schema changes executed through a transaction-mode connection pooler can misbehave in ways that are hard to diagnose. The connection itself is opened lazily on first use. As a result, a module that is imported several layers away from any query does not require a running database, which allows the unit tests and the demonstration mode (DEMO_MODE=1) to run with no PostgreSQL instance at all.
+Reasons for Selection of the Database
+PostgreSQL was selected because the characteristics of the data in this project match the guarantees that a mature relational DBMS provides. The principal reasons are listed below.
+Strong relational integrity: the schema contains nine foreign keys, several unique constraints and a mix of NOT NULL and nullable columns. The DBMS enforces these rules for every writer, which is the central argument for the relational model [31], [32].
+Native enumerated types: the four disease classes, three severity levels, four urgency levels, three certainty levels, two locales, two roles and five abstain reasons are declared as PostgreSQL enumerated types. A mistyped or impossible value, such as a fifth disease class that the model can never predict, cannot be inserted [33].
+JSONB columns for ordered lists: medicines, care steps, biosecurity measures, disease signs, perceptual hashes and triage rules are stored as JSONB arrays, which preserves order and keeps the English and Urdu versions of a list in the same row [33].
+Transactional guarantees: an audit record can be written in the same transaction as the change it describes, so a medical-guidance edit can never exist without a record of who made it [33].
+Idempotent seeding: the INSERT ... ON CONFLICT DO UPDATE (upsert) statement allows the seed script to run repeatedly and leave exactly four diseases and eleven treatments, which makes the start-up procedure safe to run every time [33].
+Database-generated identifiers: primary keys are random version 4 UUIDs produced by the built-in gen_random_uuid() function, so identifiers can be created without a central sequence and are not guessable in the way that sequential integers are [35].
+Type-safe access: because the schema is written in TypeScript with Drizzle ORM, queries are checked against the schema at compile time and migrations are derived from the same definition, which removes a common source of mismatch between code and database [34].
+Portability and cost: PostgreSQL is open source, runs as a container on a developer machine, and is offered as a managed service by several providers, so the same code serves development, demonstration and production.
+Table 5.2 compares PostgreSQL with two other data stores that were considered, using the criteria that matter most to this project. The comparison reflects the general characteristics of each system rather than a benchmark.
+Table 5. 2:Comparison of Candidate Data Stores
+Criterion
+PostgreSQL (selected)
+SQLite
+MongoDB
+Data model
+Relational, with JSONB for semi-structured fields
+Relational, embedded in a single file
+Document-oriented
+Referential integrity
+Foreign keys with a per-relationship ON DELETE action
+Foreign keys supported but enabled per connection
+No native foreign-key enforcement; references are managed by the application
+Enumerated types
+Native ENUM type
+Not available; CHECK constraints are used instead
+Optional schema validation rules
+Concurrent writers
+Many concurrent writers (MVCC)
+One writer at a time
+Document-level concurrency
+Deployment fit
+Container locally; managed service in production
+Zero configuration, but tied to one host and process
+Separate server or managed service
+Fit for this project
+High: integrity, enums, JSONB and transactions are all required
+Lower: weaker multi-user and enum support
+Lower: relationships and audit guarantees would move into application code
+Benefits of the Selected Database
+The selected database and the way it has been used provide the following benefits to the project.
+Privacy by structure: because no column can hold an image, the claim that photographs are never kept is guaranteed by the data model and does not rely on a policy that someone must remember to follow.
+Explainable advice: severity is stored separately from the model’s output, and the exact list of triage rules that fired is stored with it, so a piece of advice can be explained months after it was given.
+Safe handling of medical content: treatment guidance is versioned, carries a reviewer, and clears its sign-off whenever the text is edited, so an old approval can never cover new wording.
+Optional accounts: the schema supports a complete session with the user identifier left empty, using a device identifier instead, so a guest receives full functionality.
+Safe offline retries: a unique idempotency key on each scan means that the offline queue can resend a request after a lost response without creating a duplicate scan or running inference twice.
+Bilingual content as a first-class feature: every piece of user-facing content exists in English and Urdu in the same row, so the two languages cannot fall out of step.
+Early detection of distribution shift: the stored abstain reasons, predicted classes with timestamps and farmer feedback provide inexpensive signals that the field conditions no longer match the training data.
+Honest model metrics: the model registry stores only group-aware evaluation figures; the inflated random-split figure is deliberately absent.
+Evolvability: new enumerated values, columns and indexes are introduced through generated migrations that every part of the system sees at the same time.
+Limitations of the Selected Database
+The design also has limitations that were accepted knowingly and that should be understood when the system is extended.
+Operational overhead: unlike an embedded database, PostgreSQL runs as a separate server process or managed service, which adds deployment and monitoring effort for a small project.
+Unvalidated JSONB contents: the database guarantees that a JSONB column holds valid JSON, but not that every element is a string; the shape of each array is enforced only by the TypeScript types in the application.
+Fixed language set: English and Urdu are stored as paired columns instead of a separate translations table. This is simple and fast for two languages, but adding a third language would require a schema migration.
+Enumerated types are rigid: adding a value is a straightforward migration, but removing or renaming one is more difficult, so the lists have to be chosen carefully.
+Best-effort persistence: the persistence layer deliberately swallows its own errors so that a farmer still receives a diagnosis when the database is slow or unavailable. The consequence is that a history row can be missed silently, and callers must treat a missing scan identifier as a normal outcome.
+No stored photographs: the privacy guarantee means the original images cannot be re-examined or reused for retraining from this database. Optional retention requires separate object storage and explicit user consent.
+Single-node design: the current deployment uses one database instance. Scaling beyond that would require replication or a managed service and has not been evaluated in this project.
+Content review dependency: the review notice depends on the reviewed_by field, so the unreviewed warning continues to appear until a veterinarian signs the guidance off.
+Database Queries
+The application accesses the database through the typed query builder of Drizzle ORM. This section presents the main queries in their equivalent SQL form so that their purpose, their dependence on constraints and indexes, and their behaviour can be read without any knowledge of the ORM. The statements are representative of those issued by the persistence layer; the exact text generated by the ORM may differ in identifier quoting and parameter notation. Placeholders such as $1 and $2 denote bound parameters.
+Schema Creation and Seeding Queries
+The initial migration creates seven enumerated types, ten tables, ten indexes and nine foreign keys in a single generated script. The excerpt below shows the style of that script for two of the enumerated types and for the scans table, which is the table where an image column would normally be expected and where none exists.
+CREATE TYPE disease_class AS ENUM ('coccidiosis','healthy','ncd','salmonella');
+CREATE TYPE urgency AS ENUM ('monitor','treat_today','vet_soon','vet_now');
+ 
+CREATE TABLE scans (
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id           uuid REFERENCES users(id)  ON DELETE SET NULL,
+  device_id         varchar(64),
+  flock_id          uuid REFERENCES flocks(id) ON DELETE SET NULL,
+  idempotency_key   varchar(64) UNIQUE,
+  image_count       smallint    NOT NULL DEFAULT 1,
+  perceptual_hashes jsonb       NOT NULL DEFAULT '[]',
+  image_width       integer,
+  image_height      integer,
+  locale            locale      NOT NULL DEFAULT 'en',
+  created_at        timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX scans_user_created_idx ON scans (user_id, created_at);
+The reference content is loaded by the seed script, which inserts four diseases and eleven treatments. It uses an upsert against the unique index on (disease_code, severity), so running the start-up procedure a second time updates the existing rows rather than failing or duplicating them. This idempotency is verified by the continuous-integration hand-off job.
+INSERT INTO treatments (disease_code, severity, medicines_en, medicines_ur,
+                        vet_required, urgency, ...)
+VALUES ($1, $2, $3, $4, $5, $6, ...)
+ON CONFLICT (disease_code, severity)
+DO UPDATE SET medicines_en = EXCLUDED.medicines_en,
+              medicines_ur = EXCLUDED.medicines_ur,
+              vet_required = EXCLUDED.vet_required,
+              urgency      = EXCLUDED.urgency,
+              updated_at   = now();
+Diagnosis Write-Path Queries
+Figure 5.1 shows the sequence of database operations performed for one diagnosis. The browser first compresses the photographs and holds them in its own IndexedDB store, then sends them with an idempotency key. The server checks that key before doing any work. If it is found, the stored prediction is replayed and nothing new is written; otherwise a scan row is inserted that contains no image bytes, the model registry entry is looked up or created, and a prediction row is inserted. The farmer’s three answers about the flock arrive afterwards and are written to the same prediction row together with the derived severity, urgency and the list of triage rules that fired.
+Figure 5.1 Write Path of One Diagnosis
+-- 1. Idempotency check: replay if this request was already processed
+SELECT s.id, p.* FROM scans s
+JOIN predictions p ON p.scan_id = s.id
+WHERE s.idempotency_key = $1;
+ 
+-- 2. New scan: hash and dimensions only, never image bytes
+INSERT INTO scans (user_id, device_id, idempotency_key, image_count,
+                   perceptual_hashes, image_width, image_height, locale)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id;
+ 
+-- 3. Model registry: created on first sight of a model version
+INSERT INTO model_versions (version, source, backbone, macro_f1, ...)
+VALUES ($1, $2, $3, $4, ...) ON CONFLICT (version) DO NOTHING;
+ 
+-- 4. What the model said
+INSERT INTO predictions (scan_id, model_version_id, predicted_class,
+       probabilities, calibrated_confidence, certainty, conformal_set,
+       abstained, abstain_reason, energy_score, total_ms, ...)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, ...) RETURNING id;
+ 
+-- 5. What the system decided, once the flock answers arrive
+UPDATE predictions
+SET severity = $2, urgency = $3, triage_rules = $4, flock_signals = $5
+WHERE id = $1;
+ 
+-- 6. Optional filing under a flock, and one feedback row per scan
+UPDATE scans SET flock_id = $2 WHERE id = $1;
+INSERT INTO feedback (scan_id, was_helpful, actual_class, comment)
+VALUES ($1, $2, $3, $4);   -- a second insert for the same scan is rejected
+The model-registry query illustrates a deliberate choice. The row is created on first sight of a model version instead of at deployment time, because a deployment step can be skipped without any visible failure, and predictions would then be written with an empty model reference that nobody notices until the question is asked months later. The unique constraint on the version column settles the race when two requests arrive together on a cold start.
+The persistence functions follow a deliberate failure policy. Every function in the persistence layer catches its own errors and returns null instead of throwing. This is the opposite of what most persistence code should do, but here it is intentional: a farmer standing in a coop with sick birds must still receive a diagnosis when the database is slow or unavailable. History is a convenience; the diagnosis is the product. A null scan identifier is therefore a normal outcome that callers are required to handle.
+Retrieval and Monitoring Queries
+The queries below read data back for the user interface and for monitoring. History is always requested as the scans of one person, newest first, and it matches on either the account or the device so that a guest who later registers still sees the checks made earlier. The two composite indexes that include created_at allow the sort to be served by the index. Treatment guidance is retrieved by the unique pair of disease and severity.
+-- History of one person (account OR device), newest first
+SELECT s.id, s.created_at, p.predicted_class, p.severity, p.urgency, p.certainty
+FROM scans s LEFT JOIN predictions p ON p.scan_id = s.id
+WHERE s.user_id = $1 OR s.device_id = $2
+ORDER BY s.created_at DESC LIMIT 50;
+ 
+-- Reference content for a result screen
+SELECT * FROM diseases ORDER BY display_order;
+SELECT * FROM treatments WHERE disease_code = $1 AND severity = $2;
+ 
+-- Which model is answering right now
+SELECT version, macro_f1, balanced_accuracy, mcc
+FROM model_versions WHERE is_active = true;
+Three further queries support monitoring. The first shows how the distribution of predicted classes moves over time and is served by the index on (predicted_class, created_at). The second tracks the weekly abstain rate; a rising rate is the cheapest available alarm that the field images no longer resemble the training data. The third lists the cases in which a veterinarian reported a different disease from the one that was predicted, which is the only genuine labelled evidence the system collects.
+-- Drift: predicted classes per week
+SELECT date_trunc('week', created_at) AS week, predicted_class, count(*)
+FROM predictions GROUP BY 1, 2 ORDER BY 1, 2;
+ 
+-- Weekly abstain rate
+SELECT date_trunc('week', created_at) AS week,
+       avg(abstained::int) AS abstain_rate, count(*) AS scans
+FROM predictions GROUP BY 1 ORDER BY 1;
+ 
+-- Cases where a veterinarian reported a different disease
+SELECT p.predicted_class, f.actual_class, count(*)
+FROM feedback f JOIN predictions p ON p.scan_id = f.scan_id
+WHERE f.actual_class IS NOT NULL
+  AND f.actual_class IS DISTINCT FROM p.predicted_class
+GROUP BY 1, 2;
+Administrative and Audit Queries
+Administrative changes to treatment guidance are executed inside one transaction together with their audit record. If the audit insert failed after the guidance had been changed, medical content would be altered with no record of who altered it, which is precisely the situation the audit table exists to prevent. Editing the content also increments the version and clears the reviewer fields, because text that a reviewer has not read has not been approved.
+BEGIN;
+UPDATE treatments
+SET medicines_en = $2, care_steps_en = $3, ...,
+    version = version + 1, reviewed_by = NULL, reviewed_at = NULL,
+    updated_at = now()
+WHERE id = $1;
+INSERT INTO audit_logs (actor_id, action, entity_type, entity_id, changes)
+VALUES ($4, 'treatment.update', 'treatment', $1, $5);
+COMMIT;
+ 
+-- Veterinarian sign-off (the unreviewed notice disappears by itself)
+UPDATE treatments SET reviewed_by = $2, reviewed_at = now() WHERE id = $1;
+-- ...followed in the same transaction by an audit row 'treatment.review'
+ 
+-- Is the unreviewed notice required for this result?
+SELECT (reviewed_by IS NULL) AS show_notice FROM treatments
+WHERE disease_code = $1 AND severity = $2;
+ 
+-- Change history of one entity
+SELECT action, actor_id, changes, created_at FROM audit_logs
+WHERE entity_type = 'treatment' AND entity_id = $1 ORDER BY created_at DESC;
+Finally, an account deletion request is a single statement whose effects are determined by the referential actions declared in the schema: the sessions and flocks of the user are removed by cascade, while the scans are retained as diagnosis records with the user reference set to null.
+DELETE FROM users WHERE id = $1;
+-- CASCADE: sessions, flocks removed   SET NULL: scans.user_id cleared
+Database Tables
+This section describes every object in the database. The database contains ten tables, seven enumerated types, ten indexes and nine foreign keys. Every table uses a UUID version 4 primary key generated by the database with gen_random_uuid(), with one exception: the diseases table is keyed directly by its enumerated disease code. Table 5.3 gives the overall summary and Table 5.4 lists the tables with their purpose.
+Database Overview and Enumerated Types
+Table 5. 3:Summary of Database Objects
+Database Object
+Count
+Remarks
+Tables
+10
+Two hold seeded reference content (diseases, treatments).
+Enumerated types
+7
+disease_class, severity, urgency, certainty, locale, user_role, abstain_reason.
+Indexes
+10
+In addition to primary keys and unique constraints.
+Foreign keys
+9
+5 with ON DELETE CASCADE and 4 with ON DELETE SET NULL.
+Primary keys
+UUID v4
+Generated by the database; diseases is keyed by its enumerated code.
+Seeded rows
+15
+4 diseases and 11 treatments.
+Table 5. 4:Inventory of Database Tables
+No.
+Table
+Purpose
+Category
+1
+users
+Optional accounts; guest scanning always works.
+Identity
+2
+sessions
+Server-side sessions for signed-in users.
+Identity
+3
+flocks
+Named groups of birds belonging to a user.
+Organisation
+4
+diseases
+Bilingual disease reference content.
+Reference (seeded)
+5
+treatments
+Treatment guidance per disease and severity.
+Reference (seeded)
+6
+model_versions
+Registry of machine-learning models that have answered.
+Governance
+7
+scans
+One diagnosis attempt.
+Transaction
+8
+predictions
+What the model said and what the system decided.
+Transaction
+9
+feedback
+Whether the diagnosis turned out to be right.
+Transaction
+10
+audit_logs
+Administrative actions on guidance content.
+Governance
+Seven enumerated types constrain the vocabulary of the database. Using enumerated types instead of free text means a typographical error cannot be inserted, the permitted values are documented in the database itself, and adding a value is a migration that both sides of the system see. The abstain_reason type is stored so that refusal rates can be watched over time. Table 5.5 lists the types.
+Table 5. 5:Enumerated Types
+Type
+Permitted Values
+Purpose
+disease_class
+coccidiosis, healthy, ncd, salmonella
+The four classes the model was trained on; used as the key of diseases and as the prediction value.
+severity
+mild, moderate, severe
+Derived by rules, never taken from the model.
+urgency
+monitor, treat_today, vet_soon, vet_now
+Ordered from least to most urgent.
+certainty
+confident, uncertain, cannot_tell
+How sure the system is; a separate axis from severity.
+locale
+en, ur
+English and Urdu.
+user_role
+farmer, admin
+Access level of an account.
+abstain_reason
+quality, out_of_distribution, low_confidence, ambiguous, no_class_plausible
+Why the system declined to answer.
+Users Table
+The users table stores optional accounts. Guest scanning always works; an account adds a history that survives a change of phone and provides administrator access for one or two people. Requiring registration before a farmer could find out whether the birds are ill would make the tool useless in practice, so no other table requires a row in users.
+Table 5. 6:Structure of the users Table
+Column
+Data Type
+Constraints / Default
+Description
+id
+uuid
+PK, default gen_random_uuid()
+Unique identifier of the account.
+email
+varchar(320)
+UNIQUE, nullable
+Optional sign-in identifier; the default channel.
+phone
+varchar(32)
+UNIQUE, nullable
+Alternative identifier for users who have no email address.
+password_hash
+text
+nullable
+Hashed credential; the plain password is never stored.
+display_name
+varchar(120)
+nullable
+Name shown in the interface.
+locale
+locale
+NOT NULL, default ‘en’
+Preferred language (English or Urdu).
+role
+user_role
+NOT NULL, default ‘farmer’
+Access level: farmer or admin.
+consent_to_retain_images
+boolean
+NOT NULL, default false
+Explicit, separately recorded consent to keep a re-encoded copy of images.
+created_at
+timestamptz
+NOT NULL, default now()
+Time the account was created.
+last_seen_at
+timestamptz
+nullable
+Time of the last activity.
+Email or phone: both columns are nullable and unique, because many smallholders in rural Pakistan have a phone number but no email address, and offering only email would exclude a large part of the intended audience. Email is the default because sending SMS costs money.
+Consent is explicit and off by default. Even when it is true, retention stores a re-encoded copy in object storage and never in this database.
+The index users_identity_idx on (email, phone) supports sign-in with either identifier.
+Sessions Table
+The sessions table holds server-side sessions for signed-in users. The session token is stored only as a hash, so a copy of the database does not hand over live sessions to whoever obtains it, which follows the recommended practice for protecting session identifiers [36].
+Table 5. 7:Structure of the sessions Table
+Column
+Data Type
+Constraints / Default
+Description
+id
+uuid
+PK, default gen_random_uuid()
+Unique identifier of the session.
+user_id
+uuid
+NOT NULL, FK to users.id, ON DELETE CASCADE
+Owner of the session.
+token_hash
+text
+NOT NULL, UNIQUE
+Hash of the session token; the token itself is not stored.
+expires_at
+timestamptz
+NOT NULL
+Time after which the session is invalid.
+created_at
+timestamptz
+NOT NULL, default now()
+Time the session was created.
+Deleting a user removes that user’s sessions by cascade, which is the correct behaviour for an account deletion request. The index sessions_user_idx on (user_id) supports session lookup and bulk revocation at sign-out.
+Flocks Table
+The flocks table lets a farmer group birds under a name, so history is meaningful across several sheds. The statement that three birds look unwell means something very different in a pen of eight than in a pen of two hundred, and the flock is where that denominator lives.
+Table 5. 8:Structure of the flocks Table
+Column
+Data Type
+Constraints / Default
+Description
+id
+uuid
+PK, default gen_random_uuid()
+Unique identifier of the flock.
+user_id
+uuid
+NOT NULL, FK to users.id, ON DELETE CASCADE
+Owner of the flock.
+name
+varchar(120)
+NOT NULL
+Name chosen by the farmer, for example a shed name.
+bird_count
+integer
+nullable
+Approximate number of birds.
+breed
+varchar(120)
+nullable
+Breed of the birds.
+notes
+text
+nullable
+Free-text notes.
+created_at
+timestamptz
+NOT NULL, default now()
+Time the flock was created.
+A flock requires an account, because it is something a person names and returns to, and a device cookie that a browser can clear is the wrong place to keep it.
+Only name is required. Asking a farmer to know the exact bird count before naming a shed is the kind of form that gets abandoned.
+The application limits each user to 20 flocks. This is not a storage limit; a list of eighty is a list nobody scrolls.
+The index flocks_user_idx on (user_id) supports the screen that lists one user’s flocks.
+Diseases Table
+The diseases table holds the disease reference material in both languages. It is kept in the database rather than in code because it is content: an administrator edits it and a veterinarian reviews it, and neither should need a developer or a new deployment. The table contains four rows, one for each class the model can predict.
+Table 5. 9:Structure of the diseases Table
+Column
+Data Type
+Constraints / Default
+Description
+code
+disease_class
+PRIMARY KEY
+Disease code; the enumerated type is the key.
+name_en / name_ur
+varchar(120)
+NOT NULL
+Disease name in English and Urdu.
+summary_en / summary_ur
+text
+NOT NULL
+Short explanation in each language.
+signs_en / signs_ur
+jsonb
+NOT NULL, default ‘[]’
+Visible signs in plain words (array of strings).
+baseline_severity
+severity
+NOT NULL
+Severity of the pathogen before any flock signal is considered.
+baseline_urgency
+urgency
+NOT NULL
+Urgency of the pathogen before any flock signal is considered.
+is_notifiable
+boolean
+NOT NULL, default false
+True for Newcastle Disease (ncd) only.
+audio_en / audio_ur
+varchar(255)
+nullable
+Path to recorded narration in each language.
+display_order
+smallint
+NOT NULL, default 0
+Display order by clinical urgency, not alphabetical.
+The primary key is the enumerated type itself. There is no surrogate key because the set of diseases is fixed by the model, and a fifth row would describe a disease the model can never predict.
+The baseline severity and urgency are properties of the pathogen; Newcastle Disease is severe and requires a veterinarian immediately regardless of other signals.
+Newcastle Disease is reportable in most jurisdictions, so is_notifiable causes the interface to display a blocking alert for it.
+The signs describe what a farmer can see in plain words, not a clinical description, and the audio columns exist because written text excludes readers who cannot read comfortably, which describes much of the intended audience.
+Treatments Table
+The treatments table stores treatment guidance keyed by disease and severity. It recommends medicines to people who will act on the advice, so it is treated with particular care: it is versioned, it records who reviewed it, and it is audited. The table contains eleven rows.
+Table 5. 10:Structure of the treatments Table
+Column
+Data Type
+Constraints / Default
+Description
+id
+uuid
+PK, default gen_random_uuid()
+Unique identifier of the record.
+disease_code
+disease_class
+NOT NULL, FK to diseases.code, ON DELETE CASCADE
+Disease to which the guidance applies.
+severity
+severity
+NOT NULL
+Severity level to which the guidance applies.
+medicines_en / medicines_ur
+jsonb
+NOT NULL, default ‘[]’
+Recommended medicines (array of strings).
+care_steps_en / care_steps_ur
+jsonb
+NOT NULL, default ‘[]’
+Care steps in order (array of strings).
+biosecurity_en / biosecurity_ur
+jsonb
+NOT NULL, default ‘[]’
+Biosecurity measures (array of strings).
+vet_required
+boolean
+NOT NULL, default false
+Whether a veterinarian must be consulted.
+urgency
+urgency
+NOT NULL
+How quickly action is needed.
+version
+integer
+NOT NULL, default 1
+Increases with every edit of the content.
+reviewed_by
+varchar(160)
+nullable
+Veterinarian who signed the content off; null means unreviewed.
+reviewed_at
+timestamptz
+nullable
+Time of the sign-off.
+audio_en / audio_ur
+varchar(255)
+nullable
+Path to recorded narration in each language.
+created_at / updated_at
+timestamptz
+NOT NULL, default now()
+Creation and last modification times.
+The unique index treatments_disease_severity_idx on (disease_code, severity) is load-bearing. It is both the lookup path for a result screen and the conflict target of the seed upsert, which is what makes running the start-up procedure twice idempotent.
+A null reviewed_by is the mechanism behind the notice displayed on every result screen. When a veterinarian signs the content off, the notice disappears by itself, because the notice is a consequence of a null column and not a hard-coded string.
+Editing the content clears reviewed_by and reviewed_at and increments version, because text that a reviewer has not read is text they have not approved.
+Every list is stored in both languages as JSONB arrays, so ordering is preserved and the two languages cannot differ in the number of rows. A bilingual JSONB design was preferred to a separate translations table because the languages are fixed at two and a join per field would add cost without any flexibility that would ever be used.
+Coverage rule: every (disease, severity) pair that the triage engine can produce must have a row, or the farmer would see a message that the steps could not be loaded. A test enumerates the engine’s outputs to assert this. The reachable pairs are coccidiosis (moderate, severe), healthy (mild, moderate, severe), ncd (severe) and salmonella (moderate, severe).
+Model Versions Table
+The model_versions table records which machine-learning model produced which result. Without it, a change in accuracy after a model bundle is replaced could not be attributed, and the feedback loop could not distinguish between a better model and changed field conditions. The table stores calibration and abstention parameters that reflect established techniques: a temperature value for confidence calibration [37], an abstain threshold applied to the out-of-distribution energy score [38], and the per-class recall and confusion matrix used to judge each class separately.
+Table 5. 11:Structure of the model_versions Table
+Column
+Data Type
+Constraints / Default
+Description
+id
+uuid
+PK, default gen_random_uuid()
+Unique identifier of the registry entry.
+version
+varchar(80)
+NOT NULL, UNIQUE
+Version label of the model bundle.
+source
+varchar(16)
+NOT NULL
+Origin of the bundle: ‘shipped’ or ‘trained’.
+backbone
+varchar(120)
+nullable
+Name of the network backbone.
+macro_f1
+real
+nullable
+Group-aware macro F1 score.
+balanced_accuracy
+real
+nullable
+Group-aware balanced accuracy.
+mcc
+real
+nullable
+Matthews correlation coefficient.
+per_class_recall
+jsonb
+nullable
+Recall of each class (class name to number).
+confusion_matrix
+jsonb
+nullable
+Confusion matrix (array of arrays of numbers).
+temperature
+real
+nullable
+Temperature used to calibrate confidence.
+abstain_threshold
+real
+nullable
+Threshold below which the system abstains.
+is_active
+boolean
+NOT NULL, default false
+True for the one model currently answering.
+activated_at
+timestamptz
+nullable
+Time the model became active.
+created_at
+timestamptz
+NOT NULL, default now()
+Time the entry was created.
+The row is created on first sight of a model version, not at deployment time, because a skipped deployment step fails silently.
+Metrics are read from the model bundle that the service actually loaded, never from a file in the repository. A row claiming a macro F1 that no longer matches the weights in production would be worse than a row of nulls, because it would be believed.
+Only group-aware metrics are stored. The random-split figure is not stored anywhere because it is inflated by near-duplicate photographs of the same bird and is not a real number.
+Exactly one row has is_active set to true at any time, so the administrator screen can answer which model is answering right now.
+Scans Table
+The scans table represents one diagnosis attempt. It is the table in which a photograph would normally be stored, and the absence of an image column is deliberate, as explained in Section 5.1.
+Table 5. 12:Structure of the scans Table
+Column
+Data Type
+Constraints / Default
+Description
+id
+uuid
+PK, default gen_random_uuid()
+Unique identifier of the scan.
+user_id
+uuid
+nullable, FK to users.id, ON DELETE SET NULL
+Owner of the scan; null for a guest.
+device_id
+varchar(64)
+nullable
+Signed device cookie value for guest history.
+flock_id
+uuid
+nullable, FK to flocks.id, ON DELETE SET NULL
+Flock under which the scan is filed.
+idempotency_key
+varchar(64)
+nullable, UNIQUE
+Client-generated key that makes retries safe.
+image_count
+smallint
+NOT NULL, default 1
+Number of photographs in the check.
+perceptual_hashes
+jsonb
+NOT NULL, default ‘[]’
+Content hashes for duplicate and drift analysis (array of strings).
+image_width / image_height
+integer
+nullable
+Image dimensions only.
+locale
+locale
+NOT NULL, default ‘en’
+Language of the session.
+created_at
+timestamptz
+NOT NULL, default now()
+Time of the scan.
+The user_id column is nullable because guest scanning is a first-class path and not a fallback. The device_id is a signed cookie value, so a guest has their own history on that device without creating an account. History matches on either the account or the device, so a guest who later registers still sees earlier checks.
+Both indexes, scans_user_created_idx on (user_id, created_at) and scans_device_created_idx on (device_id, created_at), are composite and include created_at, because history is always read as one person’s scans, newest first. A single-column index would still require a sort.
+The idempotency key is generated by the client and sent as the Idempotency-Key header. The unique constraint, together with a lookup, stops the offline queue from creating a duplicate scan when it retries after a lost response, and stops inference from running twice and possibly returning a different diagnosis for the same photograph.
+The flock_id relationship uses ON DELETE SET NULL, so deleting a flock does not delete its history.
+Predictions Table
+The predictions table records what the model said and what the system decided to tell the farmer. These are two different things and both are recorded. The model’s output consists of the class, the probabilities and a calibrated confidence [37]. The decision consists of the certainty, the set of classes that the model could not separate, an out-of-distribution energy score [38], and the severity and urgency derived by rules. The conformal set follows the idea of conformal prediction, in which the system returns a set of plausible classes instead of a single forced label [39].
+Table 5. 13:Structure of the predictions Table
+Column
+Data Type
+Constraints / Default
+Description
+id
+uuid
+PK, default gen_random_uuid()
+Unique identifier of the prediction.
+scan_id
+uuid
+NOT NULL, FK to scans.id, ON DELETE CASCADE
+Scan to which the prediction belongs.
+model_version_id
+uuid
+nullable, FK to model_versions.id, ON DELETE SET NULL
+Model that produced the answer.
+predicted_class
+disease_class
+nullable
+Predicted disease; null when the system abstains.
+probabilities
+jsonb
+nullable
+Class probabilities (class name to number).
+calibrated_confidence
+real
+nullable
+Confidence after calibration.
+certainty
+certainty
+NOT NULL
+confident, uncertain or cannot_tell.
+conformal_set
+jsonb
+NOT NULL, default ‘[]’
+Classes the model could not separate (array of strings).
+abstained
+boolean
+NOT NULL, default false
+True if the system declined to answer.
+abstain_reason
+abstain_reason
+nullable
+Reason for declining.
+energy_score
+real
+nullable
+Out-of-distribution score.
+severity
+severity
+nullable
+Severity derived by rules.
+urgency
+urgency
+nullable
+Urgency derived by rules.
+triage_rules
+jsonb
+NOT NULL, default ‘[]’
+Rules that fired, in order (array of strings).
+flock_signals
+jsonb
+nullable
+The farmer’s three answers (name to answer).
+decode_ms / preprocess_ms / inference_ms / total_ms
+real
+nullable
+Timings of each processing stage.
+created_at
+timestamptz
+NOT NULL, default now()
+Time of the prediction.
+Severity is not the model’s output. It is derived by rules from the disease baseline plus the farmer’s three answers. Deriving severity from the confidence score would be unsound, because confidence measures certainty about a label and not the progress of a disease, and the training data carries no severity labels at all.
+The triage_rules column records exactly which rules fired and in what order, which is what makes a piece of advice auditable months later instead of being reconstructed from memory.
+The predicted_class, severity and urgency columns are nullable because, when the system abstains, there is no class to record, and inventing one would be worse than an empty value. A conformal set with two or more members is a refusal and not a diagnosis.
+The four timing columns allow a latency budget to be measured against real traffic and not against a benchmark.
+The model_version_id relationship uses SET NULL, so removing a registry row never deletes the diagnoses it produced.
+The indexes predictions_scan_idx on (scan_id) and predictions_class_created_idx on (predicted_class, created_at) serve the join from a scan to its prediction and the drift question of how the distribution of predicted classes moves over time.
+Feedback Table
+The feedback table records whether a diagnosis turned out to be right. It gives the farmer a say instead of making the tool feel like a verdict, and it produces genuinely useful field data.
+Table 5. 14:Structure of the feedback Table
+Column
+Data Type
+Constraints / Default
+Description
+id
+uuid
+PK, default gen_random_uuid()
+Unique identifier of the feedback.
+scan_id
+uuid
+NOT NULL, UNIQUE, FK to scans.id, ON DELETE CASCADE
+Scan being commented on; one feedback per scan.
+was_helpful
+boolean
+nullable
+Whether the farmer found the result helpful.
+actual_class
+disease_class
+nullable
+Disease confirmed later, if different.
+confirmed_by_vet
+boolean
+NOT NULL, default false
+Whether a veterinarian confirmed the disease.
+comment
+text
+nullable
+Free-text comment.
+created_at
+timestamptz
+NOT NULL, default now()
+Time the feedback was given.
+The unique constraint on scan_id enforces a one-to-one relationship, so a farmer cannot vote twice on the same check.
+The table is the cheapest distribution-shift alarm available: a helpfulness rate or abstain rate that drifts signals that the deployment no longer matches what the model was trained on.
+The was_helpful value is weak evidence, because not helpful can mean that the diagnosis was wrong, that the treatment was expensive, or that the bird died anyway. The actual_class value, set when a veterinarian later confirms a different disease, is the only real label in the table, which is why it has its own index feedback_actual_class_idx.
+Audit Logs Table
+The audit_logs table records administrative actions so that a change to medical guidance is never anonymous. Three actions are recorded: treatment.update when content is edited (which also clears the sign-off), treatment.review when a veterinarian signs the content off, and treatment.unreview when a sign-off is withdrawn.
+Table 5. 15:Structure of the audit_logs Table
+Column
+Data Type
+Constraints / Default
+Description
+id
+uuid
+PK, default gen_random_uuid()
+Unique identifier of the log entry.
+actor_id
+uuid
+nullable, FK to users.id, ON DELETE SET NULL
+Administrator who performed the action.
+action
+varchar(80)
+NOT NULL
+Action performed, for example treatment.update.
+entity_type
+varchar(60)
+NOT NULL
+Kind of entity affected.
+entity_id
+varchar(80)
+nullable
+Identifier of the affected entity.
+changes
+jsonb
+nullable
+Counts and identifiers describing the change.
+created_at
+timestamptz
+NOT NULL, default now()
+Time of the action.
+The audit row is written in the same transaction as the change; written afterwards, a failure between the two would leave medical guidance altered with no record of who altered it.
+The actor_id relationship uses SET NULL, so deleting an administrator does not erase the history of what they changed; the interface then shows that the change was made by an account since removed.
+The changes column stores counts and identifiers, not full text, because an audit trail that holds every revision of every list would become the largest table in the database, and what an auditor needs first is that something changed and who made the change.
+The entity_type and entity_id columns are generic strings and not a foreign key, so the table can record actions against any entity without a schema change. The index audit_logs_entity_idx on (entity_type, entity_id) retrieves the history of one entity.
+Index Strategy
+Every index in the database serves a query that the application actually issues. None was added speculatively, because an unused index costs write throughput and storage and earns nothing. Table 5.16 lists the ten indexes and the reason for each.
+Table 5. 16:Index Strategy
+Index
+Table
+Columns
+Purpose
+users_identity_idx
+users
+(email, phone)
+Sign-in accepts either identifier.
+sessions_user_idx
+sessions
+(user_id)
+Session lookup and bulk revocation at sign-out.
+flocks_user_idx
+flocks
+(user_id)
+Lists the flocks of one user.
+treatments_disease_severity_idx (UNIQUE)
+treatments
+(disease_code, severity)
+Lookup path and constraint; target of the seed upsert.
+scans_user_created_idx
+scans
+(user_id, created_at)
+History by account, newest first, without a separate sort.
+scans_device_created_idx
+scans
+(device_id, created_at)
+History by device for guests.
+predictions_scan_idx
+predictions
+(scan_id)
+Join from a scan to its prediction on every history row.
+predictions_class_created_idx
+predictions
+(predicted_class, created_at)
+Drift analysis of predicted classes over time.
+feedback_actual_class_idx
+feedback
+(actual_class)
+Finds cases where a veterinarian reported a different disease.
+audit_logs_entity_idx
+audit_logs
+(entity_type, entity_id)
+Change history of one entity.
+Database Schema Diagram
+Figure 5.2 presents the schema diagram of the database. It shows the ten tables with their primary keys, foreign keys and principal columns, and it labels each relationship with its cardinality and its ON DELETE action. The eight tables shown in blue form the operational part of the database, while the two tables shown in brown, diseases and treatments, are the seeded reference content. The diagram is the physical counterpart of the conceptual ERD of Chapter 4 (Figure 4.2), extended with accounts, flocks, the model registry, feedback and the audit log.
+Figure 5.2 Database Schema Diagram
+The users table is the root of the identity side of the schema. One user can own many sessions and many flocks, can be the actor of many audit records, and can own many scans. A flock can contain many scans. On the diagnosis side, one scan has one or more prediction records and at most one feedback record, and one model version can be referenced by many predictions. The reference side is independent of users: one disease has many treatments, one for each severity level that applies to it. Table 5.17 lists all nine foreign keys with their delete actions.
+Table 5. 17:Relationships and ON DELETE Policy
+Parent Table
+Child Table
+Foreign Key
+Cardinality
+ON DELETE
+users
+sessions
+sessions.user_id
+1 : N
+CASCADE
+users
+flocks
+flocks.user_id
+1 : N
+CASCADE
+users
+scans
+scans.user_id (optional)
+1 : N
+SET NULL
+users
+audit_logs
+audit_logs.actor_id
+1 : N
+SET NULL
+flocks
+scans
+scans.flock_id (optional)
+1 : N
+SET NULL
+diseases
+treatments
+treatments.disease_code
+1 : N
+CASCADE
+scans
+predictions
+predictions.scan_id
+1 : N
+CASCADE
+scans
+feedback
+feedback.scan_id (UNIQUE)
+1 : 1
+CASCADE
+model_versions
+predictions
+predictions.model_version_id
+1 : N
+SET NULL
+The deletion policy was chosen separately for each relationship and not applied uniformly. Five relationships cascade and four set the reference to null, and each has a reason:
+CASCADE is used where the child has no meaning without the parent: sessions without a user, flocks without an owner, predictions without a scan, feedback without a scan, and treatments without a disease. Deleting the parent should remove them, and an account deletion request depends on exactly this behaviour.
+SET NULL is used where the child must outlive the parent: a scan is still a record of a diagnosis when its user is removed; deleting a shed must not delete its history; retiring a model must not delete the diagnoses it produced; and deleting an administrator must not erase the record of what that administrator changed.
+Chapter Summary
+This chapter has documented the database of the poultry disease detection system. PostgreSQL 17 was selected, accessed through Drizzle ORM and the standard postgres-js driver, because the project needs enforced relational integrity, native enumerated types, JSONB arrays for bilingual content, transactional audit logging and idempotent seeding, together with portability from a local container to a managed service. The benefits and limitations of the selection were discussed, and representative SQL queries were presented for schema creation, seeding, the diagnosis write path, retrieval, monitoring, administration and account deletion.
+The chapter then described the ten tables, seven enumerated types and ten indexes in detail, and presented the schema diagram with its nine foreign keys and the reasoning behind each ON DELETE action. Several design decisions distinguish the database: privacy is structural because no column can hold an image; severity is stored apart from the model output together with the rules that produced it; medical content is versioned data whose missing reviewer drives the warning shown to users; accounts are optional; idempotency is enforced by a unique constraint; and only honest, group-aware model metrics are stored. The next chapter describes how the program that uses this database was developed and implemented.
+REFERENCES
+[1] 
+M. F. A. e. al, "Challenges and Future Prospects of Pakistan's Animal Industry," Veterinary Sciences, vol. 2, no. 8, 2025. 
+[2] 
+I. H. H. A. A. M. W. H. M. L. A. G. E. M. C. Manzoor, "A Participatory Investigation of Bovine Health and Production Issues in Pakistan," Frontiers in Veterinary Science, vol. 7, 2020. 
+[3] 
+D. Machuve, E. Nwankwo, N. Mduma and J. Mbelwa, "Poultry diseases diagnostics models using deep learning," Frontiers in Artificial Intelligence, vol. 5, p. 733345, 2022. 
+[4] 
+G. Li, R. S. Gates and B. C. Ramirez, "An On-Site Feces Image Classifier System for Chicken Health Assessment: A Proof of Concept," Applied Engineering in Agriculture, vol. 39, no. 4, pp. 417-426, 2023. 
+[5] 
+M. Z. Degu and G. L. Simegn, "Smartphone based detection and classification of poultry diseases from chicken fecal images using deep learning techniques," Smart Agricultural Technology, vol. 4, p. 100221, 2023. 
+[6] 
+M. S. A. Huda, A. Sarkar, K. Tanvir, M. A. Ali, D. Nandi and M. Haq, "Enhancing Poultry Disease Classification Using Fecal Image: A Fusion Approach," in Proceedings of the 3rd International Conference on Computing Advancements, 2024. 
+[7] 
+F. Saleem, A. Ameer, F. Afzal, M. Usman, H. Irshad, S. Sattar and U. Ijaz, "A cross-sectional survey of poultry management systems, practices and antimicrobial use in relation to disease outbreak in Pakistan," BMC Research Notes, vol. 18. 
+[8] 
+J. Wang, M. Shen, L. Liu, Y. Xu and C. Okinda, "Recognition and Classification of Broiler Droppings Based on Deep Convolutional Neural Network," Journal of Sensors, vol. 2019, no. 1, p. 3823515, 2019. 
+[9] 
+D. Grace, T. Knight-Jones, A. Melaku, R. Alders and W. Jemberu, "The Public Health Importance and Management of Infectious Poultry Diseases in Smallholder Systems in Africa," Foods (MDPI), vol. 13, no. 3, 2024. 
+[10] 
+A. A. Sambo, R. A. Zira, A. Yahaya and S. A. Dantata, "Poultry disease detection using machine learning: A review," Journal of Scientific Development Research, 2025. 
+[11] 
+A. J. Kalita, M. Subba, S. Adil, M. A. Wani, Y. A. Beigh and M. Shafi, "Application of artificial intelligence and machine learning in poultry disease detection and diagnosis: A review: AI and Machine learning in poultry disease diagnosis," Letters In Animal Biology, vol. 5, no. 1, pp. 01-06, 2025. 
+[12] 
+J. Vrindavanam, P. Kumar and G. Patil, "Poultry disease identification in fecal images using vision transformer," Medicon Agriculture & Environ-mental Sciences, vol. 6, pp. 05-15, 2024. 
+[13] 
+G. Chidziwisano, E. Samikwa and C. Daka, "Deep learning methods for poultry disease prediction using images," Computers and Electronics in Agriculture, vol. 230, p. 109765, 2025. 
+[14] 
+A. Dhungana, X. Yang, B. Paneru, S. Dahal, G. Lu and L. Chai, "An Integrated Deep Learning Approach for Poultry Disease Detection and Classification Based on Analysis of Chicken Manure Images," AgriEngineering, vol. 7, no. 9, p. 278, 2025. 
+[15] 
+A. M. Pranta, "Accessible AI-powered poultry disease diagnostics: development, validation, and web deployment of a farmer-friendly MobileNet-based system for coccidiosis and salmonella detection in resource-constrained settings.," Poultry Science, vol. 105, no. 3, pp. 106338-106338, 2025. 
+[16] 
+A. Tasdelen and Y. Arslan, "Detection of high-risk diseases in poultry feces through transfer learning," Engineering Science and Technology, an International Journal, vol. 64, p. 102002, 2025. 
+[17] 
+M. C. Bıngol and G. Bilgin, "Prediction of chicken diseases by transfer learning method," International Scientific and Vocational Studies Journal, vol. 7, no. 2, pp. 170-175, 2023. 
+[18] 
+S. Joseph, "Automating poultry disease detection using deep learning," Journal of Soft Computing Paradigm, vol. 5, no. 4, pp. 378-389, 2023. 
+[19] 
+K. Srivastava and P. Pandey, "Deep learning based classification of poultry disease," International Journal of Automation and Smart Technology, vol. 13, no. 1, pp. 2439-2439, 2023. 
+[20] 
+L. Yajie, M. G. M. Johar and A. I. Hajamydeen, "Poultry disease early detection methods using deep learning technology," Indonesian Journal of Electrical Engineering and Computer Science, vol. 32, no. 3, pp. 1712-1723, 2023. 
+[21] 
+I. Kellogg, D. L. Roberts and R. Crespo, "Automated image analysis for detection of coccidia in poultry," Animals, vol. 14, no. 2, p. 212, 2024. 
+[22] 
+A. Ansarimovahed, A. Banakar, G. Li and S. M. Javidan, "Separating Chickens’ Heads and Legs in Thermal Images via Object Detection and Machine Learning Models to Predict Avian Influenza and Newcastle Disease," Animals, vol. 15, no. 8, p. 1114, 2025. 
+[23] 
+M. K. Gourisaria, A. Arora, S. Bilgaiyan and M. Sahni, "Chicken disease multiclass classification using deep learning," in Proceedings of International Conference on Information Technology and Applications: ICITA 2022, 2023. 
+[24] 
+X. Chen and X. Yang, "Chicken manure disease recognition model based on improved resnext50," in Journal of Physics: Conference Series, 2023. 
+[25] 
+M. Hasan, Z. Khow, V. Goh, S. Mansor and Y. Tan, "Image-based Detection and Classification of Poultry Diseases from Chicken Droppings in Open House Poultry Farms," Journal of Informatics and Web Engineering, vol. 4, no. 2, pp. 77-92, 2025. 
+[26] 
+A. Nakrosis, A. Paulauskaite-Taraseviciene, V. Raudonis, I. Narusis, V. Gruzauskas, R. Gruzauskas and I. Lagzdinyte-Budnike, "Towards early poultry health prediction through non-invasive and computer vision-based dropping classification," Animals, vol. 13, no. 19, p. 3041, 2023. 
+[27] 
+M. Zhou, J. Zhu, Z. Cui, H. Wang and X. Sun, "Detection of abnormal chicken droppings based on improved Faster R-CNN," International Journal of Agricultural and Biological Engineering, vol. 16, no. 1, pp. 243-249, 2023. 
+[28] 
+D. Yang, Z. Tian, J. Xi, H. Chen, E. Sun and L. Wang, "High-Accuracy Recognition Method for Diseased Chicken Feces Based on Image and Text Information Fusion," Animals, vol. 15, no. 15, p. 2158, 2025. 
+[29] 
+A. Islam, M. R. Hassan, M. Uddin and M. S. Rahman, "Lightweight model for poultry disease detection from fecal images using multi-color space feature optimization and machine learning," arXiv preprint arXiv:2507.10056, 2025. 
+[30] 
+V. Tundjungsari and S. A. Mitasya, "The Development of Chicken Disease Detection Application Using the Xception Transfer Learning Method," in 2024 7th International Conference on Information and Communications Technology (ICOIACT), 2024. 
+[31] 
+E. F. Codd, "A relational model of data for large shared data banks," Communications of the ACM, vol. 13, no. 6, pp. 377-387, 1970. 
+[32] 
+R. Elmasri and S. B. Navathe, Fundamentals of Database Systems, 7th ed., Hoboken, NJ, USA: Pearson, 2016. 
+[33] 
+PostgreSQL Global Development Group, "PostgreSQL 17 documentation," PostgreSQL, 2024. [Online]. Available: https://www.postgresql.org/docs/17/. [Accessed: Oct. 5, 2026].
+[34] 
+Drizzle Team, "Drizzle ORM documentation," Drizzle ORM, 2025. [Online]. Available: https://orm.drizzle.team/docs/overview. [Accessed: Oct. 5, 2026].
+[35] 
+K. Davis, B. Peabody and P. Leach, "Universally Unique IDentifiers (UUIDs)," Internet Engineering Task Force, RFC 9562, May 2024. [Online]. Available: https://www.rfc-editor.org/info/rfc9562. [Accessed: Oct. 5, 2026].
+[36] 
+OWASP Foundation, "Session Management Cheat Sheet," OWASP Cheat Sheet Series, 2025. [Online]. Available: https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html. [Accessed: Oct. 5, 2026].
+[37] 
+C. Guo, G. Pleiss, Y. Sun and K. Q. Weinberger, "On Calibration of Modern Neural Networks," in Proceedings of the 34th International Conference on Machine Learning (ICML), Sydney, Australia, 2017, pp. 1321-1330. 
+[38] 
+W. Liu, X. Wang, J. D. Owens and Y. Li, "Energy-based Out-of-distribution Detection," in Advances in Neural Information Processing Systems 33 (NeurIPS 2020), 2020, pp. 21464-21475. 
+[39] 
+A. N. Angelopoulos and S. Bates, "Conformal Prediction: A Gentle Introduction," Foundations and Trends in Machine Learning, vol. 16, no. 4, pp. 494-591, 2023. 
