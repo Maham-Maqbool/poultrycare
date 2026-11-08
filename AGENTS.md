@@ -157,7 +157,8 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
   - Staged all 275 commercial project files, assets, models, tests, and documentation.
   - Created initial commit: "Initial commit: Commercial PoultryCare Pro Flutter application" (commit hash: `8ad3dab`).
   - Configured remote origin: `https://github.com/Maham-Maqbool/poultrycare.git`.
-  - Working tree is clean on branch `master`.
+  - Renamed default branch to `main`.
+  - Working tree is clean on branch `main`.
 
 
 
