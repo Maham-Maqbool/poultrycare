@@ -59,3 +59,15 @@ __pycache__/
 
 # Widget Preview related
 .widget_preview/
+
+# Python & Database related
+__pycache__/
+*.py[cod]
+backend/.venv/
+.venv/
+*.db
+*.sqlite
+*.sqlite3
+.env
+
+*.docx

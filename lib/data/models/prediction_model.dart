@@ -46,7 +46,7 @@ class PredictionModel {
   });
 
   bool get isHealthy => predictedClass == 'healthy';
-  bool get isNotifiable => predictedClass == 'ncd';
+  bool get isNotifiable => predictedClass == 'ncd' || predictedClass == 'newcastle' || (predictedClass?.toLowerCase().contains('newcastle') ?? false);
 
   PredictionModel copyWith({
     String? id,

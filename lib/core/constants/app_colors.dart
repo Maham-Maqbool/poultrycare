@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// AppColors encapsulates the design palette for PoultryCare.
 /// Designed for high outdoor legibility in rural poultry farming contexts.
 class AppColors {
-  // Brand Primary: Deep Emerald
+  // Brand Primary: Deep Bio Emerald
   static const Color primary = Color(0xFF1B5E20);
   static const Color primaryMedium = Color(0xFF2E7D32);
   static const Color primaryLight = Color(0xFF4CAF50);
@@ -55,4 +55,58 @@ class AppColors {
   static const Color warning = Color(0xFFF59E0B);
   static const Color error = Color(0xFFEF4444);
   static const Color info = Color(0xFF0284C7);
+
+  // Executive Gradients for Healthcare & Agriculture
+  static const LinearGradient heroGradient = LinearGradient(
+    colors: [Color(0xFF0F4A24), Color(0xFF1B5E20), Color(0xFF2E7D32)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient emeraldCardGradient = LinearGradient(
+    colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient cyanCardGradient = LinearGradient(
+    colors: [Color(0xFF0369A1), Color(0xFF0284C7)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient amberCardGradient = LinearGradient(
+    colors: [Color(0xFFB45309), Color(0xFFD97706)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient purpleCardGradient = LinearGradient(
+    colors: [Color(0xFF6D28D9), Color(0xFF8B5CF6)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient redCardGradient = LinearGradient(
+    colors: [Color(0xFFB91C1C), Color(0xFFDC2626)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // Soft Ambient Multi-Layer Shadows for Executive UI
+  static List<BoxShadow> get subtleShadow => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.04),
+      blurRadius: 10,
+      offset: const Offset(0, 4),
+    ),
+  ];
+
+  static List<BoxShadow> get cardShadow => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.06),
+      blurRadius: 14,
+      offset: const Offset(0, 6),
+    ),
+  ];
 }

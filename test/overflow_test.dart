@@ -18,6 +18,7 @@ import 'package:poultrycare/features/scanner/views/diagnostic_result_screen.dart
 import 'package:poultrycare/features/flocks/views/flocks_list_screen.dart';
 import 'package:poultrycare/features/history/views/scan_history_screen.dart';
 import 'package:poultrycare/features/profile/views/settings_screen.dart';
+import 'package:poultrycare/features/calculator/views/fcr_calculator_screen.dart';
 
 Widget createTestApp(Widget child, {bool isUrdu = false, Size size = const Size(360, 640)}) {
   final authRepo = AuthRepository();
@@ -175,6 +176,28 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
 
     await tester.pumpWidget(createTestApp(const SettingsScreen(), isUrdu: true));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Test FcrCalculatorScreen for overflow in English (360x640)', (tester) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(createTestApp(const FcrCalculatorScreen(), isUrdu: false));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Test FcrCalculatorScreen for overflow in Urdu (360x640)', (tester) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(createTestApp(const FcrCalculatorScreen(), isUrdu: true));
     await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);

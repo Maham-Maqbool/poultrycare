@@ -11,4 +11,5 @@ class AppRoutes {
   static const String history = '/history';
   static const String encyclopedia = '/encyclopedia';
   static const String settings = '/settings';
+  static const String fcrCalculator = '/fcr-calculator';
 }
