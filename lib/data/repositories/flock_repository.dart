@@ -2,7 +2,7 @@ import '../models/flock_model.dart';
 import '../mock/mock_flocks_data.dart';
 
 /// FlockRepository manages farmer flocks/sheds in memory
-/// enforcing the Chapter 5 limit of 20 flocks per user.
+/// enforcing the commercial tier limit of 20 flocks per user.
 class FlockRepository {
   final List<FlockModel> _flocks = List.from(mockFlocksData);
 

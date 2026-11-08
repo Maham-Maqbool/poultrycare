@@ -97,6 +97,8 @@ class _DiseaseDetailScreenState extends State<DiseaseDetailScreen> {
                   : '${d.nameEn}: Spoken Overview',
               isUrdu: isUrdu,
               durationText: '1:30',
+              diseaseName: d.code,
+              severity: 'moderate',
             ),
             const SizedBox(height: AppDimensions.space16),
 

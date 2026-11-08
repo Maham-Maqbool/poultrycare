@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../routes/app_routes.dart';
+import '../../../services/session_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,7 +12,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
@@ -36,10 +38,25 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     );
 
     _animController.forward();
+    _checkSessionAndNavigate();
+  }
 
-    // Navigate to onboarding after 2.2 seconds
-    _navTimer = Timer(const Duration(milliseconds: 2200), () {
-      if (mounted) {
+  void _checkSessionAndNavigate() {
+    _navTimer = Timer(const Duration(milliseconds: 1800), () async {
+      if (!mounted) return;
+
+      final session = SessionService.instance;
+      final isLoggedIn = await session.isLoggedIn();
+      final onboardingDone = await session.isOnboardingCompleted();
+
+      if (!mounted) return;
+
+      if (isLoggedIn) {
+        // Authenticated users bypass login loop directly to dashboard
+        Navigator.pushReplacementNamed(context, AppRoutes.mainShell);
+      } else if (onboardingDone) {
+        Navigator.pushReplacementNamed(context, AppRoutes.login);
+      } else {
         Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
       }
     });
@@ -70,8 +87,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 ScaleTransition(
                   scale: _scaleAnimation,
                   child: Container(
-                    width: 100,
-                    height: 100,
+                    width: 110,
+                    height: 110,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
@@ -86,7 +103,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     child: const Center(
                       child: Icon(
                         Icons.egg_alt_rounded,
-                        size: 52,
+                        size: 58,
                         color: AppColors.primary,
                       ),
                     ),
@@ -98,9 +115,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   child: Column(
                     children: [
                       const Text(
-                        'PoultryCare',
+                        'PoultryCare Pro',
                         style: TextStyle(
-                          fontSize: 32,
+                          fontSize: 34,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
                           letterSpacing: -0.5,
@@ -108,17 +125,28 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       ),
                       const SizedBox(height: AppDimensions.space8),
                       Text(
-                        'AI Fecal Disease Detection & Triage',
+                        'Smart AI Poultry Disease Detection & Treatment Advisory',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
-                          color: Colors.white.withValues(alpha: 0.85),
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'پولٹری امراض کی فوری تشخیص اور علاج',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white.withValues(alpha: 0.95),
                         ),
                       ),
                       const SizedBox(height: AppDimensions.space16),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.18),
                           borderRadius: AppDimensions.borderRadiusCircular,
@@ -126,13 +154,14 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.bolt_rounded, size: 16, color: AppColors.secondaryLight),
+                            Icon(Icons.verified_rounded,
+                                size: 16, color: AppColors.secondaryLight),
                             SizedBox(width: 6),
                             Text(
-                              'MobileNetV3 Active - v1.2.0',
+                              'Commercial Farmer Edition',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 12,
+                                fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -144,10 +173,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 ),
                 const Spacer(),
                 Text(
-                  'Khwaja Fareed UEIT Final Year Project',
+                  'PoultryCare Healthcare Suite',
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white.withValues(alpha: 0.65),
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.75),
                   ),
                 ),
                 const SizedBox(height: AppDimensions.space16),

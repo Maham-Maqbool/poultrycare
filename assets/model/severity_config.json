@@ -1,0 +1,9 @@
+{
+  "uncertain_below": 0.5,
+  "mild_max": 0.67,
+  "moderate_max": 0.83,
+  "min_severity_by_class": {
+    "Newcastle": "Moderate"
+  },
+  "note": "Severity is a model-certainty-based risk level, not a clinical grade."
+}

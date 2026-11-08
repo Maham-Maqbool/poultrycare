@@ -7,6 +7,7 @@ import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../routes/app_routes.dart';
 import '../controllers/auth_controller.dart';
+import '../../profile/controllers/settings_controller.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -48,10 +49,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final auth = context.watch<AuthController>();
+    final settings = context.watch<SettingsController>();
+    final isUrdu = settings.isUrdu;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Account'),
+        title: Text(isUrdu ? 'نیا اکاؤنٹ بنائیں' : 'Create Account'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -62,14 +65,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Join PoultryCare',
+                  isUrdu ? 'پولٹری کیئر میں شمولیت' : 'Join PoultryCare Pro',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.space4),
                 Text(
-                  'Track your sheds and get tailored poultry health advice',
+                  isUrdu
+                      ? 'اپنے شیڈز اور پرندوں کی صحت کی خودکار نگرانی کریں'
+                      : 'Track your sheds and get tailored poultry health advice',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: AppColors.textSecondaryLight,
                   ),
@@ -77,30 +82,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: AppDimensions.space24),
                 CustomTextField(
                   controller: _nameController,
-                  label: 'Farm or Farmer Name',
-                  hint: 'e.g. Ali Farm / Maham Maqbool',
+                  label: isUrdu ? 'فارم یا کسان کا نام' : 'Farm or Farmer Name',
+                  hint: isUrdu ? 'مثلاً چوہدری پولٹری فارم' : 'e.g. Ali Farm / Tariq Poultry',
                   prefixIcon: Icons.badge_outlined,
                   validator: (v) => AppValidators.validateRequired(v, 'Name'),
                 ),
                 const SizedBox(height: AppDimensions.space16),
                 CustomTextField(
                   controller: _identifierController,
-                  label: 'Mobile Phone or Email',
-                  hint: 'e.g. 03001234567 or email@domain.com',
+                  label: isUrdu ? 'موبائل نمبر یا ای میل' : 'Mobile Phone or Email',
+                  hint: isUrdu ? 'مثلاً 03001234567' : 'e.g. 03001234567 or email@domain.com',
                   prefixIcon: Icons.contact_mail_outlined,
                   validator: AppValidators.validateEmailOrPhone,
                 ),
                 const SizedBox(height: AppDimensions.space16),
                 CustomTextField(
                   controller: _passwordController,
-                  label: 'Password',
-                  hint: 'Minimum 6 characters',
+                  label: isUrdu ? 'پاس ورڈ (خفیہ کوڈ)' : 'Password',
+                  hint: isUrdu ? 'کم از کم 6 ہندسے' : 'Minimum 6 characters',
                   prefixIcon: Icons.lock_outline_rounded,
                   isPassword: true,
                   validator: AppValidators.validatePassword,
                 ),
                 const SizedBox(height: AppDimensions.space20),
-                // Chapter 5 consent_to_retain_images requirement
+
+                // Research and Model Improvement Consent
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -125,20 +131,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Consent for Image Research',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13,
-                              ),
+                            Text(
+                              isUrdu ? 'تصویری تشخیص کی بہتری کی اجازت' : 'Consent for Image Improvement',
+                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Allow encrypted, anonymized scan images to assist retraining the poultry AI model.',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondaryLight,
-                              ),
+                              isUrdu
+                                  ? 'تصاویر کو محفوظ طریقے سے ماڈل کی درستگی بڑھانے کے لیے استعمال کیا جا سکتا ہے'
+                                  : 'Allow anonymized encrypted image tokens to be retained locally for diagnostic model refinement.',
+                              style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondaryLight),
                             ),
                           ],
                         ),
@@ -146,24 +148,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppDimensions.space28),
+                const SizedBox(height: AppDimensions.space24),
                 CustomButton(
-                  text: 'Register Account',
+                  text: isUrdu ? 'اکاؤنٹ رجسٹر کریں' : 'Register Account',
                   isLoading: auth.isLoading,
                   onPressed: _submitRegister,
-                ),
-                const SizedBox(height: AppDimensions.space16),
-                Center(
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      'Already registered? Sign In',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
                 ),
               ],
             ),

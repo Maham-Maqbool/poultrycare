@@ -1,5 +1,5 @@
 /// FlockModel represents a poultry flock/shed managed by a farmer
-/// reflecting the Chapter 5 `flocks` schema.
+/// reflecting the commercial farm flock schema.
 class FlockModel {
   final String id;
   final String userId;

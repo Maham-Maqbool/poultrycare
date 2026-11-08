@@ -6,6 +6,7 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../home/controllers/dashboard_controller.dart';
+import '../controllers/settings_controller.dart';
 import '../../../routes/app_routes.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -15,14 +16,16 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthController>();
     final dashboard = context.watch<DashboardController>();
+    final settings = context.watch<SettingsController>();
+    final isUrdu = settings.isUrdu;
     final user = auth.user;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Farm Account'),
+        title: Text(isUrdu ? 'فارم اکاؤنٹ' : 'Farm Account'),
         actions: [
           IconButton(
-            tooltip: 'App Settings',
+            tooltip: isUrdu ? 'ایپ سیٹنگز' : 'App Settings',
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
               Navigator.pushNamed(context, AppRoutes.settings);
@@ -53,12 +56,12 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    user.displayName ?? 'Guest Farmer',
+                    user.displayName ?? (isUrdu ? 'مہمان فارمر' : 'Guest Farmer'),
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    user.email ?? user.phone ?? 'Guest Session (Local Device)',
+                    user.email ?? user.phone ?? (isUrdu ? 'لوکل ڈیوائس سیشن' : 'Guest Session (Local Device)'),
                     style: const TextStyle(fontSize: 13, color: AppColors.textSecondaryLight),
                   ),
                   const SizedBox(height: 8),
@@ -69,7 +72,9 @@ class ProfileScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      user.isGuest ? 'Guest Mode' : 'Verified Farmer',
+                      user.isGuest
+                          ? (isUrdu ? 'مہمان موڈ' : 'Guest Mode')
+                          : (isUrdu ? 'تصدیق شدہ فارمر' : 'Verified Farmer'),
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
@@ -88,9 +93,9 @@ class ProfileScreen extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildStatItem('Total Scans', '${dashboard.totalScans}'),
-                  _buildStatItem('Healthy Rate', '${dashboard.healthyRate.toStringAsFixed(0)}%'),
-                  _buildStatItem('Active Sheds', '${dashboard.flockCount}'),
+                  _buildStatItem(isUrdu ? 'کل اسکینز' : 'Total Scans', '${dashboard.totalScans}'),
+                  _buildStatItem(isUrdu ? 'صحت مند شرح' : 'Healthy Rate', '${dashboard.healthyRate.toStringAsFixed(0)}%'),
+                  _buildStatItem(isUrdu ? 'فعال شیڈز' : 'Active Sheds', '${dashboard.flockCount}'),
                 ],
               ),
             ),
@@ -103,8 +108,11 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.history_rounded, color: AppColors.primary),
-                    title: const Text('Diagnostic History Archive'),
-                    subtitle: const Text('Review past fecal scans and treatments'),
+                    title: Text(isUrdu ? 'تشخیصی تاریخ و ریکارڈز' : 'Diagnostic History Archive'),
+                    subtitle: Text(
+                      isUrdu ? 'پچھلے ٹیسٹ اور علاج کا ریکارڈ دیکھیں' : 'Review past fecal scans and treatments',
+                      style: const TextStyle(fontSize: 12),
+                    ),
                     trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                     onTap: () {
                       Navigator.pushNamed(context, AppRoutes.history);
@@ -113,8 +121,11 @@ class ProfileScreen extends StatelessWidget {
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.home_work_outlined, color: AppColors.primary),
-                    title: const Text('Manage Farm Flocks'),
-                    subtitle: const Text('Update bird counts and breeds'),
+                    title: Text(isUrdu ? 'پولٹری شیڈز کا انتظام' : 'Manage Farm Flocks'),
+                    subtitle: Text(
+                      isUrdu ? 'پرندوں کی تعداد اور نسل کا اندراج' : 'Update bird counts and breeds',
+                      style: const TextStyle(fontSize: 12),
+                    ),
                     trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                     onTap: () {
                       Navigator.pushNamed(context, AppRoutes.flocks);
@@ -123,8 +134,11 @@ class ProfileScreen extends StatelessWidget {
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.menu_book_outlined, color: AppColors.primary),
-                    title: const Text('Poultry Disease Encyclopedia'),
-                    subtitle: const Text('Clinical symptoms and medicines'),
+                    title: Text(isUrdu ? 'امراض کی انسائیکلوپیڈیا' : 'Poultry Disease Encyclopedia'),
+                    subtitle: Text(
+                      isUrdu ? 'علامات، ادویات اور حفاظتی اقدامات' : 'Clinical symptoms and medicines',
+                      style: const TextStyle(fontSize: 12),
+                    ),
                     trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                     onTap: () {
                       Navigator.pushNamed(context, AppRoutes.encyclopedia);
@@ -133,8 +147,11 @@ class ProfileScreen extends StatelessWidget {
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.settings_outlined, color: AppColors.primary),
-                    title: const Text('Settings & Localization'),
-                    subtitle: const Text('Urdu language, dark mode, AI version'),
+                    title: Text(isUrdu ? 'سیٹنگز اور زبان' : 'Settings & Localization'),
+                    subtitle: Text(
+                      isUrdu ? 'اردو زبان، نائٹ موڈ، کسٹمر کیئر' : 'Urdu language, dark mode, AI version',
+                      style: const TextStyle(fontSize: 12),
+                    ),
                     trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                     onTap: () {
                       Navigator.pushNamed(context, AppRoutes.settings);
@@ -147,7 +164,9 @@ class ProfileScreen extends StatelessWidget {
 
             // Logout / Switch User Button
             CustomButton(
-              text: user.isGuest ? 'Sign In with Account' : 'Sign Out',
+              text: user.isGuest
+                  ? (isUrdu ? 'اکاؤنٹ میں سائن ان کریں' : 'Sign In with Account')
+                  : (isUrdu ? 'اکاؤنٹ سے لاگ آؤٹ' : 'Sign Out'),
               variant: ButtonVariant.outlined,
               onPressed: () async {
                 await auth.logout();

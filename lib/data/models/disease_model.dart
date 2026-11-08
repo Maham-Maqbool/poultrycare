@@ -1,5 +1,5 @@
 /// DiseaseModel represents a poultry disease classification master record
-/// reflecting the Chapter 5 `diseases` schema.
+/// reflecting the enterprise disease domain schema.
 class DiseaseModel {
   final String code; // 'coccidiosis' | 'healthy' | 'ncd' | 'salmonella'
   final String nameEn;

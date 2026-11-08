@@ -57,6 +57,30 @@ class HistoryController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Deletes a scan record from the local SQLite database.
+  Future<void> deleteRecord(String scanId) async {
+    _isLoading = true;
+    notifyListeners();
+
+    await _repo.deleteRecord(scanId);
+    _records = await _repo.getAllRecords();
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  /// Clears all scan history from the local SQLite database.
+  Future<void> clearAllHistory() async {
+    _isLoading = true;
+    notifyListeners();
+
+    await _repo.clearAllHistory();
+    _records = [];
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
   void setDiseaseFilter(String filter) {
     _selectedDiseaseFilter = filter;
     notifyListeners();

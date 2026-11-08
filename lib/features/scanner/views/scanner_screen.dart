@@ -5,15 +5,15 @@ import '../../../core/constants/app_dimensions.dart';
 import '../../../core/constants/app_assets.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_image_view.dart';
-import '../../../core/widgets/custom_button.dart';
 import '../../../routes/app_routes.dart';
 import '../controllers/scanner_controller.dart';
 import '../../flocks/controllers/flock_controller.dart';
+import '../../profile/controllers/settings_controller.dart';
 
 class ScannerScreen extends StatelessWidget {
   const ScannerScreen({super.key});
 
-  void _showSamplePicker(BuildContext context) {
+  void _showSamplePicker(BuildContext context, bool isUrdu) {
     final scanner = context.read<ScannerController>();
     showModalBottomSheet(
       context: context,
@@ -31,10 +31,10 @@ class ScannerScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Select Test Sample Specimen',
-                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16.5),
+                        isUrdu ? 'ٹیسٹ نمونہ تصویر منتخب کریں' : 'Select Test Sample Specimen',
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16.5),
                       ),
                     ),
                     IconButton(
@@ -44,15 +44,17 @@ class ScannerScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Authentic poultry fecal dropping photographs for laboratory demonstration:',
-                  style: TextStyle(color: AppColors.textSecondaryLight, fontSize: 12.5),
+                Text(
+                  isUrdu
+                      ? 'مصدقہ معیاری نمونہ تصاویر برائے تجرباتی معائنہ:'
+                      : 'Authentic poultry fecal dropping photographs for laboratory demonstration:',
+                  style: const TextStyle(color: AppColors.textSecondaryLight, fontSize: 12.5),
                 ),
                 const SizedBox(height: 14),
                 _buildSampleTile(
                   ctx,
-                  title: 'Coccidiosis (Bloody / Mucoid)',
-                  subtitle: 'Eimeria tenella intestinal lesion exudate',
+                  title: isUrdu ? 'کوکسیڈیوسس (خونی پیچش)' : 'Coccidiosis (Bloody / Mucoid)',
+                  subtitle: isUrdu ? 'انتڑیوں کے زخم اور خونی فضلہ' : 'Eimeria tenella intestinal lesion exudate',
                   imagePath: AppAssets.sampleCoccidiosis,
                   disease: 'coccidiosis',
                   onSelect: () {
@@ -62,8 +64,8 @@ class ScannerScreen extends StatelessWidget {
                 ),
                 _buildSampleTile(
                   ctx,
-                  title: 'Newcastle Disease (Green Watery)',
-                  subtitle: 'Velogenic paramyxovirus diarrhea',
+                  title: isUrdu ? 'رانی کھیت کی بیماری (سبز پتلا پاخانہ)' : 'Newcastle Disease (Green Watery)',
+                  subtitle: isUrdu ? 'سبز پتلا فضلہ اور جھٹکے' : 'Velogenic paramyxovirus diarrhea',
                   imagePath: AppAssets.sampleNewcastle,
                   disease: 'ncd',
                   onSelect: () {
@@ -73,8 +75,8 @@ class ScannerScreen extends StatelessWidget {
                 ),
                 _buildSampleTile(
                   ctx,
-                  title: 'Salmonella (Chalky White)',
-                  subtitle: 'Pullorum disease chalky paste',
+                  title: isUrdu ? 'سالمونیلا (سفید چونا پیچش)' : 'Salmonella (Chalky White)',
+                  subtitle: isUrdu ? 'پلورم بیماری کا سفید فضلہ' : 'Pullorum disease chalky paste',
                   imagePath: AppAssets.sampleSalmonella,
                   disease: 'salmonella',
                   onSelect: () {
@@ -84,8 +86,8 @@ class ScannerScreen extends StatelessWidget {
                 ),
                 _buildSampleTile(
                   ctx,
-                  title: 'Healthy (Normal Digestion)',
-                  subtitle: 'Firm cylindrical feces with urate cap',
+                  title: isUrdu ? 'صحت مند مرغی (عام ہاضمہ)' : 'Healthy (Normal Digestion)',
+                  subtitle: isUrdu ? 'سخت اور عام ہاضمے کا فضلہ' : 'Firm cylindrical feces with urate cap',
                   imagePath: AppAssets.sampleHealthy,
                   disease: 'healthy',
                   onSelect: () {
@@ -138,15 +140,28 @@ class ScannerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final scanner = context.watch<ScannerController>();
     final flockController = context.watch<FlockController>();
+    final settings = context.watch<SettingsController>();
+    final isUrdu = settings.isUrdu;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Diagnostic Studio'),
+        title: Text(isUrdu ? 'اے آئی اسکینر اسٹوڈیو' : 'AI Diagnostic Studio'),
         actions: [
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
+            ),
+            icon: const Icon(Icons.language_rounded, size: 18),
+            label: Text(
+              isUrdu ? 'English' : 'اردو',
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+            ),
+            onPressed: settings.toggleLocale,
+          ),
           IconButton(
-            tooltip: 'Standard Test Specimens',
+            tooltip: isUrdu ? 'معیاری نمونہ تصاویر' : 'Standard Test Specimens',
             icon: const Icon(Icons.collections_bookmark_outlined),
-            onPressed: () => _showSamplePicker(context),
+            onPressed: () => _showSamplePicker(context, isUrdu),
           ),
         ],
       ),
@@ -165,82 +180,112 @@ class ScannerScreen extends StatelessWidget {
                       ClipRRect(
                         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                         child: Container(
-                          height: 240,
+                          height: 220,
                           width: double.infinity,
                           color: const Color(0xFF0F172A),
                           child: scanner.selectedImagePath != null
                               ? AppImageView(
                                   imagePath: scanner.selectedImagePath!,
                                   width: double.infinity,
-                                  height: 240,
+                                  height: 220,
                                   fit: BoxFit.cover,
                                 )
-                              : const Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.add_a_photo_outlined,
-                                        size: 48,
-                                        color: Colors.white54,
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        'Capture or upload chicken dropping photo',
-                                        style: TextStyle(color: Colors.white60, fontSize: 13),
-                                      ),
-                                    ],
+                              : Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(14),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withValues(alpha: 0.08),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.white.withValues(alpha: 0.15),
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            Icons.add_a_photo_rounded,
+                                            size: 40,
+                                            color: AppColors.primaryLight,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          isUrdu
+                                              ? 'مرغی کے فضلے کا نمونہ شامل کریں'
+                                              : 'Add Fecal Specimen Photo',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          isUrdu
+                                              ? 'نیچے دیے گئے بٹن سے کیمرے سے تصویر لیں یا گیلری سے منتخب کریں'
+                                              : 'Capture photo with camera or choose from gallery below',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(alpha: 0.75),
+                                            fontSize: 12.5,
+                                            height: 1.35,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                         ),
                       ),
 
-                      // Clinical AI Reticle Overlay
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: Center(
-                            child: Container(
-                              width: 140,
-                              height: 140,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.6),
-                                  width: 1.5,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Stack(
-                                children: [
-                                  Center(
-                                    child: Icon(
-                                      Icons.add,
-                                      size: 24,
-                                      color: Colors.white.withValues(alpha: 0.75),
-                                    ),
+                      // Clinical AI Reticle Overlay (Only shown when image is loaded)
+                      if (scanner.selectedImagePath != null)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: Center(
+                              child: Container(
+                                width: 140,
+                                height: 140,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.75),
+                                    width: 2.0,
                                   ),
-                                ],
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.add,
+                                    size: 28,
+                                    color: Colors.white.withValues(alpha: 0.85),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
 
                       // Status Header Badge
                       Positioned(
                         top: 12,
                         left: 12,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.7),
+                            color: Colors.black.withValues(alpha: 0.75),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Container(
-                                width: 8,
-                                height: 8,
+                                width: 9,
+                                height: 9,
                                 decoration: const BoxDecoration(
                                   color: AppColors.healthy,
                                   shape: BoxShape.circle,
@@ -248,11 +293,13 @@ class ScannerScreen extends StatelessWidget {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                scanner.isLocalFile ? 'Live Camera / File Specimen' : 'Standard Specimen',
+                                scanner.selectedImagePath != null
+                                    ? (isUrdu ? 'تصویر منتخب شدہ ہے' : 'Specimen Loaded')
+                                    : (isUrdu ? 'کیمرہ تیار ہے' : 'Camera Ready'),
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
@@ -260,120 +307,177 @@ class ScannerScreen extends StatelessWidget {
                         ),
                       ),
 
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            '224x224 Tensor Target',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w600,
+                      if (scanner.selectedImagePath != null)
+                        Positioned(
+                          top: 10,
+                          right: 10,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.black.withValues(alpha: 0.7),
+                            radius: 18,
+                            child: IconButton(
+                              icon: const Icon(Icons.close_rounded, size: 18, color: Colors.white),
+                              onPressed: scanner.clearSelectedImage,
                             ),
                           ),
                         ),
-                      ),
                     ],
-                  ),
-
-                  // 3 Real Upload Action Controls
-                  Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            // Real Camera Capture
-                            Expanded(
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                ),
-                                icon: const Icon(Icons.camera_alt_rounded, size: 18),
-                                label: const Text(
-                                  'Camera',
-                                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
-                                ),
-                                onPressed: () async {
-                                  final success = await scanner.pickImageFromCamera();
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          success
-                                              ? 'Poultry photograph captured successfully.'
-                                              : 'Camera capture cancelled.',
-                                        ),
-                                        duration: const Duration(seconds: 2),
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-
-                            // Real Device Gallery Picker
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                ),
-                                icon: const Icon(Icons.photo_library_outlined, size: 18),
-                                label: const Text(
-                                  'Gallery',
-                                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
-                                ),
-                                onPressed: () async {
-                                  final success = await scanner.pickImageFromGallery();
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          success
-                                              ? 'Specimen image loaded from gallery.'
-                                              : 'Image selection cancelled.',
-                                        ),
-                                        duration: const Duration(seconds: 2),
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-
-                        // Standard Samples Bottom Bar
-                        SizedBox(
-                          width: double.infinity,
-                          child: TextButton.icon(
-                            icon: const Icon(Icons.science_outlined, size: 16),
-                            label: const Text(
-                              'Or Choose Test Fecal Sample (4 Authentic Classes)',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                            ),
-                            onPressed: () => _showSamplePicker(context),
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: AppDimensions.space16),
 
-            // Image Quality Validation Checklist (FR-11)
+            // LARGE FARMER-CENTRIC ACTION BUTTONS
+            Row(
+              children: [
+                // HUGE CAMERA CARD
+                Expanded(
+                  child: InkWell(
+                    borderRadius: AppDimensions.borderRadiusLarge,
+                    onTap: () async {
+                      final success = await scanner.pickImageFromCamera();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              success
+                                  ? (isUrdu
+                                      ? 'کیمرے سے تصویر کامیابی سے لی گئی'
+                                      : 'Photograph captured successfully.')
+                                  : (isUrdu ? 'کیمرہ بند کر دیا گیا' : 'Camera capture cancelled.'),
+                            ),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    child: Container(
+                      height: 94,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary,
+                            AppColors.primary.withValues(alpha: 0.85),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: AppDimensions.borderRadiusLarge,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.camera_alt_rounded, size: 32, color: Colors.white),
+                          const SizedBox(height: 6),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              isUrdu ? 'کیمرے سے تصویر لیں' : 'Take Photo',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // HUGE GALLERY CARD
+                Expanded(
+                  child: InkWell(
+                    borderRadius: AppDimensions.borderRadiusLarge,
+                    onTap: () async {
+                      final success = await scanner.pickImageFromGallery();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              success
+                                  ? (isUrdu
+                                      ? 'گیلری سے تصویر لوڈ کر لی گئی'
+                                      : 'Specimen image loaded from gallery.')
+                                  : (isUrdu ? 'گیلری بند کر دی گئی' : 'Image selection cancelled.'),
+                            ),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    child: Container(
+                      height: 94,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.secondary,
+                            AppColors.secondary.withValues(alpha: 0.85),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: AppDimensions.borderRadiusLarge,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.secondary.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.photo_library_rounded, size: 32, color: Colors.white),
+                          const SizedBox(height: 6),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              isUrdu ? 'گیلری سے منتخب کریں' : 'Pick from Gallery',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // Demo Samples Shortcut
+            Center(
+              child: TextButton.icon(
+                icon: const Icon(Icons.science_outlined, size: 18),
+                label: Text(
+                  isUrdu ? 'یا تصدیق شدہ نمونہ تصویر چنیں (4 اقسام)' : 'Or Choose Test Fecal Sample (4 Classes)',
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+                onPressed: () => _showSamplePicker(context, isUrdu),
+              ),
+            ),
+            const SizedBox(height: AppDimensions.space12),
+
+            // Pre-Inference Quality Checklist
             AppCard(
               padding: const EdgeInsets.all(14.0),
               child: Column(
@@ -382,10 +486,10 @@ class ScannerScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'Pre-Inference Quality Checks',
-                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+                          isUrdu ? 'تصویر کے معیار کی جانچ' : 'Pre-Inference Quality Checks',
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5),
                         ),
                       ),
                       Container(
@@ -395,7 +499,9 @@ class ScannerScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          scanner.isImageValid ? 'Ready for AI' : 'Check Quality',
+                          scanner.isImageValid
+                              ? (isUrdu ? 'تشخیص کے لیے تیار' : 'Ready for AI')
+                              : (isUrdu ? 'معیار چیک کریں' : 'Check Quality'),
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -407,17 +513,17 @@ class ScannerScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   _buildCheckRow(
-                    title: 'Lighting & Specimen Visibility',
+                    title: isUrdu ? 'مناسب روشنی اور واضح تصویر' : 'Lighting & Specimen Visibility',
                     passed: scanner.lightingPassed,
                     onToggle: scanner.toggleLighting,
                   ),
                   _buildCheckRow(
-                    title: 'Focal Sharpness & Detail',
+                    title: isUrdu ? 'فوکس اور تفصیلات کی صفائی' : 'Focal Sharpness & Detail',
                     passed: scanner.sharpnessPassed,
                     onToggle: scanner.toggleSharpness,
                   ),
                   _buildCheckRow(
-                    title: 'Isolated Dropping in Target',
+                    title: isUrdu ? 'ایک ہی بیٹ پر واضح فوکس' : 'Isolated Dropping in Target',
                     passed: scanner.singleDroppingPassed,
                     onToggle: scanner.toggleSingleDropping,
                   ),
@@ -426,28 +532,39 @@ class ScannerScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.space16),
 
-            // Target Flock Assignment
+            // Shed Selection
             AppCard(
               padding: const EdgeInsets.all(14.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Assign Specimen to Farm Shed',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+                  Row(
+                    children: [
+                      const Icon(Icons.home_work_outlined, size: 20, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          isUrdu ? 'متاثرہ پولٹری شیڈ یا فلاک' : 'Target Flock / Shed Assignment',
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    initialValue: scanner.selectedFlockId,
+                    isExpanded: true,
                     decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     ),
-                    items: flockController.flocks.map((f) {
-                      return DropdownMenuItem<String>(
-                        value: f.id,
+                    initialValue: scanner.selectedFlockId,
+                    items: flockController.flocks.map((flock) {
+                      return DropdownMenuItem(
+                        value: flock.id,
                         child: Text(
-                          '${f.name} (${f.birdCount ?? 0} chickens)',
-                          style: const TextStyle(fontSize: 13.5),
+                          '${flock.name} (${flock.breed ?? 'Standard'}, ${flock.birdCount ?? 0} birds)',
+                          style: const TextStyle(fontSize: 13.0),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                       );
                     }).toList(),
@@ -458,43 +575,45 @@ class ScannerScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.space16),
 
-            // 3-Question Clinical Flock Triage (Chapter 5)
+            // 3-Question Clinical Flock Triage
             AppCard(
               padding: const EdgeInsets.all(14.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.medical_services_outlined, size: 20, color: AppColors.primary),
-                      SizedBox(width: 8),
+                      const Icon(Icons.medical_services_outlined, size: 20, color: AppColors.primary),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Clinical Flock Triage (3 Vital Signals)',
-                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+                          isUrdu ? 'پرندوں کی جسمانی علامات (3 سوالات)' : 'Clinical Flock Triage (3 Vital Signals)',
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'These vitals synthesize with image classification to derive calibrated clinical severity:',
-                    style: TextStyle(color: AppColors.textSecondaryLight, fontSize: 12),
+                  Text(
+                    isUrdu
+                        ? 'یہ علامات اے آئی ماڈل کے ساتھ مل کر بیماری کی درست شدت کا تعین کرتی ہیں:'
+                        : 'These vitals synthesize with image classification to derive calibrated clinical severity:',
+                    style: const TextStyle(color: AppColors.textSecondaryLight, fontSize: 12),
                   ),
                   const Divider(height: 24),
 
                   // Q1: Lethargy
-                  const Text(
-                    '1. Bird Lethargy & Wing Droop:',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  Text(
+                    isUrdu ? '1. پرندوں میں سستی یا پر لٹکانا:' : '1. Bird Lethargy & Wing Droop:',
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 6,
                     children: [
                       _buildTriageChip(
-                        label: 'None',
+                        label: isUrdu ? 'بالکل نہیں' : 'None',
                         selected: scanner.lethargy == 'None',
                         onSelect: () => scanner.setFlockSignals(
                           lethargy: 'None',
@@ -503,7 +622,7 @@ class ScannerScreen extends StatelessWidget {
                         ),
                       ),
                       _buildTriageChip(
-                        label: 'Under 10% of birds',
+                        label: isUrdu ? '10 فیصد سے کم' : 'Under 10% of birds',
                         selected: scanner.lethargy == 'Under 10% of birds',
                         onSelect: () => scanner.setFlockSignals(
                           lethargy: 'Under 10% of birds',
@@ -512,7 +631,7 @@ class ScannerScreen extends StatelessWidget {
                         ),
                       ),
                       _buildTriageChip(
-                        label: 'Over 10% of birds',
+                        label: isUrdu ? '10 فیصد سے زیادہ' : 'Over 10% of birds',
                         selected: scanner.lethargy == 'Over 10% of birds',
                         onSelect: () => scanner.setFlockSignals(
                           lethargy: 'Over 10% of birds',
@@ -522,20 +641,20 @@ class ScannerScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
 
                   // Q2: Intake Drop
-                  const Text(
-                    '2. Feed & Water Consumption:',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  Text(
+                    isUrdu ? '2. خوراک اور پانی کی کھپت میں کمی:' : '2. Feed & Water Consumption:',
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 6,
                     children: [
                       _buildTriageChip(
-                        label: 'Normal',
+                        label: isUrdu ? 'معمول کے مطابق' : 'Normal',
                         selected: scanner.intakeDrop == 'Normal',
                         onSelect: () => scanner.setFlockSignals(
                           lethargy: scanner.lethargy,
@@ -544,7 +663,7 @@ class ScannerScreen extends StatelessWidget {
                         ),
                       ),
                       _buildTriageChip(
-                        label: 'Reduced consumption',
+                        label: isUrdu ? 'کچھ کمی آئی ہے' : 'Reduced consumption',
                         selected: scanner.intakeDrop == 'Reduced consumption',
                         onSelect: () => scanner.setFlockSignals(
                           lethargy: scanner.lethargy,
@@ -553,7 +672,7 @@ class ScannerScreen extends StatelessWidget {
                         ),
                       ),
                       _buildTriageChip(
-                        label: 'Severely dropped',
+                        label: isUrdu ? 'شدید کمی آئی ہے' : 'Severely dropped',
                         selected: scanner.intakeDrop == 'Severely dropped',
                         onSelect: () => scanner.setFlockSignals(
                           lethargy: scanner.lethargy,
@@ -563,20 +682,20 @@ class ScannerScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
 
                   // Q3: Sudden Mortality
-                  const Text(
-                    '3. Sudden Mortality in Last 24 Hours:',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  Text(
+                    isUrdu ? '3. پچھلے 24 گھنٹوں میں اموات:' : '3. Sudden Mortality in Last 24 Hours:',
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 6,
                     children: [
                       _buildTriageChip(
-                        label: 'None in 24h',
+                        label: isUrdu ? 'کوئی موت نہیں' : 'None in 24h',
                         selected: scanner.suddenMortality == 'None in 24h',
                         onSelect: () => scanner.setFlockSignals(
                           lethargy: scanner.lethargy,
@@ -585,7 +704,7 @@ class ScannerScreen extends StatelessWidget {
                         ),
                       ),
                       _buildTriageChip(
-                        label: '1 to 2 birds',
+                        label: isUrdu ? '1 یا 2 پرندے' : '1 to 2 birds',
                         selected: scanner.suddenMortality == '1 to 2 birds',
                         onSelect: () => scanner.setFlockSignals(
                           lethargy: scanner.lethargy,
@@ -594,7 +713,7 @@ class ScannerScreen extends StatelessWidget {
                         ),
                       ),
                       _buildTriageChip(
-                        label: 'Multiple birds died',
+                        label: isUrdu ? 'کئی پرندے مرے' : 'Multiple birds died',
                         selected: scanner.suddenMortality == 'Multiple birds died',
                         onSelect: () => scanner.setFlockSignals(
                           lethargy: scanner.lethargy,
@@ -609,6 +728,30 @@ class ScannerScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.space24),
 
+            if (scanner.errorMessage != null) ...[
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.severe.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.severe.withValues(alpha: 0.4)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline_rounded, color: AppColors.severe, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        scanner.errorMessage!,
+                        style: const TextStyle(color: AppColors.severe, fontSize: 12.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             // Execution Button
             if (scanner.isAnalyzing) ...[
               AppCard(
@@ -620,23 +763,50 @@ class ScannerScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                       scanner.analysisStep,
-                      style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primary),
+                      style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary),
                     ),
                   ],
                 ),
               ),
             ] else ...[
-              CustomButton(
-                text: 'Run AI Disease & Severity Diagnosis',
-                icon: Icons.analytics_outlined,
-                onPressed: scanner.isImageValid
-                    ? () async {
-                        final res = await scanner.executeDiagnosis();
-                        if (res != null && context.mounted) {
-                          Navigator.pushNamed(context, AppRoutes.diagnosticResult);
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: (scanner.selectedImagePath != null && scanner.isImageValid)
+                        ? AppColors.primary
+                        : Colors.grey.shade400,
+                    foregroundColor: Colors.white,
+                    elevation: (scanner.selectedImagePath != null && scanner.isImageValid) ? 3 : 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppDimensions.borderRadiusMedium,
+                    ),
+                  ),
+                  icon: const Icon(Icons.analytics_outlined, size: 22),
+                  label: Text(
+                    scanner.selectedImagePath != null
+                        ? (isUrdu
+                            ? 'اے آئی تشخیص اور شدت معلوم کریں'
+                            : 'Run AI Disease & Severity Diagnosis')
+                        : (isUrdu
+                            ? 'تشخیص کے لیے پہلے تصویر لیں یا منتخب کریں'
+                            : 'Select or Capture Photo to Run AI Diagnosis'),
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5),
+                  ),
+                  onPressed: (scanner.selectedImagePath != null && scanner.isImageValid)
+                      ? () async {
+                          final res = await scanner.executeDiagnosis();
+                          if (res != null && context.mounted) {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes.diagnosticResult,
+                              arguments: res,
+                            );
+                          }
                         }
-                      }
-                    : null,
+                      : null,
+                ),
               ),
             ],
             const SizedBox(height: AppDimensions.space32),
@@ -652,33 +822,20 @@ class ScannerScreen extends StatelessWidget {
     required void Function(bool) onToggle,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: Row(
-              children: [
-                Icon(
-                  passed ? Icons.check_circle_rounded : Icons.cancel_rounded,
-                  size: 18,
-                  color: passed ? AppColors.healthy : AppColors.severe,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(fontSize: 13),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+            child: Text(
+              title,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
             ),
           ),
-          Switch(
+          Switch.adaptive(
             value: passed,
             activeThumbColor: AppColors.primary,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            activeTrackColor: AppColors.primaryContainerLight,
             onChanged: onToggle,
           ),
         ],
@@ -695,12 +852,13 @@ class ScannerScreen extends StatelessWidget {
       label: Text(
         label,
         style: TextStyle(
-          fontSize: 12,
-          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          fontSize: 12.5,
+          fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
+          color: selected ? Colors.white : null,
         ),
       ),
       selected: selected,
-      selectedColor: AppColors.primaryContainerLight,
+      selectedColor: AppColors.primary,
       onSelected: (_) => onSelect(),
     );
   }

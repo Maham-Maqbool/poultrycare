@@ -1,5 +1,5 @@
 /// PredictionModel captures AI classification outputs, certainty metrics,
-/// and clinical rules-based triage decisions reflecting the Chapter 5 `predictions` schema.
+/// and clinical rules-based triage decisions reflecting the enterprise predictions schema.
 class PredictionModel {
   final String id;
   final String scanId;

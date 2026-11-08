@@ -51,6 +51,7 @@ IMG_SIZE = 224
 # Model Loader
 MODEL_PATH = None
 for candidate in [
+    RESOURCES_DIR / "poultry_neural_vision_fp16.tflite",
     RESOURCES_DIR / "poultry_mobilenetv2_fp16.tflite",
     RESOURCES_DIR / "poultry_mobilenetv2_fp32.tflite",
     RESOURCES_DIR / "poultry_mobilenetv2_dynamic.tflite",

@@ -1,6 +1,6 @@
 {
-  "model": "mobilenetv2",
-  "file": "poultry_mobilenetv2_fp16.tflite",
+  "model": "PoultryCare Neural Vision Engine",
+  "file": "poultry_neural_vision_fp16.tflite",
   "variant": "fp16",
   "labels": [
     "Coccidiosis",

@@ -3,6 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../routes/app_routes.dart';
+import '../../../services/session_service.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -22,7 +23,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       'titleUr': 'فوری اے آئی اسکین',
       'description':
           'Capture or upload chicken fecal droppings for immediate classification among Coccidiosis, Newcastle Disease, Salmonella, or Healthy.',
-      'tag': 'Deep Learning (MobileNetV3)',
+      'tag': 'Clinical Deep Vision AI',
     },
     {
       'icon': Icons.medical_services_rounded,
@@ -42,8 +43,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     },
   ];
 
-  void _finish() {
-    Navigator.pushReplacementNamed(context, AppRoutes.login);
+  void _finish() async {
+    await SessionService.instance.setOnboardingCompleted();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
+    }
   }
 
   @override
@@ -180,7 +184,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   const SizedBox(height: AppDimensions.space24),
                   CustomButton(
-                    text: _currentPage == _slides.length - 1 ? 'Get Started' : 'Next',
+                    text: _currentPage == _slides.length - 1
+                        ? 'Get Started / شروع کریں'
+                        : 'Next / آگے',
                     onPressed: () {
                       if (_currentPage < _slides.length - 1) {
                         _pageController.nextPage(

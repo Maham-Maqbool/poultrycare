@@ -1,5 +1,5 @@
 /// ScanModel represents a diagnostic session or scan submission
-/// reflecting the Chapter 5 `scans` schema.
+/// reflecting the commercial scan domain schema.
 class ScanModel {
   final String id;
   final String? userId;

@@ -5,6 +5,7 @@ import '../../../core/utils/validators.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../controllers/flock_controller.dart';
+import '../../profile/controllers/settings_controller.dart';
 
 class AddFlockModal extends StatefulWidget {
   const AddFlockModal({super.key});
@@ -41,7 +42,7 @@ class _AddFlockModalState extends State<AddFlockModal> {
     super.dispose();
   }
 
-  void _saveFlock() async {
+  void _saveFlock(bool isUrdu) async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
@@ -58,13 +59,22 @@ class _AddFlockModalState extends State<AddFlockModal> {
     if (success && mounted) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('New poultry flock registered successfully!')),
+        SnackBar(
+          content: Text(
+            isUrdu
+                ? 'نیا پولٹری شیڈ کامیابی سے رجسٹر ہو گیا'
+                : 'New poultry flock registered successfully!',
+          ),
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsController>();
+    final isUrdu = settings.isUrdu;
+
     return Padding(
       padding: EdgeInsets.only(
         left: 20,
@@ -82,10 +92,10 @@ class _AddFlockModalState extends State<AddFlockModal> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Register Farm Flock / Shed',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+                      isUrdu ? 'نیا پولٹری شیڈ رجسٹر کریں' : 'Register Farm Flock / Shed',
+                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -98,8 +108,8 @@ class _AddFlockModalState extends State<AddFlockModal> {
               const SizedBox(height: 14),
               CustomTextField(
                 controller: _nameController,
-                label: 'Flock / Shed Name *',
-                hint: 'e.g. Shed 3 (Broiler Batch 5)',
+                label: isUrdu ? 'شیڈ کا نام *' : 'Flock / Shed Name *',
+                hint: isUrdu ? 'مثلاً شیڈ نمبر 3 (برائلر)' : 'e.g. Shed 3 (Broiler Batch 5)',
                 prefixIcon: Icons.home_work_outlined,
                 validator: (v) => AppValidators.validateRequired(v, 'Flock Name'),
               ),
@@ -109,8 +119,8 @@ class _AddFlockModalState extends State<AddFlockModal> {
                   Expanded(
                     child: CustomTextField(
                       controller: _countController,
-                      label: 'Bird Count (Approx.)',
-                      hint: 'e.g. 500',
+                      label: isUrdu ? 'پرندوں کی تعداد' : 'Bird Count (Approx.)',
+                      hint: '500',
                       keyboardType: TextInputType.number,
                       prefixIcon: Icons.format_list_numbered,
                       validator: (v) => AppValidators.validateNumber(v, 'Count'),
@@ -120,8 +130,8 @@ class _AddFlockModalState extends State<AddFlockModal> {
                   Expanded(
                     child: CustomTextField(
                       controller: _breedController,
-                      label: 'Poultry Breed',
-                      hint: 'e.g. Cobb 500, Desi',
+                      label: isUrdu ? 'پرندوں کی نسل' : 'Poultry Breed',
+                      hint: 'Cobb 500, Desi',
                       prefixIcon: Icons.egg_outlined,
                     ),
                   ),
@@ -130,15 +140,15 @@ class _AddFlockModalState extends State<AddFlockModal> {
               const SizedBox(height: 12),
               CustomTextField(
                 controller: _notesController,
-                label: 'Notes & Shed Location',
-                hint: 'Vaccination history, litter condition...',
+                label: isUrdu ? 'شیڈ کے بارے میں نوٹس' : 'Notes & Shed Location',
+                hint: isUrdu ? 'ویکسینیشن یا برادے کی حالت...' : 'Vaccination history, litter condition...',
                 maxLines: 2,
               ),
               const SizedBox(height: AppDimensions.space20),
               CustomButton(
-                text: 'Save Flock',
+                text: isUrdu ? 'شیڈ محفوظ کریں' : 'Save Flock',
                 isLoading: _isLoading,
-                onPressed: _saveFlock,
+                onPressed: () => _saveFlock(isUrdu),
               ),
             ],
           ),

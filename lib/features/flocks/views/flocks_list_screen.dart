@@ -6,6 +6,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/empty_state_view.dart';
 import '../controllers/flock_controller.dart';
+import '../../profile/controllers/settings_controller.dart';
 import 'add_flock_modal.dart';
 import 'flock_detail_screen.dart';
 
@@ -15,14 +16,16 @@ class FlocksListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final flockController = context.watch<FlockController>();
+    final settings = context.watch<SettingsController>();
+    final isUrdu = settings.isUrdu;
     final flocks = flockController.flocks;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Flocks & Sheds'),
+        title: Text(isUrdu ? 'میرے پولٹری شیڈز' : 'My Flocks & Sheds'),
         actions: [
           IconButton(
-            tooltip: 'Add Shed',
+            tooltip: isUrdu ? 'شیڈ شامل کریں' : 'Add Shed',
             icon: const Icon(Icons.add_circle_outline_rounded),
             onPressed: () => AddFlockModal.show(context),
           ),
@@ -32,15 +35,17 @@ class FlocksListScreen extends StatelessWidget {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('New Flock'),
+        label: Text(isUrdu ? 'نیا شیڈ' : 'New Flock'),
         onPressed: () => AddFlockModal.show(context),
       ),
       body: flocks.isEmpty
           ? EmptyStateView(
               icon: Icons.home_work_outlined,
-              title: 'No Flocks Added Yet',
-              message: 'Organize your poultry sheds to track clinical history separately.',
-              actionText: 'Register First Flock',
+              title: isUrdu ? 'ابھی تک کوئی شیڈ شامل نہیں ہوا' : 'No Flocks Added Yet',
+              message: isUrdu
+                  ? 'اپنے فارم کے شیڈز کو الگ الگ ٹریک کرنے کے لیے نیا شیڈ رجسٹر کریں'
+                  : 'Organize your poultry sheds to track clinical history separately.',
+              actionText: isUrdu ? 'پہلا شیڈ رجسٹر کریں' : 'Register First Flock',
               onAction: () => AddFlockModal.show(context),
             )
           : ListView.builder(
@@ -86,12 +91,12 @@ class FlocksListScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${flock.birdCount ?? 'Unknown'} birds | ${flock.breed ?? 'Standard Breed'}',
+                              '${flock.birdCount ?? '0'} ${isUrdu ? 'پرندے' : 'birds'} | ${flock.breed ?? (isUrdu ? 'معیاری نسل' : 'Standard Breed')}',
                               style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondaryLight),
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Added: ${AppFormatters.formatDate(flock.createdAt)}',
+                              '${isUrdu ? 'اندراج' : 'Added'}: ${AppFormatters.formatDate(flock.createdAt)}',
                               style: const TextStyle(fontSize: 11, color: AppColors.textMutedLight),
                             ),
                           ],
@@ -107,7 +112,9 @@ class FlocksListScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              hasDisease ? 'Active Risk' : 'Healthy',
+                              hasDisease
+                                  ? (isUrdu ? 'بیماری کا خطرہ' : 'Active Risk')
+                                  : (isUrdu ? 'صحت مند' : 'Healthy'),
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,

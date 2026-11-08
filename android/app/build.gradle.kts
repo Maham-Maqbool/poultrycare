@@ -36,6 +36,13 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    packaging {
+        jniLibs {
+            keepDebugSymbols += "**/*.so"
+            excludes += "**/libVkLayer_khronos_validation.so"
+        }
+    }
 }
 
 kotlin {

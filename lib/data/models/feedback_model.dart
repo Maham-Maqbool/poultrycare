@@ -1,5 +1,5 @@
 /// FeedbackModel captures farmer helpfulness and veterinarian confirmed labels
-/// reflecting the Chapter 5 `feedback` schema.
+/// reflecting the enterprise feedback domain schema.
 class FeedbackModel {
   final String id;
   final String scanId;

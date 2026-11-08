@@ -4,7 +4,6 @@ import '../../../data/mock/mock_scans_data.dart';
 import '../../../data/models/treatment_model.dart';
 import '../../../data/repositories/diagnostic_repository.dart';
 import '../../../data/repositories/disease_repository.dart';
-import '../../../core/constants/app_assets.dart';
 
 /// ScannerController manages camera capture, local gallery selection,
 /// image quality validation, 3-question flock triage input, and diagnostic execution.
@@ -13,10 +12,11 @@ class ScannerController extends ChangeNotifier {
   final DiseaseRepository _diseaseRepo;
   final ImagePicker _picker = ImagePicker();
 
-  String? _selectedImagePath = AppAssets.sampleCoccidiosis;
+  String? _selectedImagePath;
   String? _selectedFlockId = 'flock-101';
   String? _forcedDisease; // For demo testing specific classes
   bool _isLocalFile = false;
+  String? _errorMessage;
 
   // 3 Clinical Flock Triage Questions
   String _lethargy = 'Under 10% of birds';
@@ -54,9 +54,20 @@ class ScannerController extends ChangeNotifier {
   String get analysisStep => _analysisStep;
   DiagnosticRecord? get lastResult => _lastResult;
   TreatmentModel? get lastTreatment => _lastTreatment;
+  String? get errorMessage => _errorMessage;
+
+  /// Resets the selected image viewfinder.
+  void clearSelectedImage() {
+    _selectedImagePath = null;
+    _isLocalFile = false;
+    _forcedDisease = null;
+    _errorMessage = null;
+    notifyListeners();
+  }
 
   /// Captures a live photograph using the device camera.
   Future<bool> pickImageFromCamera() async {
+    _errorMessage = null;
     try {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
@@ -76,13 +87,16 @@ class ScannerController extends ChangeNotifier {
       }
       return false;
     } catch (e) {
-      debugPrint('Camera capture error: $e');
+      debugPrint('[ScannerController] Camera capture error: $e');
+      _errorMessage = 'Camera access was denied or cancelled: $e';
+      notifyListeners();
       return false;
     }
   }
 
   /// Selects an authentic poultry photo from local device gallery.
   Future<bool> pickImageFromGallery() async {
+    _errorMessage = null;
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
@@ -102,7 +116,9 @@ class ScannerController extends ChangeNotifier {
       }
       return false;
     } catch (e) {
-      debugPrint('Gallery picker error: $e');
+      debugPrint('[ScannerController] Gallery picker error: $e');
+      _errorMessage = 'Gallery access error: $e';
+      notifyListeners();
       return false;
     }
   }
@@ -125,6 +141,15 @@ class ScannerController extends ChangeNotifier {
     _lightingPassed = true;
     _sharpnessPassed = true;
     _singleDroppingPassed = true;
+    notifyListeners();
+  }
+
+  /// Sets the active diagnostic record and optional treatment for viewing.
+  void setLastResult(DiagnosticRecord record, [TreatmentModel? treatment]) {
+    _lastResult = record;
+    _lastTreatment = treatment;
+    _selectedImagePath = record.scan.imagePath;
+    _forcedDisease = record.prediction.predictedClass;
     notifyListeners();
   }
 
@@ -163,40 +188,51 @@ class ScannerController extends ChangeNotifier {
     if (_selectedImagePath == null || !isImageValid) return null;
 
     _isAnalyzing = true;
-    _analysisStep = 'Normalizing image tensor (224x224)...';
+    _errorMessage = null;
+    _analysisStep = 'Preprocessing image tensor (224x224 RGB)...';
     notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 350));
-    _analysisStep = 'Evaluating MobileNetV3 deep learning weights...';
-    notifyListeners();
+    try {
+      await Future.delayed(const Duration(milliseconds: 150));
+      _analysisStep = 'Executing on-device AI vision diagnosis...';
+      notifyListeners();
 
-    await Future.delayed(const Duration(milliseconds: 400));
-    _analysisStep = 'Synthesizing flock triage signals & clinical rules...';
-    notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 150));
+      _analysisStep = 'Synthesizing clinical flock triage rules...';
+      notifyListeners();
 
-    final record = await _diagRepo.runDiagnosis(
-      imagePath: _selectedImagePath!,
-      flockId: _selectedFlockId,
-      forcedDisease: _forcedDisease,
-      flockSignals: {
-        'lethargy': _lethargy,
-        'intakeDrop': _intakeDrop,
-        'suddenMortality': _suddenMortality,
-      },
-    );
-
-    _lastResult = record;
-    if (record.prediction.predictedClass != null && record.prediction.severity != null) {
-      _lastTreatment = await _diseaseRepo.getTreatment(
-        record.prediction.predictedClass!,
-        record.prediction.severity!,
+      final record = await _diagRepo.runDiagnosis(
+        imagePath: _selectedImagePath!,
+        flockId: _selectedFlockId,
+        forcedDisease: _forcedDisease,
+        flockSignals: {
+          'lethargy': _lethargy,
+          'intakeDrop': _intakeDrop,
+          'suddenMortality': _suddenMortality,
+        },
       );
-    }
 
-    _isAnalyzing = false;
-    _analysisStep = 'Complete';
-    notifyListeners();
-    return record;
+      _lastResult = record;
+      if (record.prediction.predictedClass != null &&
+          record.prediction.severity != null) {
+        _lastTreatment = await _diseaseRepo.getTreatment(
+          record.prediction.predictedClass!,
+          record.prediction.severity!,
+        );
+      }
+
+      _isAnalyzing = false;
+      _analysisStep = 'Complete';
+      notifyListeners();
+      return record;
+    } catch (e) {
+      debugPrint('[ScannerController] Diagnosis execution error: $e');
+      _isAnalyzing = false;
+      _errorMessage = 'Diagnosis failed: $e';
+      _analysisStep = 'Analysis error';
+      notifyListeners();
+      return null;
+    }
   }
 
   Future<void> submitFeedback({

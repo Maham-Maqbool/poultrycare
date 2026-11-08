@@ -43,6 +43,19 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+.gradle/
+**/android/.gradle/
+**/android/local.properties
+**/android/app/build/
+**/android/key.properties
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Python
+__pycache__/
+*.py[cod]
 
 # Widget Preview related
 .widget_preview/

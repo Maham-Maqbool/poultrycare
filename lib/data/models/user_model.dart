@@ -1,5 +1,5 @@
 /// UserModel represents an authenticated or guest farmer account
-/// reflecting the Chapter 5 `users` schema.
+/// reflecting the commercial user domain schema.
 class UserModel {
   final String id;
   final String? displayName;

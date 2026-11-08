@@ -4,7 +4,7 @@ import '../mock/mock_diseases_data.dart';
 import '../mock/mock_treatments_data.dart';
 
 /// DiseaseRepository manages disease encyclopedia and treatment lookups
-/// reflecting Chapter 5 query specifications.
+/// reflecting enterprise poultry health specifications.
 class DiseaseRepository {
   Future<List<DiseaseModel>> getAllDiseases() async {
     await Future.delayed(const Duration(milliseconds: 150));

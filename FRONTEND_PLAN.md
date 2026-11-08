@@ -5,10 +5,9 @@
 
 ## 1. Executive Summary & Document Review
 
-- **Project Title**: Poultry Disease Detection and Severity Assessment from Fecal Images (PoultryCare)
-- **Institution**: Khwaja Fareed University of Engineering & Information Technology (KFUEIT), Rahim Yar Khan
-- **Developers**: Isha Ishtiaq (COSC232101047), Maham Maqbool (COSC232101029)
-- **Supervisor**: Dr. Shahzad Hussain
+- **Project Title**: Poultry Disease Detection and Severity Assessment (PoultryCare Pro)
+- **Product Edition**: PoultryCare Pro (Commercial Farmer Edition)
+- **Target Audience**: Rural poultry farmers, commercial shed owners, and veterinary field staff.
 - **Project Domain**: Mobile Health Tech, Computer Vision for Poultry Agriculture, Clinical Triage and Biosecurity Advisory
 - **Target Audience & Personas**:
   - **Smallholder Farmers (Primary)**: Non-technical rural farmers monitoring flocks, needing fast, visual, non-intimidating disease detection, instant severity assessment, and practical care steps.
@@ -186,10 +185,10 @@ graph TD
     - Privacy & Temporary Cache Cleaner (FR-12):
       - "Clear temporary image cache now" button.
       - "Image retention consent" switch.
-    - FYP Credits & KFUEIT Information:
-      - Developers: Isha Ishtiaq & Maham Maqbool
-      - Supervisor: Dr. Shahzad Hussain
-      - Department of Computer Science, KFUEIT.
+    - Commercial Support & Veterinary Helpline:
+      - 24/7 Field Support: +92 300 1234567
+      - Email: support@poultrycare.farm
+      - Commercial Pro Edition v2.4.0
 
 ---
 
@@ -199,7 +198,7 @@ All models implemented in clean Dart 3 with null safety, `copyWith`, `toJson`, a
 
 | Model Name | Key Properties | Mock Count | Sample Record |
 |---|---|---|---|
-| `UserModel` | id, displayName, email, phone, role (`farmer` \| `admin`), locale (`en` \| `ur`), consentToRetainImages | 3 records | Maham Maqbool (Lead Farmer), Isha Ishtiaq (Admin), Guest Session |
+| `UserModel` | id, displayName, email, phone, role (`farmer` \| `admin`), locale (`en` \| `ur`), consentToRetainImages | 3 records | Chaudhry Poultry Farms (Farmer), Dr. Tariq (Admin), Guest Session |
 | `FlockModel` | id, userId, name, birdCount, breed, notes, createdAt, activeStatus | 4 records | "Shed A (Broiler Batch 4) - 500 birds", "Shed B (Layers) - 250 birds" |
 | `DiseaseModel` | code, nameEn, nameUr, summaryEn, summaryUr, signsEn, signsUr, baselineSeverity, baselineUrgency, isNotifiable, displayOrder | 4 records | `coccidiosis`, `ncd`, `salmonella`, `healthy` with full bilingual texts |
 | `TreatmentModel` | id, diseaseCode, severity (`mild`, `moderate`, `severe`), medicinesEn, medicinesUr, careStepsEn, careStepsUr, biosecurityEn, biosecurityUr, vetRequired, urgency | 11 records | Complete clinical protocols for all valid (disease, severity) combinations |

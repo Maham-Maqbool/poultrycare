@@ -1,5 +1,5 @@
 /// TreatmentModel stores medical recommendations, care steps, and biosecurity protocols
-/// reflecting the Chapter 5 `treatments` schema.
+/// reflecting the commercial veterinary treatment catalog.
 class TreatmentModel {
   final String id;
   final String diseaseCode;

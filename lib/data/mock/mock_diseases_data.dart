@@ -1,7 +1,7 @@
 import '../models/disease_model.dart';
 
 /// mockDiseasesData holds curated disease encyclopedia entries in English and Urdu
-/// reflecting Chapter 5 `diseases` table.
+/// reflecting commercial poultry health diagnostics dataset.
 final List<DiseaseModel> mockDiseasesData = [
   const DiseaseModel(
     code: 'coccidiosis',

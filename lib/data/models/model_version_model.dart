@@ -1,5 +1,5 @@
 /// ModelVersionModel tracks registered deep learning models
-/// reflecting the Chapter 5 `model_versions` schema.
+/// reflecting the AI model registry schema.
 class ModelVersionModel {
   final String id;
   final String version;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../scanner/views/scanner_screen.dart';
@@ -8,6 +9,8 @@ import '../../profile/views/profile_screen.dart';
 import '../../profile/controllers/settings_controller.dart';
 import 'home_dashboard_screen.dart';
 
+/// MainShellScreen hosts the bottom navigation bar and page index stack.
+/// Provides tab switching callbacks to embedded child screens.
 class MainShellScreen extends StatefulWidget {
   final int initialTab;
 
@@ -20,14 +23,6 @@ class MainShellScreen extends StatefulWidget {
 class _MainShellScreenState extends State<MainShellScreen> {
   late int _selectedIndex;
 
-  final List<Widget> _pages = const [
-    HomeDashboardScreen(),
-    ScannerScreen(),
-    FlocksListScreen(),
-    DiseaseLibraryScreen(),
-    ProfileScreen(),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -35,9 +30,11 @@ class _MainShellScreenState extends State<MainShellScreen> {
   }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index >= 0 && index < 5) {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
@@ -45,12 +42,32 @@ class _MainShellScreenState extends State<MainShellScreen> {
     final settings = context.watch<SettingsController>();
     final isUrdu = settings.isUrdu;
 
-    return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
+    final pages = [
+      HomeDashboardScreen(onTabSelected: _onItemTapped),
+      const ScannerScreen(),
+      const FlocksListScreen(),
+      const DiseaseLibraryScreen(),
+      const ProfileScreen(),
+    ];
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_selectedIndex != 0) {
+          setState(() {
+            _selectedIndex = 0;
+          });
+        } else {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _selectedIndex,
+          children: pages,
+        ),
+        bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         selectedItemColor: AppColors.primary,
@@ -84,6 +101,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 }

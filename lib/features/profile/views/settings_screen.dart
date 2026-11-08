@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/widgets/app_card.dart';
@@ -9,13 +10,35 @@ import '../controllers/settings_controller.dart';
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
+  Future<void> _callHelpline(BuildContext context) async {
+    const phoneNumber = '+923001234567';
+    final uri = Uri.parse('tel:$phoneNumber');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Veterinary Support: +92 300 1234567'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsController>();
+    final isUrdu = settings.isUrdu;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('App Settings & System Info'),
+        title: Text(isUrdu ? 'ایپ سیٹنگز اور سپورٹ' : 'App Settings & Support'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -23,9 +46,9 @@ class SettingsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Display & Localization
-            const Text(
-              'Appearance & Language',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+            Text(
+              isUrdu ? 'ظاہری شکل اور زبان' : 'Appearance & Language',
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
             const SizedBox(height: 10),
             AppCard(
@@ -34,8 +57,13 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   SwitchListTile(
                     secondary: const Icon(Icons.dark_mode_outlined, color: AppColors.primary),
-                    title: const Text('Dark Mode'),
-                    subtitle: const Text('Reduces outdoor screen glare and saves battery'),
+                    title: Text(isUrdu ? 'ڈارک موڈ (نائٹ موڈ)' : 'Dark Mode'),
+                    subtitle: Text(
+                      isUrdu
+                          ? 'دھوپ میں اسکرین کی چمک کم کرتا ہے اور بیٹری بچاتا ہے'
+                          : 'Reduces outdoor screen glare and saves battery',
+                      style: const TextStyle(fontSize: 12),
+                    ),
                     value: settings.isDarkMode,
                     activeThumbColor: AppColors.primary,
                     onChanged: (_) => settings.toggleTheme(),
@@ -43,8 +71,8 @@ class SettingsScreen extends StatelessWidget {
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.language_rounded, color: AppColors.primary),
-                    title: const Text('App Language (زبان)'),
-                    subtitle: Text(settings.isUrdu ? 'Urdu (اردو)' : 'English'),
+                    title: Text(isUrdu ? 'ایپ کی زبان (Language)' : 'App Language (زبان)'),
+                    subtitle: Text(isUrdu ? 'اردو (Urdu)' : 'English'),
                     trailing: DropdownButton<String>(
                       value: settings.locale,
                       underline: const SizedBox(),
@@ -62,60 +90,10 @@ class SettingsScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.space20),
 
-            // AI Model Registry (Chapter 5 model_versions table)
-            const Text(
-              'AI Model Registry & Diagnostics',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            AppCard(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'MobileNetV3-Poultry',
-                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.healthyLight,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text(
-                          'Active',
-                          style: TextStyle(color: AppColors.healthy, fontWeight: FontWeight.w700, fontSize: 11),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Version: v1.2.0-quantized | Backbone: MobileNetV3-Small',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.textSecondaryLight),
-                  ),
-                  const Divider(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildMetric('Macro F1', '94.6%'),
-                      _buildMetric('Balanced Acc', '94.1%'),
-                      _buildMetric('MCC', '0.92'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppDimensions.space20),
-
-            // Privacy & Temporary Storage (FR-12)
-            const Text(
-              'Privacy & Storage Hygiene',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+            // Privacy & Temporary Storage
+            Text(
+              isUrdu ? 'پرائیویسی اور اسٹوریج صفائی' : 'Privacy & Storage Hygiene',
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
             const SizedBox(height: 10),
             AppCard(
@@ -129,7 +107,9 @@ class SettingsScreen extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Temporary Image Cache: ${(settings.cacheSizeKb / 1024).toStringAsFixed(1)} MB',
+                          isUrdu
+                              ? 'عارضی کیشے: ${(settings.cacheSizeKb / 1024).toStringAsFixed(1)} MB'
+                              : 'Temporary Image Cache: ${(settings.cacheSizeKb / 1024).toStringAsFixed(1)} MB',
                           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -137,13 +117,17 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    'Per requirement FR-12, raw diagnostic photos are held in temporary storage and purged after result compilation.',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.textSecondaryLight, height: 1.4),
+                  Text(
+                    isUrdu
+                        ? 'موبائل اسٹوریج محفوظ رکھنے کے لیے عارضی ٹیسٹ فائلز صاف کی جا سکتی ہیں'
+                        : 'Temporary diagnostic image caches can be cleared safely without losing diagnosis history.',
+                    style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondaryLight, height: 1.4),
                   ),
                   const SizedBox(height: 12),
                   CustomButton(
-                    text: settings.cacheSizeKb == 0 ? 'Cache Cleaned' : 'Purge Temporary Image Cache Now',
+                    text: settings.cacheSizeKb == 0
+                        ? (isUrdu ? 'کیشے صاف ہے' : 'Cache Cleaned')
+                        : (isUrdu ? 'عارضی تصویر کیشے ابھی صاف کریں' : 'Purge Temporary Image Cache Now'),
                     variant: ButtonVariant.outlined,
                     onPressed: settings.cacheSizeKb == 0
                         ? null
@@ -151,29 +135,24 @@ class SettingsScreen extends StatelessWidget {
                             await settings.clearCache();
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Temporary image cache purged.')),
+                                SnackBar(
+                                  content: Text(
+                                    isUrdu ? 'عارضی کیشے صاف کر دیا گیا' : 'Temporary image cache purged.',
+                                  ),
+                                ),
                               );
                             }
                           },
-                  ),
-                  const Divider(height: 24),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Anonymized Research Consent', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
-                    subtitle: const Text('Allow encrypted feature hashes for model retraining', style: TextStyle(fontSize: 12)),
-                    value: settings.imageRetentionConsent,
-                    activeThumbColor: AppColors.primary,
-                    onChanged: settings.toggleConsent,
                   ),
                 ],
               ),
             ),
             const SizedBox(height: AppDimensions.space20),
 
-            // FYP Attribution & Credits
-            const Text(
-              'About Project & Institution',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+            // Commercial Customer Support & Veterinary Hotline
+            Text(
+              isUrdu ? 'کسٹمر سپورٹ اور ویٹرنری فیلڈ سروس' : 'PoultryCare Support & Field Service',
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
             const SizedBox(height: 10),
             AppCard(
@@ -182,34 +161,54 @@ class SettingsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Poultry Disease Detection & Severity Assessment',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                    'PoultryCare Commercial Field Edition',
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5),
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'BS Computer Science Final Year Project (2023-2027)',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.primary, fontWeight: FontWeight.w600),
+                    'Version: 2.4.0 Commercial Pro (Offline AI Enabled)',
+                    style: TextStyle(fontSize: 12.5, color: AppColors.primary, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    'Khwaja Fareed University of Engineering & Information Technology (KFUEIT), Rahim Yar Khan',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.textSecondaryLight),
+                  Text(
+                    isUrdu
+                        ? 'پولٹری فارمرز کے لیے 24 گھنٹے دستیاب تشخیصی سروس اور ویٹرنری ہیلپ لائن:'
+                        : '24/7 dedicated support and veterinary advisory for commercial poultry farms:',
+                    style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondaryLight),
                   ),
-                  const Divider(height: 20),
-                  const Text(
-                    'Student Developers:',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Icon(Icons.phone_in_talk_rounded, size: 18, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          isUrdu ? 'ویٹرنری ہیلپ لائن: +92 300 1234567' : 'Veterinary Helpline: +92 300 1234567',
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  const Text('• Isha Ishtiaq (COSC232101047)', style: TextStyle(fontSize: 13)),
-                  const Text('• Maham Maqbool (COSC232101029)', style: TextStyle(fontSize: 13)),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Project Supervisor:',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
+                  const Row(
+                    children: [
+                      Icon(Icons.mail_outline_rounded, size: 18, color: AppColors.primary),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Email: support@poultrycare.farm',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  const Text('• Dr. Shahzad Hussain', style: TextStyle(fontSize: 13)),
+                  const SizedBox(height: 14),
+                  CustomButton(
+                    text: isUrdu ? 'سپورٹ ہیلپ لائن پر کال کریں' : 'Call Support Helpline',
+                    onPressed: () => _callHelpline(context),
+                  ),
                 ],
               ),
             ),
@@ -217,16 +216,6 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  static Widget _buildMetric(String label, String value) {
-    return Column(
-      children: [
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.primary)),
-        const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight)),
-      ],
     );
   }
 }

@@ -1,7 +1,7 @@
 import '../models/treatment_model.dart';
 
 /// mockTreatmentsData provides the 11 medical and biosecurity treatment protocols
-/// across all valid disease and clinical severity pairs reflecting Chapter 5 `treatments` table.
+/// across all valid disease and clinical severity pairs reflecting commercial veterinary protocols.
 final List<TreatmentModel> mockTreatmentsData = [
   // 1. Coccidiosis: Mild
   const TreatmentModel(

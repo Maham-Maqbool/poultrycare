@@ -11,6 +11,8 @@ import 'package:poultrycare/features/auth/controllers/auth_controller.dart';
 import 'package:poultrycare/features/flocks/controllers/flock_controller.dart';
 import 'package:poultrycare/features/scanner/controllers/scanner_controller.dart';
 import 'package:poultrycare/features/home/controllers/dashboard_controller.dart';
+import 'package:poultrycare/features/home/views/home_dashboard_screen.dart';
+import 'package:poultrycare/features/home/views/main_shell_screen.dart';
 import 'package:poultrycare/features/history/controllers/history_controller.dart';
 import 'package:poultrycare/features/profile/controllers/settings_controller.dart';
 
@@ -39,8 +41,40 @@ void main() {
       ),
     );
 
-    expect(find.text('PoultryCare'), findsOneWidget);
+    expect(find.text('PoultryCare Pro'), findsOneWidget);
     await tester.pumpAndSettle(const Duration(seconds: 3));
+  });
+
+  testWidgets('MainShellScreen renders HomeDashboardScreen with cards and quick actions', (WidgetTester tester) async {
+    final authRepo = AuthRepository();
+    final flockRepo = FlockRepository();
+    final diseaseRepo = DiseaseRepository();
+    final diagnosticRepo = DiagnosticRepository();
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider<AuthRepository>.value(value: authRepo),
+          Provider<FlockRepository>.value(value: flockRepo),
+          Provider<DiseaseRepository>.value(value: diseaseRepo),
+          Provider<DiagnosticRepository>.value(value: diagnosticRepo),
+          ChangeNotifierProvider(create: (_) => AuthController(authRepo)),
+          ChangeNotifierProvider(create: (_) => FlockController(flockRepo)),
+          ChangeNotifierProvider(create: (_) => ScannerController(diagnosticRepo, diseaseRepo)),
+          ChangeNotifierProvider(create: (_) => DashboardController(diagnosticRepo, flockRepo)),
+          ChangeNotifierProvider(create: (_) => HistoryController(diagnosticRepo)),
+          ChangeNotifierProvider(create: (_) => SettingsController()),
+        ],
+        child: const MaterialApp(
+          home: MainShellScreen(initialTab: 0),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    expect(find.byType(HomeDashboardScreen), findsOneWidget);
+    expect(find.text('PoultryCare Pro'), findsWidgets);
+    expect(find.byIcon(Icons.egg_alt_rounded), findsOneWidget);
   });
 
   testWidgets('AppImageView renders graceful specimen placeholder when empty', (WidgetTester tester) async {
@@ -54,6 +88,22 @@ void main() {
 
     expect(find.text('Poultry Specimen'), findsOneWidget);
     expect(find.byIcon(Icons.biotech_rounded), findsOneWidget);
+  });
+
+  testWidgets('AppImageView safely handles double.infinity width without Infinity toInt error', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: AppImageView(
+            imagePath: 'assets/images/sample_coccidiosis.jpg',
+            width: double.infinity,
+            height: 220,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byType(AppImageView), findsOneWidget);
   });
 
   test('ScannerController manages specimen selection and triage synthesis', () async {
