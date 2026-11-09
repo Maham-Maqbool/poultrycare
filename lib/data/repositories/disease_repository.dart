@@ -13,10 +13,17 @@ class DiseaseRepository {
     return list;
   }
 
+  static String _normalizeCode(String code) {
+    final lower = code.toLowerCase().trim();
+    if (lower.contains('newcastle') || lower == 'ncd') return 'ncd';
+    return lower;
+  }
+
   Future<DiseaseModel?> getDiseaseByCode(String code) async {
+    final normalized = _normalizeCode(code);
     try {
       return mockDiseasesData.firstWhere(
-        (d) => d.code.toLowerCase() == code.toLowerCase(),
+        (d) => _normalizeCode(d.code) == normalized,
       );
     } catch (_) {
       return null;
@@ -25,17 +32,19 @@ class DiseaseRepository {
 
   Future<TreatmentModel?> getTreatment(String diseaseCode, String severity) async {
     await Future.delayed(const Duration(milliseconds: 100));
+    final normalizedDisease = _normalizeCode(diseaseCode);
+    final normalizedSeverity = severity.toLowerCase().trim();
     try {
       return mockTreatmentsData.firstWhere(
         (t) =>
-            t.diseaseCode.toLowerCase() == diseaseCode.toLowerCase() &&
-            t.severity.toLowerCase() == severity.toLowerCase(),
+            _normalizeCode(t.diseaseCode) == normalizedDisease &&
+            t.severity.toLowerCase() == normalizedSeverity,
       );
     } catch (_) {
       // Return first treatment for this disease as fallback
       try {
         return mockTreatmentsData.firstWhere(
-          (t) => t.diseaseCode.toLowerCase() == diseaseCode.toLowerCase(),
+          (t) => _normalizeCode(t.diseaseCode) == normalizedDisease,
         );
       } catch (_) {
         return null;

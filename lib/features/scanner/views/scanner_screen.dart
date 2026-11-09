@@ -480,6 +480,8 @@ class ScannerScreen extends StatelessWidget {
             // Pre-Inference Quality Checklist
             AppCard(
               padding: const EdgeInsets.all(14.0),
+              accentColor: AppColors.info,
+              customShadow: AppColors.subtleShadow,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -535,6 +537,8 @@ class ScannerScreen extends StatelessWidget {
             // Shed Selection
             AppCard(
               padding: const EdgeInsets.all(14.0),
+              accentColor: AppColors.secondary,
+              customShadow: AppColors.subtleShadow,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -578,6 +582,8 @@ class ScannerScreen extends StatelessWidget {
             // 3-Question Clinical Flock Triage
             AppCard(
               padding: const EdgeInsets.all(14.0),
+              accentColor: AppColors.primary,
+              customShadow: AppColors.subtleShadow,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

@@ -11,6 +11,9 @@ class AppCard extends StatelessWidget {
   final Color? color;
   final BorderSide? border;
   final BorderRadius? borderRadius;
+  final Gradient? gradient;
+  final Color? accentColor;
+  final List<BoxShadow>? customShadow;
 
   const AppCard({
     super.key,
@@ -21,6 +24,9 @@ class AppCard extends StatelessWidget {
     this.color,
     this.border,
     this.borderRadius,
+    this.gradient,
+    this.accentColor,
+    this.customShadow,
   });
 
   @override
@@ -28,28 +34,53 @@ class AppCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final effectiveRadius = borderRadius ?? AppDimensions.borderRadiusLarge;
+    final BorderRadius effectiveRadius = borderRadius ?? AppDimensions.borderRadiusLarge;
+
+    final BoxBorder effectiveBorder;
+    if (border != null) {
+      effectiveBorder = Border.fromBorderSide(border!);
+    } else if (accentColor != null) {
+      effectiveBorder = Border.all(
+        color: accentColor!.withValues(alpha: 0.35),
+        width: 1.5,
+      );
+    } else {
+      effectiveBorder = Border.all(
+        color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        width: 1.0,
+      );
+    }
+
+    final effectiveShadow = customShadow ??
+        (isDark
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 8.0,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.05),
+                  blurRadius: 10.0,
+                  offset: const Offset(0, 3),
+                ),
+                BoxShadow(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.02),
+                  blurRadius: 4.0,
+                  offset: const Offset(0, 1),
+                ),
+              ]);
 
     final cardWidget = Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: color ?? (isDark ? theme.cardColor : Colors.white),
+        color: gradient == null ? (color ?? (isDark ? theme.cardColor : Colors.white)) : null,
+        gradient: gradient,
         borderRadius: effectiveRadius,
-        border: border != null
-            ? Border.fromBorderSide(border!)
-            : Border.all(
-                color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                width: 1.0,
-              ),
-        boxShadow: isDark
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 8.0,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+        border: effectiveBorder,
+        boxShadow: effectiveShadow,
       ),
       child: Material(
         color: Colors.transparent,
@@ -57,9 +88,29 @@ class AppCard extends StatelessWidget {
         child: InkWell(
           borderRadius: effectiveRadius,
           onTap: onTap,
-          child: Padding(
-            padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
-            child: child,
+          child: Stack(
+            children: [
+              if (accentColor != null)
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  left: 0,
+                  child: Container(
+                    width: 4,
+                    decoration: BoxDecoration(
+                      color: accentColor!,
+                      borderRadius: BorderRadius.only(
+                        topLeft: effectiveRadius.topLeft,
+                        bottomLeft: effectiveRadius.bottomLeft,
+                      ),
+                    ),
+                  ),
+                ),
+              Padding(
+                padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
+                child: child,
+              ),
+            ],
           ),
         ),
       ),

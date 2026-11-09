@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../../services/database_service.dart';
 import '../../services/tflite_service.dart';
@@ -9,8 +7,8 @@ import '../models/scan_model.dart';
 import '../models/prediction_model.dart';
 import '../models/feedback_model.dart';
 
-/// DiagnosticRepository provides on-device TFLite inference,
-/// local SQLite history persistence, and clinical flock triage rules.
+/// DiagnosticRepository provides 100% on-device TFLite inference,
+/// standalone SQLite history persistence, and clinical flock triage rules.
 class DiagnosticRepository {
   final List<DiagnosticRecord> _records = [];
   final DatabaseService _dbService = DatabaseService.instance;
@@ -141,63 +139,7 @@ class DiagnosticRepository {
     _records.clear();
   }
 
-  /// Queries the live Python ML Inference API server if reachable.
-  Future<Map<String, dynamic>?> _callInferenceApi({
-    required String imagePath,
-    required Map<String, dynamic> flockSignals,
-    String? forcedDisease,
-  }) async {
-    try {
-      final client = HttpClient();
-      client.connectionTimeout = const Duration(milliseconds: 1000);
-
-      final candidateUris = [
-        Uri.parse('http://10.0.2.2:8000/api/diagnose'),
-        Uri.parse('http://127.0.0.1:8000/api/diagnose'),
-      ];
-
-      String? b64Image;
-      final file = File(imagePath);
-      if (await file.exists()) {
-        final bytes = await file.readAsBytes();
-        b64Image = base64Encode(bytes);
-      }
-
-      final payloadMap = <String, dynamic>{
-        'image_path': imagePath,
-        'flock_signals': flockSignals,
-      };
-      if (b64Image != null) {
-        payloadMap['image_base64'] = b64Image;
-      }
-      if (forcedDisease != null) {
-        payloadMap['forced_disease'] = forcedDisease;
-      }
-      final payload = jsonEncode(payloadMap);
-
-      for (final uri in candidateUris) {
-        try {
-          final request = await client
-              .postUrl(uri)
-              .timeout(const Duration(milliseconds: 600));
-          request.headers.contentType = ContentType.json;
-          request.write(payload);
-          final response = await request
-              .close()
-              .timeout(const Duration(milliseconds: 1500));
-          if (response.statusCode == 200) {
-            final body = await response.transform(utf8.decoder).join();
-            client.close();
-            return jsonDecode(body) as Map<String, dynamic>;
-          }
-        } catch (_) {}
-      }
-      client.close();
-    } catch (_) {}
-    return null;
-  }
-
-  /// Executes image validation, deep learning classification,
+  /// Executes image validation, on-device deep learning classification,
   /// clinical flock triage rules evaluation, and local SQLite persistence.
   Future<DiagnosticRecord> runDiagnosis({
     required String imagePath,
@@ -205,12 +147,13 @@ class DiagnosticRepository {
     required Map<String, dynamic> flockSignals,
     String? forcedDisease,
   }) async {
-    // 0. Query live ML Inference API service if reachable
-    final apiResult = await _callInferenceApi(
-      imagePath: imagePath,
-      flockSignals: flockSignals,
-      forcedDisease: forcedDisease,
-    );
+    // 1. Run real on-device TFLite model inference
+    TFLiteDiagnosisResult? tfliteResult;
+    try {
+      tfliteResult = await _tfliteService.diagnoseImage(imagePath);
+    } catch (e) {
+      debugPrint('[DiagnosticRepository] TFLite diagnosis exception: $e');
+    }
 
     double preprocessMs = 18.0;
     double decodeMs = 12.0;
@@ -223,100 +166,67 @@ class DiagnosticRepository {
     final List<String> rulesFired = [];
     String modelVersionId = 'PC-VisionAI-v2.4';
 
-    if (apiResult != null) {
+    if (tfliteResult != null) {
       predictedClass =
-          (apiResult['predicted_class'] ?? 'healthy').toString().toLowerCase();
-      confidence = (apiResult['confidence'] as num?)?.toDouble() ?? 0.95;
-      probabilities = (apiResult['probabilities'] as Map<String, dynamic>?)
-              ?.map(
-            (k, v) => MapEntry(k.toLowerCase(), (v as num).toDouble()),
-          ) ??
-          {predictedClass: confidence};
-      derivedSeverity =
-          (apiResult['severity'] ?? 'mild').toString().toLowerCase();
-      derivedUrgency =
-          (apiResult['urgency'] ?? 'monitor').toString().toLowerCase();
-      if (apiResult['rules_fired'] is List) {
-        rulesFired.addAll(
-            (apiResult['rules_fired'] as List).map((e) => e.toString()));
-      }
-      final latency = apiResult['latency'] as Map<String, dynamic>?;
-      preprocessMs = (latency?['preprocess_ms'] as num?)?.toDouble() ?? 18.5;
+          (forcedDisease ?? tfliteResult.predictedClass).toLowerCase();
+      confidence = tfliteResult.confidence;
+      probabilities = tfliteResult.probabilities
+          .map((k, v) => MapEntry(k.toLowerCase(), v));
+      derivedSeverity = tfliteResult.severity.toLowerCase();
+      derivedUrgency = tfliteResult.urgency.toLowerCase();
+      preprocessMs = tfliteResult.preprocessMs;
       decodeMs = 12.0;
-      inferenceMs = (latency?['inference_ms'] as num?)?.toDouble() ?? 35.0;
-      modelVersionId = apiResult['model_version']?.toString() ??
-          'PC-VisionAI-v2.4';
+      inferenceMs = tfliteResult.inferenceMs;
+      modelVersionId = tfliteResult.modelName;
+      rulesFired.add('tflite_ondevice_inference');
+      rulesFired.add('calibrated_severity_${derivedSeverity.toLowerCase()}');
     } else {
-      // 1. Run real on-device TFLite model inference
-      TFLiteDiagnosisResult? tfliteResult;
-      try {
-        tfliteResult = await _tfliteService.diagnoseImage(imagePath);
-      } catch (e) {
-        debugPrint('[DiagnosticRepository] TFLite diagnosis exception: $e');
-      }
+      predictedClass = (forcedDisease ??
+              _detectClassFromImage(imagePath, flockSignals))
+          .toLowerCase();
+      confidence = 0.94;
+      probabilities = {predictedClass: 0.94};
+      derivedSeverity = (predictedClass == 'newcastle')
+          ? 'severe'
+          : (predictedClass == 'healthy' ? 'mild' : 'moderate');
+      derivedUrgency = (predictedClass == 'newcastle')
+          ? 'vet_now'
+          : (predictedClass == 'healthy' ? 'monitor' : 'treat_today');
+      rulesFired.add('baseline_${predictedClass}_protocol');
+    }
 
-      if (tfliteResult != null) {
-        predictedClass =
-            (forcedDisease ?? tfliteResult.predictedClass).toLowerCase();
-        confidence = tfliteResult.confidence;
-        probabilities = tfliteResult.probabilities
-            .map((k, v) => MapEntry(k.toLowerCase(), v));
-        derivedSeverity = tfliteResult.severity.toLowerCase();
-        derivedUrgency = tfliteResult.urgency.toLowerCase();
-        preprocessMs = tfliteResult.preprocessMs;
-        decodeMs = 12.0;
-        inferenceMs = tfliteResult.inferenceMs;
-        modelVersionId = tfliteResult.modelName;
-        rulesFired.add('tflite_ondevice_inference');
-        rulesFired.add('calibrated_severity_${derivedSeverity.toLowerCase()}');
-      } else {
-        predictedClass = (forcedDisease ??
-                _detectClassFromImage(imagePath, flockSignals))
-            .toLowerCase();
-        confidence = 0.94;
-        probabilities = {predictedClass: 0.94};
-        derivedSeverity = (predictedClass == 'newcastle')
-            ? 'severe'
-            : (predictedClass == 'healthy' ? 'mild' : 'moderate');
-        derivedUrgency = (predictedClass == 'newcastle')
-            ? 'vet_now'
-            : (predictedClass == 'healthy' ? 'monitor' : 'treat_today');
-        rulesFired.add('baseline_${predictedClass}_protocol');
-      }
+    // 2. Evaluate Clinical Flock Triage Escalations
+    final String lethargy = (flockSignals['lethargy'] ?? 'None').toString();
+    final String intakeDrop =
+        (flockSignals['intakeDrop'] ?? 'Normal').toString();
+    final String suddenMortality =
+        (flockSignals['suddenMortality'] ?? 'None in 24h').toString();
 
-      // 2. Evaluate Clinical Flock Triage Escalations
-      final String lethargy = (flockSignals['lethargy'] ?? 'None').toString();
-      final String intakeDrop =
-          (flockSignals['intakeDrop'] ?? 'Normal').toString();
-      final String suddenMortality =
-          (flockSignals['suddenMortality'] ?? 'None in 24h').toString();
+    if (suddenMortality.contains('Multiple') ||
+        suddenMortality.contains('died')) {
+      derivedSeverity = 'severe';
+      derivedUrgency = 'vet_now';
+      rulesFired.add('mortality_escalation_severe');
+    } else if (suddenMortality.contains('1 to 2')) {
+      if (derivedSeverity == 'mild') derivedSeverity = 'moderate';
+      if (derivedUrgency == 'monitor') derivedUrgency = 'treat_today';
+      rulesFired.add('mortality_early_warning_escalation');
+    }
 
-      if (suddenMortality.contains('Multiple') ||
-          suddenMortality.contains('died')) {
-        derivedSeverity = 'severe';
-        derivedUrgency = 'vet_now';
-        rulesFired.add('mortality_escalation_severe');
-      } else if (suddenMortality.contains('1 to 2')) {
-        if (derivedSeverity == 'mild') derivedSeverity = 'moderate';
-        if (derivedUrgency == 'monitor') derivedUrgency = 'treat_today';
-        rulesFired.add('mortality_early_warning_escalation');
-      }
+    if (intakeDrop.contains('Severely') && derivedSeverity != 'severe') {
+      derivedSeverity = 'moderate';
+      if (derivedUrgency == 'monitor') derivedUrgency = 'treat_today';
+      rulesFired.add('feed_intake_drop_escalation');
+    }
 
-      if (intakeDrop.contains('Severely') && derivedSeverity != 'severe') {
-        derivedSeverity = 'moderate';
-        if (derivedUrgency == 'monitor') derivedUrgency = 'treat_today';
-        rulesFired.add('feed_intake_drop_escalation');
-      }
-
-      if (lethargy.contains('Over 10%') && derivedSeverity != 'severe') {
-        derivedSeverity = 'moderate';
-        rulesFired.add('flock_wide_lethargy_escalation');
-      }
+    if (lethargy.contains('Over 10%') && derivedSeverity != 'severe') {
+      derivedSeverity = 'moderate';
+      rulesFired.add('flock_wide_lethargy_escalation');
     }
 
     final now = DateTime.now();
 
-    // 3. Persist diagnosis session to local SQLite database
+    // 3. Persist diagnosis session directly to local SQLite database
     int? insertedDbId;
     try {
       insertedDbId = await _dbService.insertRecord(
