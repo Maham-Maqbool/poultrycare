@@ -1271,6 +1271,32 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
     return 'healthy';
   }
 
+  static String _translateTriageValue(String val, bool isUrdu) {
+    if (!isUrdu) return val;
+    switch (val) {
+      case 'None':
+        return 'کوئی نہیں';
+      case 'Under 10% of birds':
+        return '10 فیصد سے کم';
+      case 'Over 10% of birds':
+        return '10 فیصد سے زیادہ';
+      case 'Normal':
+        return 'معمول کے مطابق';
+      case 'Reduced consumption':
+        return 'کچھ کمی آئی ہے';
+      case 'Severely dropped':
+        return 'شدید کمی آئی ہے';
+      case 'None in 24h':
+        return 'کوئی موت نہیں';
+      case '1 to 2 birds':
+        return '1 یا 2 پرندے';
+      case 'Multiple birds died':
+        return 'کئی پرندے مرے';
+      default:
+        return val;
+    }
+  }
+
   static Widget _buildTriageVitalTile({
     required String label,
     required String value,
@@ -1309,13 +1335,13 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            value,
+            _translateTriageValue(value, isUrdu),
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w700,
               color: statusColor,
             ),
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ],

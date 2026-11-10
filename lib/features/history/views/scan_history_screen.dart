@@ -422,7 +422,7 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      AppFormatters.relativeTime(scan.createdAt),
+                                      AppFormatters.formatDate(scan.createdAt),
                                       style: const TextStyle(fontSize: 11, color: AppColors.textMutedLight),
                                     ),
                                   ],

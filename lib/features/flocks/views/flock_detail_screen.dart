@@ -188,8 +188,8 @@ class _FlockDetailScreenState extends State<FlockDetailScreen> {
                       children: [
                         AppImageView(
                           imagePath: item.scan.imagePath,
-                          width: 52,
-                          height: 52,
+                          width: 58,
+                          height: 58,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         const SizedBox(width: 12),
