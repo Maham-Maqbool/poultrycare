@@ -2,14 +2,16 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import '../core/constants/app_assets.dart';
 import '../data/models/detection_history_record.dart';
+import '../data/models/flock_model.dart';
 
-/// DatabaseService manages the local SQLite database for offline diagnostic history.
+/// DatabaseService manages the local SQLite database for offline diagnostic history
+/// and farmer-managed flocks/sheds.
 class DatabaseService {
   static const String _databaseName = 'poultrycare_history.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
   static const String tableHistory = 'detection_history';
+  static const String tableFlocks = 'flocks';
 
   // Singleton instance
   static final DatabaseService instance = DatabaseService._internal();
@@ -17,8 +19,8 @@ class DatabaseService {
   factory DatabaseService() => instance;
 
   static Database? _database;
-  static bool _hasExplicitlyCleared = false;
   final List<DetectionHistoryRecord> _memoryFallback = [];
+  final List<FlockModel> _flocksMemoryFallback = [];
 
   /// Returns the singleton Database instance, initializing if necessary.
   Future<Database> get database async {
@@ -36,10 +38,15 @@ class DatabaseService {
       path,
       version: _databaseVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+      onOpen: (db) async {
+        await _ensureTables(db);
+      },
     );
   }
 
-  /// Creates tables and indexes during database creation, seeding initial farm scans.
+  /// Creates tables and indexes during database creation.
+  /// Fresh installs start with ZERO records (no fake/demo seeds).
   FutureOr<void> _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE $tableHistory (
@@ -59,49 +66,59 @@ class DatabaseService {
       'CREATE INDEX idx_detection_timestamp ON $tableHistory (timestamp DESC)',
     );
 
-    // Seed realistic initial farm screening records so fresh installs have data
-    final initialRecords = [
-      DetectionHistoryRecord(
-        imagePath: AppAssets.sampleCoccidiosis,
-        diseaseName: 'Coccidiosis',
-        severityLevel: 'Moderate',
-        confidenceScore: 0.94,
-        timestamp: DateTime.now().subtract(const Duration(hours: 3)),
-        flockId: 'flock-101',
-        notes: 'Reddish mucoid dropping in Broiler Batch 26',
-        probabilities: {'coccidiosis': 0.94, 'healthy': 0.03, 'newcastle': 0.02, 'salmonella': 0.01},
-      ),
-      DetectionHistoryRecord(
-        imagePath: AppAssets.sampleHealthy,
-        diseaseName: 'Healthy',
-        severityLevel: 'Healthy',
-        confidenceScore: 0.98,
-        timestamp: DateTime.now().subtract(const Duration(hours: 14)),
-        flockId: 'flock-102',
-        notes: 'Normal digestive dropping in Layer House A',
-        probabilities: {'healthy': 0.98, 'coccidiosis': 0.01, 'newcastle': 0.005, 'salmonella': 0.005},
-      ),
-      DetectionHistoryRecord(
-        imagePath: AppAssets.sampleNewcastle,
-        diseaseName: 'Newcastle',
-        severityLevel: 'Severe',
-        confidenceScore: 0.96,
-        timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 2)),
-        flockId: 'flock-103',
-        notes: 'Green watery dropping with lethargy alert',
-        probabilities: {'newcastle': 0.96, 'coccidiosis': 0.02, 'salmonella': 0.015, 'healthy': 0.005},
-      ),
-    ];
+    await db.execute('''
+      CREATE TABLE $tableFlocks (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        bird_count INTEGER,
+        breed TEXT,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        active_disease_count INTEGER DEFAULT 0
+      )
+    ''');
+  }
 
-    for (final rec in initialRecords) {
-      await db.insert(tableHistory, rec.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+  FutureOr<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $tableFlocks (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          name TEXT NOT NULL,
+          bird_count INTEGER,
+          breed TEXT,
+          notes TEXT,
+          created_at TEXT NOT NULL,
+          active_disease_count INTEGER DEFAULT 0
+        )
+      ''');
     }
   }
+
+  Future<void> _ensureTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $tableFlocks (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        bird_count INTEGER,
+        breed TEXT,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        active_disease_count INTEGER DEFAULT 0
+      )
+    ''');
+  }
+
+  // ==========================================
+  // DETECTION HISTORY CRUD
+  // ==========================================
 
   /// Inserts a new detection record into the local SQLite database.
   /// Returns the generated primary key id.
   Future<int> insertRecord(DetectionHistoryRecord record) async {
-    _hasExplicitlyCleared = false;
     try {
       final db = await database;
       final id = await db.insert(
@@ -119,52 +136,14 @@ class DatabaseService {
   }
 
   /// Fetches all detection history records sorted by timestamp descending.
+  /// Empty table stays empty with no automatic re-seeding.
   Future<List<DetectionHistoryRecord>> fetchAllRecords() async {
     try {
       final db = await database;
-      var maps = await db.query(
+      final maps = await db.query(
         tableHistory,
         orderBy: 'timestamp DESC',
       );
-      if (maps.isEmpty && !_hasExplicitlyCleared) {
-        final initialRecords = [
-          DetectionHistoryRecord(
-            imagePath: AppAssets.sampleCoccidiosis,
-            diseaseName: 'Coccidiosis',
-            severityLevel: 'Moderate',
-            confidenceScore: 0.94,
-            timestamp: DateTime.now().subtract(const Duration(hours: 3)),
-            flockId: 'flock-101',
-            notes: 'Reddish mucoid dropping in Broiler Batch 26',
-            probabilities: {'coccidiosis': 0.94, 'healthy': 0.03, 'newcastle': 0.02, 'salmonella': 0.01},
-          ),
-          DetectionHistoryRecord(
-            imagePath: AppAssets.sampleHealthy,
-            diseaseName: 'Healthy',
-            severityLevel: 'Healthy',
-            confidenceScore: 0.98,
-            timestamp: DateTime.now().subtract(const Duration(hours: 14)),
-            flockId: 'flock-102',
-            notes: 'Normal digestive dropping in Layer House A',
-            probabilities: {'healthy': 0.98, 'coccidiosis': 0.01, 'newcastle': 0.005, 'salmonella': 0.005},
-          ),
-          DetectionHistoryRecord(
-            imagePath: AppAssets.sampleNewcastle,
-            diseaseName: 'Newcastle',
-            severityLevel: 'Severe',
-            confidenceScore: 0.96,
-            timestamp: DateTime.now().subtract(const Duration(days: 1, hours: 2)),
-            flockId: 'flock-103',
-            notes: 'Green watery dropping with lethargy alert',
-            probabilities: {'newcastle': 0.96, 'coccidiosis': 0.02, 'salmonella': 0.015, 'healthy': 0.005},
-          ),
-        ];
-
-        for (final rec in initialRecords) {
-          await db.insert(tableHistory, rec.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
-        }
-        maps = await db.query(tableHistory, orderBy: 'timestamp DESC');
-      }
       return maps.map((m) => DetectionHistoryRecord.fromMap(m)).toList();
     } catch (e) {
       debugPrint('[DatabaseService] Native SQLite query error: $e');
@@ -217,7 +196,6 @@ class DatabaseService {
   /// Deletes all detection records from the local history table.
   /// Returns the number of affected rows.
   Future<int> deleteAllRecords() async {
-    _hasExplicitlyCleared = true;
     try {
       final db = await database;
       return await db.delete(tableHistory);
@@ -239,6 +217,133 @@ class DatabaseService {
       return count ?? 0;
     } catch (_) {
       return _memoryFallback.length;
+    }
+  }
+
+  // ==========================================
+  // FLOCKS & SHEDS PERSISTENT CRUD
+  // ==========================================
+
+  Map<String, dynamic> _flockToDbMap(FlockModel flock) => {
+    'id': flock.id,
+    'user_id': flock.userId,
+    'name': flock.name,
+    'bird_count': flock.birdCount,
+    'breed': flock.breed,
+    'notes': flock.notes,
+    'created_at': flock.createdAt.toIso8601String(),
+    'active_disease_count': flock.activeDiseaseCount,
+  };
+
+  FlockModel _flockFromDbMap(Map<String, dynamic> map) => FlockModel(
+    id: map['id'] as String,
+    userId: map['user_id'] as String,
+    name: map['name'] as String,
+    birdCount: map['bird_count'] as int?,
+    breed: map['breed'] as String?,
+    notes: map['notes'] as String?,
+    createdAt: DateTime.parse(map['created_at'] as String),
+    activeDiseaseCount: map['active_disease_count'] as int? ?? 0,
+  );
+
+  /// Fetches all flocks stored in the local database.
+  Future<List<FlockModel>> fetchAllFlocks() async {
+    try {
+      final db = await database;
+      final maps = await db.query(
+        tableFlocks,
+        orderBy: 'created_at DESC',
+      );
+      return maps.map(_flockFromDbMap).toList();
+    } catch (e) {
+      debugPrint('[DatabaseService] Native SQLite query flocks error: $e');
+      return List.unmodifiable(_flocksMemoryFallback);
+    }
+  }
+
+  /// Fetches a flock by its unique ID.
+  Future<FlockModel?> getFlockById(String id) async {
+    try {
+      final db = await database;
+      final maps = await db.query(
+        tableFlocks,
+        where: 'id = ?',
+        whereArgs: [id],
+        limit: 1,
+      );
+      if (maps.isNotEmpty) {
+        return _flockFromDbMap(maps.first);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('[DatabaseService] Native SQLite getFlockById error: $e');
+      try {
+        return _flocksMemoryFallback.firstWhere((f) => f.id == id);
+      } catch (_) {
+        return null;
+      }
+    }
+  }
+
+  /// Inserts a new flock into the database.
+  Future<void> insertFlock(FlockModel flock) async {
+    try {
+      final db = await database;
+      await db.insert(
+        tableFlocks,
+        _flockToDbMap(flock),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    } catch (e) {
+      debugPrint('[DatabaseService] Native SQLite insert flock error: $e');
+      _flocksMemoryFallback.insert(0, flock);
+    }
+  }
+
+  /// Updates an existing flock in the database.
+  Future<FlockModel> updateFlock(FlockModel flock) async {
+    try {
+      final db = await database;
+      await db.update(
+        tableFlocks,
+        _flockToDbMap(flock),
+        where: 'id = ?',
+        whereArgs: [flock.id],
+      );
+      return flock;
+    } catch (e) {
+      debugPrint('[DatabaseService] Native SQLite update flock error: $e');
+      final idx = _flocksMemoryFallback.indexWhere((f) => f.id == flock.id);
+      if (idx != -1) {
+        _flocksMemoryFallback[idx] = flock;
+      }
+      return flock;
+    }
+  }
+
+  /// Deletes a flock by ID.
+  Future<void> deleteFlock(String id) async {
+    try {
+      final db = await database;
+      await db.delete(
+        tableFlocks,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      debugPrint('[DatabaseService] Native SQLite delete flock error: $e');
+      _flocksMemoryFallback.removeWhere((f) => f.id == id);
+    }
+  }
+
+  /// Deletes all flocks.
+  Future<void> deleteAllFlocks() async {
+    try {
+      final db = await database;
+      await db.delete(tableFlocks);
+    } catch (e) {
+      debugPrint('[DatabaseService] Native SQLite deleteAllFlocks error: $e');
+      _flocksMemoryFallback.clear();
     }
   }
 

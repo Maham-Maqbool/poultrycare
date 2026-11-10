@@ -34,7 +34,7 @@ class DetectionHistoryRecord {
       'severity_level': severityLevel,
       'confidence_score': confidenceScore,
       'timestamp': timestamp.toIso8601String(),
-      'flock_id': flockId ?? 'flock-101',
+      'flock_id': flockId,
       'notes': notes,
       'probabilities_json':
           probabilities != null ? jsonEncode(probabilities) : null,

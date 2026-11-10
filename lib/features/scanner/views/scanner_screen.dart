@@ -33,7 +33,7 @@ class ScannerScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        isUrdu ? 'ٹیسٹ نمونہ تصویر منتخب کریں' : 'Select Test Sample Specimen',
+                        isUrdu ? 'ٹیسٹ نمونہ تصویر منتخب کریں [ڈیمو]' : 'Select Test Sample Specimen [Demo]',
                         style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16.5),
                       ),
                     ),
@@ -561,24 +561,45 @@ class ScannerScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    isExpanded: true,
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    ),
-                    initialValue: scanner.selectedFlockId,
-                    items: flockController.flocks.map((flock) {
-                      return DropdownMenuItem(
-                        value: flock.id,
-                        child: Text(
-                          '${flock.name} (${flock.breed ?? 'Standard'}, ${flock.birdCount ?? 0} birds)',
-                          style: const TextStyle(fontSize: 13.0),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
+                  Builder(
+                    builder: (context) {
+                      final String? selectedValue = flockController.flocks.any((f) => f.id == scanner.selectedFlockId)
+                          ? scanner.selectedFlockId
+                          : null;
+                      return DropdownButtonFormField<String?>(
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          hintText: isUrdu
+                              ? 'عام معائنہ (کوئی مخصوص شیڈ نہیں)'
+                              : 'General Screening (No Specific Shed)',
                         ),
+                        initialValue: selectedValue,
+                        items: [
+                          DropdownMenuItem<String?>(
+                            value: null,
+                            child: Text(
+                              isUrdu ? 'عام معائنہ (کوئی مخصوص شیڈ نہیں)' : 'General Screening (No Specific Shed)',
+                              style: const TextStyle(fontSize: 13.0),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                          ...flockController.flocks.map((flock) {
+                            return DropdownMenuItem<String?>(
+                              value: flock.id,
+                              child: Text(
+                                '${flock.name} (${flock.breed ?? 'Standard'}, ${flock.birdCount ?? 0} birds)',
+                                style: const TextStyle(fontSize: 13.0),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            );
+                          }),
+                        ],
+                        onChanged: (val) => scanner.setFlockId(val),
                       );
-                    }).toList(),
-                    onChanged: scanner.setFlockId,
+                    },
                   ),
                 ],
               ),

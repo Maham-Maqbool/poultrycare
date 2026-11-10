@@ -678,8 +678,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               // Daily Audio Advisory Tip (With Real Text-to-Speech Voice Guide)
               AudioPlayerWidget(
                 title: isUrdu
-                    ? 'روزانہ کی آڈیو رہنمائی: برادے کی نمی کنٹرول'
-                    : 'Daily Advisory: Broiler Litter Moisture Control',
+                    ? 'روزانہ کی آڈیو رہنمائی: برادے کی نمی'
+                    : 'Advisory: Litter Moisture Control',
                 durationText: '0:45',
                 isUrdu: isUrdu,
                 customScript: isUrdu

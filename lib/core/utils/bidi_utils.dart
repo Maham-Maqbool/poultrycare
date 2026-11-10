@@ -8,3 +8,4 @@ class BidiUtils {
     return '\u2066$text\u2069';
   }
 }
+

@@ -13,7 +13,7 @@ class ScannerController extends ChangeNotifier {
   final ImagePicker _picker = ImagePicker();
 
   String? _selectedImagePath;
-  String? _selectedFlockId = 'flock-101';
+  String? _selectedFlockId;
   String? _forcedDisease; // For demo testing specific classes
   bool _isLocalFile = false;
   String? _errorMessage;

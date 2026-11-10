@@ -410,7 +410,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
             AudioPlayerWidget(
               title: isUrdu
                   ? 'سنیں: بیماری کی صوتی وضاحت اور علاج'
-                  : 'Listen: Diagnostic Voice Narration',
+                  : 'Diagnostic Voice Guide',
               isUrdu: isUrdu,
               durationText: '1:15',
               diseaseName: diseaseCode,

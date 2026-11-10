@@ -845,7 +845,7 @@ class _FcrCalculatorScreenState extends State<FcrCalculatorScreen> {
 Flock Size: $flockSize birds
 Avg Weight: $avgWeight kg
 Total Live Biomass: ${totalLiveWeightKg.toStringAsFixed(0)} kg
-Feed Consumed: ${totalFeedKg.toStringAsFixed(0)} kg (${totalFeedBags.toStringAsFixed(1)} bags)
+Feed Consumed: ${totalFeedKg.toStringAsFixed(0)} kg (${totalFeedBags.toStringAsFixed(0)} bags)
 FCR: ${fcr.toStringAsFixed(3)} ($fcrBadgeText)
 Feed Cost / kg Meat: Rs. ${feedCostPerKgMeat.toStringAsFixed(1)}
 Expected Revenue: Rs. ${_formatCurrency(totalRevenue)}

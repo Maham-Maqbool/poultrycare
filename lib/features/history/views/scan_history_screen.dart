@@ -170,7 +170,7 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
                           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                         ),
                         Text(
-                          AppFormatters.formatDateTime(scan.createdAt),
+                          AppFormatters.formatDate(scan.createdAt),
                           style: const TextStyle(fontSize: 12, color: AppColors.textMutedLight),
                         ),
                       ],

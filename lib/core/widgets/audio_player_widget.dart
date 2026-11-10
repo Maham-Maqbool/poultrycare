@@ -309,7 +309,11 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
                           ),
                         ),
                         Text(
-                          _isPlaying ? BidiUtils.ltr('0:25 / ${widget.durationText}') : BidiUtils.ltr(widget.durationText),
+                          _isPlaying
+                              ? (widget.isUrdu
+                                  ? 'جاری ہے ${BidiUtils.ltr('${(_progress * 100).toInt()}%')}'
+                                  : 'Playing ${BidiUtils.ltr('${(_progress * 100).toInt()}%')}')
+                              : (widget.isUrdu ? 'صوتی رہنمائی' : 'Voice Guide'),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,

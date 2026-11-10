@@ -261,3 +261,30 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - dart analyze: 0 issues found (clean static analysis).
     - Built release split APK (app-arm64-v8a-release.apk) and successfully installed and verified on connected physical Realme device.
     - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 25 Complete (Final Fix Pass & Round-2 Remediation):
+  - P0 Critical 1 (Vet Number Inline Modal & Direct Dialing):
+    - Replaced Settings routing in `VetCallHelper` with an inline modal on the same screen ('Save Your Vet Number' / 'اپنے ویٹ کا نمبر محفوظ کریں' + phone input + Save & Call).
+    - On save, persists the phone locally in `SessionService` and immediately dials via `url_launcher`; subsequent calls dial directly without dialogs.
+    - Purged remaining dummy phone string in `auth_repository.dart`.
+  - P0 Critical 3 (Deleted History Retention Fixed):
+    - Removed all re-seeding logic from `DatabaseService.fetchAllRecords()` and deleted initial seeding from `DatabaseService._onCreate()`.
+    - Removed `_hasExplicitlyCleared` flag entirely.
+    - Empty history table now stays permanently empty across individual deletions, clear-all actions, and app restarts.
+  - P1 Major 9 & 11 (Authentic Spoken Audio & Zero Library Certainty Claims):
+    - Overhauled encyclopedia overview spoken scripts in `disease_audio_service.dart`: when `confidenceScore` is null (library overview), zero certainty claims are made (no 'high certainty', no '100%', no 'اعلیٰ یقین').
+    - Removed hardcoded fake duration ('0:25 / 1:30') in `audio_player_widget.dart` and replaced with live TTS percentage progress.
+  - P1 Major 10 (Flocks SQLite Persistence):
+    - Created persistent `flocks` table in local SQLite via `DatabaseService` (id, user_id, name, bird_count, breed, notes, created_at, active_disease_count).
+    - Rewrote `FlockRepository` to persist all CRUD operations directly to SQLite.
+    - Fresh installs start with an empty list; adding, updating, or deleting sheds persists across full app restarts.
+  - P2 Minor Polish (U1-U10, I1-I5):
+    - Shortened audio player titles in `diagnostic_result_screen.dart` and `home_dashboard_screen.dart` to prevent truncation.
+    - Unified date formats across all dialogs and screens to `AppFormatters.formatDate`.
+    - Formatted feed bags in FCR clipboard export to whole bags (`totalFeedBags.toStringAsFixed(0)`).
+    - Hardened dropdown in `scanner_screen.dart` with a general screening fallback item and safe value selection.
+    - Added `[Demo]` label to sample picker bottom sheet.
+  - Verification & Build:
+    - Executed `dart analyze`: 0 issues found (clean static analysis).
+    - Executed `flutter test`: 29/29 tests passed across all unit, widget, and overflow test suites (100% pass rate).
+    - Executed `flutter build apk --split-per-abi --release`: Successfully generated `app-arm64-v8a-release.apk` (180.1MB), `app-armeabi-v7a-release.apk` (165.4MB), and `app-x86_64-release.apk` (182.9MB).
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
