@@ -233,3 +233,31 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Static analysis: `dart analyze` returned 0 issues.
     - Automated tests: `flutter test` passed all 29 tests (100% success rate).
     - Zero em dashes across all touched files.
+- Phase 24 Complete (Testing Report Remediation: Critical, Major, and Minor Findings Resolution):
+  - Phase 1 (Critical):
+    - C1: Completely purged fake hotline sequence +92 300 1234567. Implemented farmer-configurable vet phone in Settings with local persistence in SessionService and SettingsController. Dialing buttons now call VetCallHelper.dialVet; if no number is saved, prompts farmer to configure vet contact first.
+    - C2: Added true RTL layout mirroring by integrating flutter_localizations delegates and locale: Locale(settings.locale) in MaterialApp. Protected mixed-script segments (percentages, scan IDs, phone numbers, currencies, times) using BidiUtils.ltr isolate spans.
+  - Phase 2 (Major):
+    - M1: Defaulted all 3 pre-inference image quality checks to false in ScannerController, requiring active farmer confirmation before AI execution.
+    - M2: Removed pre-selected defaults from 3 clinical triage vitals, starting null/unselected and requiring complete farmer input before AI execution.
+    - M3: Formatted confidence scores in spoken scripts with toStringAsFixed(1), ensuring exact matching with on-screen percentages.
+    - M4: Removed hardcoded moderate severity from encyclopedia audio player and presented baselineSeverity labelled 'Typically / عام طور پر'.
+    - M5: Handled zero-scan state in DashboardController by returning null and rendering '-' / 'کوئی اسکین نہیں' instead of misleading 100%.
+    - T1: Rewrote all 4 Urdu audio scripts to authentic Urdu following Appendix A ('محترم کسان', no bracketed English, dynamic Urdu severity and confidence). Added ur-PK TTS voice verification with isLanguageAvailable and prevented _isPlaying = true in error handlers.
+  - Phase 3 (Minor UI & Polish):
+    - U1: Shortened FCR Calculator labels to 'Feed Bag (PKR)' and 'Selling Rate (PKR/kg)' so units never truncate.
+    - U2: Allowed 2 lines for audio player titles to prevent truncation.
+    - U3: Removed internal audio filenames (e.g. newcastle.mp3) from UI and replaced with 'HD Voice Guide' / 'صوتی رہنمائی'.
+    - U4: Pluralized '1 Severe Alert' vs 'Severe Alerts'.
+    - U5: Standardized date formats to AppFormatters.formatDate across all screens.
+    - U6: Wrapped triage vitals to 2 lines and translated to Urdu in DiagnosticResultScreen.
+    - U7: Scaled and prevented clipping on history thumbnail 'Poultry Specimen'.
+    - U8: Clarified FCR results subtext to 'Flock total: X bags' / 'کل شیڈ: X بوری'.
+    - U9: Shortened preset chip to 'Infected' / 'متاثرہ فلاک' with end padding.
+    - U10: Clean specimen thumbnails for legacy records.
+    - I1-I5: Labeled demo data as '[Demo]', changed verified farmer badge to 'Registered Farmer', verified secrets hygiene in .gitignore.
+  - Verification & Deployment:
+    - flutter test: 29/29 tests passed across all unit, widget, and overflow test suites (100% pass rate).
+    - dart analyze: 0 issues found (clean static analysis).
+    - Built release split APK (app-arm64-v8a-release.apk) and successfully installed and verified on connected physical Realme device.
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.

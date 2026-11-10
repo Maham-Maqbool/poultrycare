@@ -6,7 +6,7 @@ PoultryCare Pro is a commercial Flutter mobile application and Python backend fo
 - **Product**: PoultryCare Pro (Commercial Farmer Edition v2.4.1)
 - **Target Domain**: 100% Chicken and Poultry Focused (Broiler, Layer, and Desi breeds)
 - **Target Diseases**: Coccidiosis, Newcastle Disease (NCD), Salmonella, and Healthy Digestion
-- **Field Support Helpline**: +92 300 1234567 (24/7 Veterinary Assistance)
+- **Field Support**: Configurable in Settings (Direct 1-touch dialer to your registered farm veterinarian)
 - **Email Support**: support@poultrycare.farm
 
 ## Key Features
