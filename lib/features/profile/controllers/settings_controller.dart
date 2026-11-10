@@ -27,7 +27,7 @@ class SettingsController extends ChangeNotifier {
     final savedLocale = await _sessionService.getLocale();
     final savedDark = await _sessionService.isDarkMode();
     final savedVetPhone = await _sessionService.getVetPhone();
-    _locale = savedLocale;
+    _locale = savedLocale.startsWith('ur') ? 'ur' : 'en';
     _themeMode = savedDark ? ThemeMode.dark : ThemeMode.light;
     _vetPhone = savedVetPhone;
     notifyListeners();
@@ -46,8 +46,8 @@ class SettingsController extends ChangeNotifier {
   }
 
   void setLocale(String lang) {
-    _locale = lang;
-    _sessionService.saveLocale(lang);
+    _locale = lang.startsWith('ur') ? 'ur' : 'en';
+    _sessionService.saveLocale(_locale);
     notifyListeners();
   }
 

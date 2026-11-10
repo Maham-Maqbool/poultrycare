@@ -220,12 +220,20 @@ class ScannerController extends ChangeNotifier {
       );
 
       _lastResult = record;
-      if (record.prediction.predictedClass != null &&
-          record.prediction.severity != null) {
-        _lastTreatment = await _diseaseRepo.getTreatment(
-          record.prediction.predictedClass!,
-          record.prediction.severity!,
-        );
+      try {
+        if (record.prediction.predictedClass != null &&
+            record.prediction.severity != null &&
+            record.prediction.predictedClass != 'healthy') {
+          _lastTreatment = await _diseaseRepo.getTreatment(
+            record.prediction.predictedClass!,
+            record.prediction.severity!,
+          );
+        } else {
+          _lastTreatment = null;
+        }
+      } catch (e) {
+        debugPrint('[ScannerController] Treatment lookup error: $e');
+        _lastTreatment = null;
       }
 
       _isAnalyzing = false;

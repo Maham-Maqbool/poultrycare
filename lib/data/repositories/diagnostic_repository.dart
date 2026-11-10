@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../../services/database_service.dart';
 import '../../services/tflite_service.dart';
@@ -35,6 +36,26 @@ class DiagnosticRepository {
         ? 'vet_now'
         : (severity == 'healthy' ? 'monitor' : 'treat_today');
 
+    final String derivedCertainty = dbRec.confidenceScore >= 0.95
+        ? 'high'
+        : (dbRec.confidenceScore >= 0.80 ? 'moderate' : 'uncertain');
+
+    Map<String, dynamic> signals = {
+      'lethargy': 'None',
+      'intakeDrop': 'Normal',
+      'suddenMortality': 'None in 24h'
+    };
+    if (dbRec.notes != null && dbRec.notes!.startsWith('{')) {
+      try {
+        final decoded = jsonDecode(dbRec.notes!);
+        if (decoded is Map<String, dynamic>) {
+          signals = decoded;
+        } else if (decoded is Map) {
+          signals = decoded.map((k, v) => MapEntry(k.toString(), v));
+        }
+      } catch (_) {}
+    }
+
     final prediction = PredictionModel(
       id: 'prd-db-${dbRec.id ?? dbRec.timestamp.millisecondsSinceEpoch}',
       scanId: scan.id,
@@ -43,17 +64,13 @@ class DiagnosticRepository {
       probabilities: dbRec.probabilities ??
           {diseaseCode: dbRec.confidenceScore},
       calibratedConfidence: dbRec.confidenceScore,
-      certainty: 'confident',
+      certainty: derivedCertainty,
       conformalSet: [diseaseCode],
       abstained: false,
       severity: severity,
       urgency: urgency,
-      triageRules: ['local_sqlite_persisted'],
-      flockSignals: {
-        'lethargy': 'None',
-        'intakeDrop': 'Normal',
-        'suddenMortality': 'None in 24h'
-      },
+      triageRules: const [],
+      flockSignals: signals,
       decodeMs: 12.0,
       preprocessMs: 18.0,
       inferenceMs: 35.0,
@@ -237,6 +254,7 @@ class DiagnosticRepository {
           confidenceScore: confidence,
           timestamp: now,
           flockId: flockId,
+          notes: jsonEncode(flockSignals),
           probabilities: probabilities,
         ),
       );
@@ -245,6 +263,10 @@ class DiagnosticRepository {
     }
 
     final scanId = 'scn-db-${insertedDbId ?? now.millisecondsSinceEpoch}';
+
+    final String derivedCertainty = confidence >= 0.95
+        ? 'high'
+        : (confidence >= 0.80 ? 'moderate' : 'uncertain');
 
     final scan = ScanModel(
       id: scanId,
@@ -266,7 +288,7 @@ class DiagnosticRepository {
       predictedClass: predictedClass,
       probabilities: probabilities,
       calibratedConfidence: confidence,
-      certainty: 'confident',
+      certainty: derivedCertainty,
       conformalSet: [predictedClass],
       abstained: false,
       severity: derivedSeverity,

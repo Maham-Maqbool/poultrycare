@@ -5,7 +5,6 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/vet_call_helper.dart';
-import '../../../core/utils/bidi_utils.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_image_view.dart';
 import '../../../core/widgets/audio_player_widget.dart';
@@ -116,6 +115,10 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
   /// Launches phone dialer with the farmer's saved Veterinary Expert.
   Future<void> _callVeterinaryExpert(BuildContext context) async {
     await VetCallHelper.dialVet(context);
+  }
+
+  String _formatFriendlyScanId(String rawId, bool isUrdu) {
+    return AppFormatters.formatScanId(rawId, isUrdu: isUrdu);
   }
 
   @override
@@ -298,7 +301,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${isUrdu ? 'شناخت' : 'ID'}: ${BidiUtils.ltr(scan.id)} | ${AppFormatters.formatDate(scan.createdAt)}',
+                              '${_formatFriendlyScanId(scan.id, isUrdu)} | ${AppFormatters.formatDate(scan.createdAt)}',
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 color: AppColors.textMutedLight,
@@ -423,7 +426,38 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
             const SizedBox(height: AppDimensions.space16),
 
             // 4. Clinical Medical Guidance & Official Veterinary Prescription (Rx)
-            if (treatment != null) ...[
+            if (diseaseCode == 'healthy') ...[
+              AppCard(
+                padding: const EdgeInsets.all(18),
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                border: BorderSide(color: AppColors.healthy.withValues(alpha: 0.4)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle_outline_rounded, color: AppColors.healthy, size: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isUrdu ? 'کسی دوا کی ضرورت نہیں ہے' : 'No Medication Needed',
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.healthy),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isUrdu
+                                ? 'پرندے صحت مند ہیں۔ روزانہ معمول کی نگرانی، متوازن خوراک اور پینے کا صاف پانی جاری رکھیں۔'
+                                : 'Flock is healthy. Continue routine daily monitoring, balanced feeding, and clean water sanitation.',
+                            style: const TextStyle(fontSize: 13, color: AppColors.textSecondaryLight, height: 1.35),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppDimensions.space16),
+            ] else if (treatment != null) ...[
               AppCard(
                 padding: const EdgeInsets.all(18),
                 color: isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -644,6 +678,25 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size.fromHeight(40),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppDimensions.space16),
+            ] else ...[
+              AppCard(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: AppColors.moderate, size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        isUrdu
+                            ? 'اس مرض اور شدت کا مخصوص نسخہ فی الحال دستیاب نہیں ہے۔ براہ کرم ویٹرنری ڈاکٹر سے رجوع کریں۔'
+                            : 'Treatment protocol not available for this tier. Consult your veterinarian for tailored dosage.',
+                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondaryLight),
                       ),
                     ),
                   ],

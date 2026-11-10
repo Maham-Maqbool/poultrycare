@@ -14,6 +14,7 @@ import '../controllers/dashboard_controller.dart';
 import '../../scanner/controllers/scanner_controller.dart';
 import '../../flocks/controllers/flock_controller.dart';
 import '../../profile/controllers/settings_controller.dart';
+import '../../../data/models/flock_model.dart';
 import '../../../data/repositories/disease_repository.dart';
 import '../../../routes/app_routes.dart';
 
@@ -756,6 +757,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     final scan = item.scan;
                     final disease = pred.predictedClass ?? 'healthy';
 
+                    final flock = flockController.flocks.cast<FlockModel?>().firstWhere(
+                      (f) => f?.id == scan.flockId,
+                      orElse: () => null,
+                    );
+                    final shedName = flock?.name ??
+                        (scan.flockId == null
+                            ? (isUrdu ? 'عام معائنہ' : 'General Screening')
+                            : (isUrdu ? 'شیڈ: ${scan.flockId}' : 'Shed: ${scan.flockId}'));
+
                     return AppCard(
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.all(12),
@@ -791,6 +801,27 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      AppFormatters.formatScanId(scan.id, isUrdu: isUrdu),
+                                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        shedName,
+                                        style: const TextStyle(
+                                          fontSize: 11.5,
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
                                 Wrap(
                                   spacing: 6,
                                   runSpacing: 4,
@@ -801,16 +832,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                                 ),
                                 const SizedBox(height: 5),
                                 Text(
-                                  '${AppFormatters.formatConfidence(pred.calibratedConfidence)} ${isUrdu ? 'یقینی' : 'confidence'}',
+                                  '${AppFormatters.formatConfidence(pred.calibratedConfidence)} ${isUrdu ? 'یقینی' : 'confidence'} \u2022 ${AppFormatters.formatDate(scan.createdAt)}',
                                   style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w500,
                                     color: AppColors.textSecondaryLight,
                                   ),
-                                ),
-                                Text(
-                                  AppFormatters.formatDate(scan.createdAt),
-                                  style: const TextStyle(fontSize: 11, color: AppColors.textMutedLight),
                                 ),
                               ],
                             ),

@@ -523,17 +523,62 @@ class ScannerScreen extends StatelessWidget {
                   _buildCheckRow(
                     title: isUrdu ? 'مناسب روشنی اور واضح تصویر' : 'Lighting & Specimen Visibility',
                     passed: scanner.lightingPassed,
-                    onToggle: scanner.toggleLighting,
+                    onToggle: (val) {
+                      if (scanner.selectedImagePath == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isUrdu
+                                  ? 'براہ کرم پہلے کیمرے یا گیلری سے تصویر لیں'
+                                  : 'Please capture or select a dropping photo first.',
+                            ),
+                            backgroundColor: AppColors.moderate,
+                          ),
+                        );
+                        return;
+                      }
+                      scanner.toggleLighting(val);
+                    },
                   ),
                   _buildCheckRow(
                     title: isUrdu ? 'فوکس اور تفصیلات کی صفائی' : 'Focal Sharpness & Detail',
                     passed: scanner.sharpnessPassed,
-                    onToggle: scanner.toggleSharpness,
+                    onToggle: (val) {
+                      if (scanner.selectedImagePath == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isUrdu
+                                  ? 'براہ کرم پہلے کیمرے یا گیلری سے تصویر لیں'
+                                  : 'Please capture or select a dropping photo first.',
+                            ),
+                            backgroundColor: AppColors.moderate,
+                          ),
+                        );
+                        return;
+                      }
+                      scanner.toggleSharpness(val);
+                    },
                   ),
                   _buildCheckRow(
                     title: isUrdu ? 'ایک ہی بیٹ پر واضح فوکس' : 'Isolated Dropping in Target',
                     passed: scanner.singleDroppingPassed,
-                    onToggle: scanner.toggleSingleDropping,
+                    onToggle: (val) {
+                      if (scanner.selectedImagePath == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              isUrdu
+                                  ? 'براہ کرم پہلے کیمرے یا گیلری سے تصویر لیں'
+                                  : 'Please capture or select a dropping photo first.',
+                            ),
+                            backgroundColor: AppColors.moderate,
+                          ),
+                        );
+                        return;
+                      }
+                      scanner.toggleSingleDropping(val);
+                    },
                   ),
                 ],
               ),
@@ -850,11 +895,23 @@ class ScannerScreen extends StatelessWidget {
                       onPressed: canRunDiagnosis
                           ? () async {
                               final res = await scanner.executeDiagnosis();
-                              if (res != null && context.mounted) {
+                              if (!context.mounted) return;
+                              if (res != null) {
                                 Navigator.pushNamed(
                                   context,
                                   AppRoutes.diagnosticResult,
                                   arguments: res,
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      isUrdu
+                                          ? 'تشخیص مکمل نہیں ہو سکی: براہ کرم دوبارہ کوشش کریں'
+                                          : 'Diagnosis could not be completed. Please try again with a clearer photo.',
+                                    ),
+                                    backgroundColor: AppColors.severe,
+                                  ),
                                 );
                               }
                             }

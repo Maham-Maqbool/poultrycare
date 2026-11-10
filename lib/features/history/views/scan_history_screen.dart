@@ -7,7 +7,9 @@ import '../../../core/widgets/app_image_view.dart';
 import '../../../core/widgets/empty_state_view.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/models/diagnostic_record.dart';
+import '../../../data/models/flock_model.dart';
 import '../../../data/repositories/disease_repository.dart';
+import '../../flocks/controllers/flock_controller.dart';
 import '../../scanner/controllers/scanner_controller.dart';
 import '../../profile/controllers/settings_controller.dart';
 import '../controllers/history_controller.dart';
@@ -38,8 +40,8 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
         title: Text(isUrdu ? 'اسکین ریکارڈ حذف کریں؟' : 'Delete Scan Record?'),
         content: Text(
           isUrdu
-              ? 'کیا آپ واقعی اس ریکارڈ کو مقامی ڈیٹا بیس سے حذف کرنا چاہتے ہیں؟'
-              : 'Are you sure you want to delete scan ${record.scan.id}? This will remove it permanently from local device storage.',
+              ? 'کیا آپ واقعی ${AppFormatters.formatScanId(record.scan.id, isUrdu: true)} کو مقامی ڈیٹا بیس سے حذف کرنا چاہتے ہیں؟'
+              : 'Are you sure you want to delete ${AppFormatters.formatScanId(record.scan.id)}? This will remove it permanently from local device storage.',
         ),
         actions: [
           TextButton(
@@ -166,7 +168,7 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
                         StatusBadge.forDisease(pred.predictedClass ?? 'healthy', isLarge: true),
                         const SizedBox(height: 6),
                         Text(
-                          'ID: ${scan.id}',
+                          AppFormatters.formatScanId(scan.id, isUrdu: isUrdu),
                           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                         ),
                         Text(
@@ -186,7 +188,12 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
                 children: [
                   StatusBadge.forSeverity(pred.severity, isLarge: true),
                   StatusBadge.forUrgency(pred.urgency, isLarge: true),
-                  StatusBadge.forCertainty(pred.certainty, isLarge: true),
+                  StatusBadge.forCertainty(
+                    pred.certainty,
+                    confidenceScore: pred.calibratedConfidence,
+                    isUrdu: isUrdu,
+                    isLarge: true,
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -224,18 +231,34 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
               const SizedBox(height: 16),
 
               Text(
-                isUrdu ? 'فلاک ٹریج علامات:' : 'Triage Rules & Signals:',
+                isUrdu ? 'فلاک کی کلینیکل علامات:' : 'Flock Triage Observations:',
                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
               ),
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: pred.triageRules.map((r) => Chip(
-                  label: Text(r, style: const TextStyle(fontSize: 11)),
-                  backgroundColor: AppColors.primaryContainerLight.withValues(alpha: 0.5),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                )).toList(),
+              Builder(
+                builder: (context) {
+                  final signals = pred.flockSignals ?? {};
+                  final lethargy = signals['lethargy']?.toString() ?? 'None';
+                  final intake = signals['intakeDrop']?.toString() ?? 'Normal';
+                  final mortality = signals['suddenMortality']?.toString() ?? 'None in 24h';
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainerLight.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.borderLight),
+                    ),
+                    child: Column(
+                      children: [
+                        _buildTriageSummaryRow(isUrdu ? 'سستی و کاہلی' : 'Lethargy', lethargy),
+                        const Divider(height: 12),
+                        _buildTriageSummaryRow(isUrdu ? 'خوراک کی کمی' : 'Feed Intake', intake),
+                        const Divider(height: 12),
+                        _buildTriageSummaryRow(isUrdu ? '24 گھنٹے میں اموات' : '24h Mortality', mortality),
+                      ],
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -264,6 +287,7 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final history = context.watch<HistoryController>();
+    final flockController = context.watch<FlockController>();
     final settings = context.watch<SettingsController>();
     final isUrdu = settings.isUrdu;
     final records = history.filteredRecords;
@@ -389,6 +413,15 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
                         final scan = item.scan;
                         final disease = pred.predictedClass ?? 'healthy';
 
+                        final flock = flockController.flocks.cast<FlockModel?>().firstWhere(
+                          (f) => f?.id == scan.flockId,
+                          orElse: () => null,
+                        );
+                        final shedName = flock?.name ??
+                            (scan.flockId == null
+                                ? (isUrdu ? 'عام معائنہ' : 'General Screening')
+                                : (isUrdu ? 'شیڈ: ${scan.flockId}' : 'Shed: ${scan.flockId}'));
+
                         return AppCard(
                           margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.all(12),
@@ -406,6 +439,27 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          AppFormatters.formatScanId(scan.id, isUrdu: isUrdu),
+                                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            shedName,
+                                            style: const TextStyle(
+                                              fontSize: 11.5,
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
                                     Wrap(
                                       spacing: 6,
                                       runSpacing: 4,
@@ -416,14 +470,9 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
                                     ),
                                     const SizedBox(height: 5),
                                     Text(
-                                      '${AppFormatters.formatConfidence(pred.calibratedConfidence)} ${isUrdu ? 'یقینی' : 'confidence'}',
-                                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondaryLight),
+                                      '${AppFormatters.formatConfidence(pred.calibratedConfidence)} ${isUrdu ? 'یقینی' : 'confidence'} \u2022 ${AppFormatters.formatDate(scan.createdAt)}',
+                                      style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondaryLight),
                                       overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      AppFormatters.formatDate(scan.createdAt),
-                                      style: const TextStyle(fontSize: 11, color: AppColors.textMutedLight),
                                     ),
                                   ],
                                 ),
@@ -472,6 +521,16 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
       selectedColor: AppColors.primaryContainerLight,
       showCheckmark: false,
       onSelected: (_) => onSelect(),
+    );
+  }
+
+  static Widget _buildTriageSummaryRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondaryLight)),
+        Text(value, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+      ],
     );
   }
 }

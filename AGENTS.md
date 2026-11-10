@@ -261,6 +261,37 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - dart analyze: 0 issues found (clean static analysis).
     - Built release split APK (app-arm64-v8a-release.apk) and successfully installed and verified on connected physical Realme device.
     - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 26 Complete (Round 3 Fix Pass):
+  - Item 1 (Shed Assignment and Dynamic Flock Status):
+    - In `ScannerController`, default flock ID set to null ("General Screening (No Specific Shed)"). User dropdown choice persists with scan in SQLite.
+    - In `HistoryController`, added `isFlockAtRisk(flockId)` checking scans within the last 30 days for severe rating or active disease.
+    - In `FlocksListScreen`, live flock risk status binds to `history.isFlockAtRisk(flock.id)`, showing "Active Risk" / "بیماری کا خطرہ" or "Healthy" / "صحت مند".
+    - In `FlockDetailScreen`, header status badge mirrors the live 30-day risk logic and `_loadScans()` filters strictly for `flock.id`, refreshing when returning from scanning.
+    - In `ScanHistoryScreen` and `HomeDashboardScreen`, every scan row now prominently displays its shed name (or "General Screening").
+  - Item 2 (Detail and List Agreement):
+    - Verified agreement between flock list cards and flock detail header using identical 30-day live calculation.
+  - Item 3 (Scan Detail Friendly ID, Dynamic Certainty, Plain-Words Triage):
+    - In `AppFormatters`, added `formatScanId(rawId)` converting raw database IDs (e.g. `scn-db-4`) into friendly labels (`Scan #4` / `اسکین نمبر 4`).
+    - In `StatusBadge.forCertainty`, dynamically derived certainty from `confidenceScore` (>=95% High, 80-95% Moderate, <80% Uncertain) and appended confidence score (`AI Confidence: 99.7%`).
+    - In `DiagnosticRepository`, removed developer debug flag `'local_sqlite_persisted'` from `triageRules: const []`.
+    - In `ScanHistoryScreen`, replaced raw rule chips with structured plain-language farmer triage observations (Lethargy, Feed Intake, 24h Mortality).
+  - Item 4 (Run AI Diagnostic Post-Save Safe Navigation):
+    - In `ScannerController.executeDiagnosis()`, wrapped treatment lookup in try/catch and guarded against `'healthy'`, preventing treatment errors from blocking saved scan return.
+    - In `ScannerScreen`, added visible error SnackBar if diagnosis fails instead of silent no-op.
+    - In `DiagnosticResultScreen`, added fallback cards so diagnosis results render even if treatment is missing or flock is healthy.
+  - Item 5 (Healthy Disease Detail Treatment Tiers Purged):
+    - In `DiseaseDetailScreen`, when disease code is `'healthy'`, replaced the 3 treatment-tier cards with exactly one card: "No treatment needed: routine care and daily monitoring" / "کسی دوا کی ضرورت نہیں: معمول کی نگہداشت اور روزانہ نگرانی", purging prescription headers for healthy birds.
+  - Item 6 (Settings Screen Blank Page Resolution):
+    - In `SettingsScreen`, moved controller initialization to `initState()`.
+    - In `SettingsController` and `SettingsScreen`, normalized dropdown locale value to either `'en'` or `'ur'`, preventing assertion crashes on non-matching locale tags.
+  - Item 7 (M1 Quality Checks Verification):
+    - In `ScannerScreen`, quality check switches disable and notify the user until a photo is loaded.
+    - When no photo is selected, status badge displays "Select Photo First" / "پہلے تصویر لیں" and stays hidden from "Ready for AI".
+  - Verification & Code Quality:
+    - Executed `dart analyze`: 0 issues found (clean static analysis).
+    - Executed `flutter test`: 29/29 tests passed across all unit, widget, and overflow test suites (100% pass rate).
+    - Preserved 100% of FCR math, diagnostic neural network, biosecurity protocols, and feedback forms.
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
 - Phase 25 Complete (Final Fix Pass & Round-2 Remediation):
   - P0 Critical 1 (Vet Number Inline Modal & Direct Dialing):
     - Replaced Settings routing in `VetCallHelper` with an inline modal on the same screen ('Save Your Vet Number' / 'اپنے ویٹ کا نمبر محفوظ کریں' + phone input + Save & Call).
@@ -287,4 +318,35 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Executed `dart analyze`: 0 issues found (clean static analysis).
     - Executed `flutter test`: 29/29 tests passed across all unit, widget, and overflow test suites (100% pass rate).
     - Executed `flutter build apk --split-per-abi --release`: Successfully generated `app-arm64-v8a-release.apk` (180.1MB), `app-armeabi-v7a-release.apk` (165.4MB), and `app-x86_64-release.apk` (182.9MB).
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 26 Complete (Round 3 Fix Pass):
+  - Item 1 (Shed Assignment and Dynamic Flock Status):
+    - In `ScannerController`, default flock ID set to null ("General Screening (No Specific Shed)"). User dropdown choice persists with scan in SQLite.
+    - In `HistoryController`, added `isFlockAtRisk(flockId)` checking scans within the last 30 days for severe rating or active disease.
+    - In `FlocksListScreen`, live flock risk status binds to `history.isFlockAtRisk(flock.id)`, showing "Active Risk" / "بیماری کا خطرہ" or "Healthy" / "صحت مند".
+    - In `FlockDetailScreen`, header status badge mirrors the live 30-day risk logic and `_loadScans()` filters strictly for `flock.id`, refreshing when returning from scanning.
+    - In `ScanHistoryScreen` and `HomeDashboardScreen`, every scan row now prominently displays its shed name (or "General Screening").
+  - Item 2 (Detail and List Agreement):
+    - Verified agreement between flock list cards and flock detail header using identical 30-day live calculation.
+  - Item 3 (Scan Detail Friendly ID, Dynamic Certainty, Plain-Words Triage):
+    - In `AppFormatters`, added `formatScanId(rawId)` converting raw database IDs (e.g. `scn-db-4`) into friendly labels (`Scan #4` / `اسکین نمبر 4`).
+    - In `StatusBadge.forCertainty`, dynamically derived certainty from `confidenceScore` (>=95% High, 80-95% Moderate, <80% Uncertain) and appended confidence score (`AI Confidence: 99.7%`).
+    - In `DiagnosticRepository`, removed developer debug flag `'local_sqlite_persisted'` from `triageRules: const []`.
+    - In `ScanHistoryScreen`, replaced raw rule chips with structured plain-language farmer triage observations (Lethargy, Feed Intake, 24h Mortality).
+  - Item 4 (Run AI Diagnostic Post-Save Safe Navigation):
+    - In `ScannerController.executeDiagnosis()`, wrapped treatment lookup in try/catch and guarded against `'healthy'`, preventing treatment errors from blocking saved scan return.
+    - In `ScannerScreen`, added visible error SnackBar if diagnosis fails instead of silent no-op.
+    - In `DiagnosticResultScreen`, added fallback cards so diagnosis results render even if treatment is missing or flock is healthy.
+  - Item 5 (Healthy Disease Detail Treatment Tiers Purged):
+    - In `DiseaseDetailScreen`, when disease code is `'healthy'`, replaced the 3 treatment-tier cards with exactly one card: "No treatment needed: routine care and daily monitoring" / "کسی دوا کی ضرورت نہیں: معمول کی نگہداشت اور روزانہ نگرانی", purging prescription headers for healthy birds.
+  - Item 6 (Settings Screen Blank Page Resolution):
+    - In `SettingsScreen`, moved controller initialization to `initState()`.
+    - In `SettingsController` and `SettingsScreen`, normalized dropdown locale value to either `'en'` or `'ur'`, preventing assertion crashes on non-matching locale tags.
+  - Item 7 (M1 Quality Checks Verification):
+    - In `ScannerScreen`, quality check switches disable and notify the user until a photo is loaded.
+    - When no photo is selected, status badge displays "Select Photo First" / "پہلے تصویر لیں" and stays hidden from "Ready for AI".
+  - Verification & Code Quality:
+    - Executed `dart analyze`: 0 issues found (clean static analysis).
+    - Executed `flutter test`: 29/29 tests passed across all unit, widget, and overflow test suites (100% pass rate).
+    - Preserved 100% of FCR math, diagnostic neural network, biosecurity protocols, and feedback forms.
     - Strict Rule 7 compliance: Zero em dashes across all touched files.

@@ -17,6 +17,13 @@ class AppFormatters {
     return BidiUtils.ltr('${percentage.toStringAsFixed(1)}%');
   }
 
+  /// Formats a scan database ID into a friendly label like "Scan #4" or "اسکین نمبر 4".
+  static String formatScanId(String rawId, {bool isUrdu = false}) {
+    final matches = RegExp(r'\d+').allMatches(rawId);
+    final numStr = matches.isNotEmpty ? (matches.last.group(0) ?? rawId) : rawId;
+    return isUrdu ? 'اسکین نمبر ${BidiUtils.ltr(numStr)}' : 'Scan #${BidiUtils.ltr(numStr)}';
+  }
+
   static String relativeTime(DateTime dt) {
     final diff = DateTime.now().difference(dt);
     if (diff.inMinutes < 1) return 'Just now';

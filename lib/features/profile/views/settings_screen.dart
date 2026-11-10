@@ -16,17 +16,13 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  late TextEditingController _vetPhoneController;
-  bool _initialized = false;
+  late final TextEditingController _vetPhoneController;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_initialized) {
-      final settings = Provider.of<SettingsController>(context, listen: false);
-      _vetPhoneController = TextEditingController(text: settings.vetPhone ?? '');
-      _initialized = true;
-    }
+  void initState() {
+    super.initState();
+    final settings = Provider.of<SettingsController>(context, listen: false);
+    _vetPhoneController = TextEditingController(text: settings.vetPhone ?? '');
   }
 
   @override
@@ -39,6 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsController>();
     final isUrdu = settings.isUrdu;
+    final String currentDropdownLocale = settings.locale.startsWith('ur') ? 'ur' : 'en';
 
     return Scaffold(
       appBar: AppBar(
@@ -78,7 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: Text(isUrdu ? 'ایپ کی زبان (Language)' : 'App Language (زبان)'),
                     subtitle: Text(isUrdu ? 'اردو (Urdu)' : 'English'),
                     trailing: DropdownButton<String>(
-                      value: settings.locale,
+                      value: currentDropdownLocale,
                       underline: const SizedBox(),
                       items: const [
                         DropdownMenuItem(value: 'en', child: Text('English')),
