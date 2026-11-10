@@ -9,6 +9,7 @@ class SettingsController extends ChangeNotifier {
   String _locale = 'ur'; // Default to Urdu for rural farmer accessibility
   bool _imageRetentionConsent = true;
   int _cacheSizeKb = 4280;
+  String? _vetPhone;
 
   SettingsController() {
     _loadPreferences();
@@ -20,12 +21,15 @@ class SettingsController extends ChangeNotifier {
   bool get isUrdu => _locale == 'ur';
   bool get imageRetentionConsent => _imageRetentionConsent;
   int get cacheSizeKb => _cacheSizeKb;
+  String? get vetPhone => _vetPhone;
 
   Future<void> _loadPreferences() async {
     final savedLocale = await _sessionService.getLocale();
     final savedDark = await _sessionService.isDarkMode();
+    final savedVetPhone = await _sessionService.getVetPhone();
     _locale = savedLocale;
     _themeMode = savedDark ? ThemeMode.dark : ThemeMode.light;
+    _vetPhone = savedVetPhone;
     notifyListeners();
   }
 
@@ -61,6 +65,15 @@ class SettingsController extends ChangeNotifier {
   Future<void> clearCache() async {
     await Future.delayed(const Duration(milliseconds: 300));
     _cacheSizeKb = 0;
+    notifyListeners();
+  }
+
+  Future<void> saveVetPhone(String phone) async {
+    final trimmed = phone.trim();
+    _vetPhone = trimmed.isEmpty ? null : trimmed;
+    if (_vetPhone != null) {
+      await _sessionService.saveVetPhone(_vetPhone!);
+    }
     notifyListeners();
   }
 }

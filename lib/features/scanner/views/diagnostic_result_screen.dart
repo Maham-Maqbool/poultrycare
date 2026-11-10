@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/vet_call_helper.dart';
+import '../../../core/utils/bidi_utils.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_image_view.dart';
 import '../../../core/widgets/audio_player_widget.dart';
@@ -110,28 +111,9 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
     }
   }
 
-  /// Launches the phone dialer with the 24/7 Poultry Veterinary Helpline.
+  /// Launches phone dialer with the farmer's saved Veterinary Expert.
   Future<void> _callVeterinaryExpert(BuildContext context) async {
-    const phoneNumber = '+923001234567'; // 24/7 Poultry Veterinary Helpline
-    final uri = Uri.parse('tel:$phoneNumber');
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Helpline available directly at: +92 300 1234567',
-            ),
-            backgroundColor: AppColors.severe,
-          ),
-        );
-      }
-    }
+    await VetCallHelper.dialVet(context);
   }
 
   @override
@@ -270,8 +252,8 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                             icon: const Icon(Icons.phone_in_talk_rounded, size: 16),
                             label: Text(
                               isUrdu
-                                  ? 'ہیلپ لائن پر کال کریں (+92 300 1234567)'
-                                  : 'Call Veterinary Emergency Hotline',
+                                  ? 'ویٹرنری ڈاکٹر کو فوراً کال کریں'
+                                  : 'Call Veterinary Doctor Urgently',
                               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
                             ),
                             onPressed: () => _callVeterinaryExpert(context),
@@ -328,7 +310,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'ID: ${scan.id} | ${AppFormatters.relativeTime(scan.createdAt)}',
+                              '${isUrdu ? 'شناخت' : 'ID'}: ${BidiUtils.ltr(scan.id)} | ${AppFormatters.formatDate(scan.createdAt)}',
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 color: AppColors.textMutedLight,
@@ -653,8 +635,8 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
             // Emergency Vet Call Feature & Navigation Actions
             CustomButton(
               text: isUrdu
-                  ? 'ویٹرنری ڈاکٹر کو کال کریں (+92 300 1234567)'
-                  : 'Call Veterinary Expert (+92 300 1234567)',
+                  ? 'ویٹرنری ڈاکٹر کو کال کریں'
+                  : 'Call Veterinary Expert',
               icon: Icons.phone_in_talk_rounded,
               onPressed: () => _callVeterinaryExpert(context),
             ),

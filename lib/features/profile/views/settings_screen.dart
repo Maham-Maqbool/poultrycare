@@ -1,34 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
+import '../../../core/utils/vet_call_helper.dart';
+import '../../../core/utils/bidi_utils.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../controllers/settings_controller.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
-  Future<void> _callHelpline(BuildContext context) async {
-    const phoneNumber = '+923001234567';
-    final uri = Uri.parse('tel:$phoneNumber');
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } catch (_) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Veterinary Support: +92 300 1234567'),
-            backgroundColor: AppColors.primary,
-          ),
-        );
-      }
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  late TextEditingController _vetPhoneController;
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final settings = Provider.of<SettingsController>(context, listen: false);
+      _vetPhoneController = TextEditingController(text: settings.vetPhone ?? '');
+      _initialized = true;
     }
+  }
+
+  @override
+  void dispose() {
+    _vetPhoneController.dispose();
+    super.dispose();
   }
 
   @override
@@ -85,6 +89,105 @@ class SettingsScreen extends StatelessWidget {
                       },
                     ),
                   ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppDimensions.space20),
+
+            // My Vet Number Section (Finding C1)
+            Text(
+              isUrdu ? 'اپنے ویٹ کا نمبر (My Vet Number)' : 'My Veterinarian Contact',
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+            ),
+            const SizedBox(height: 10),
+            AppCard(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.medical_services_outlined, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          isUrdu ? 'مستند ویٹرنری ڈاکٹر کا رابطہ' : 'Emergency Doctor Contact',
+                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    isUrdu
+                        ? 'ہنگامی صورتحال میں فوری رابطہ کے لیے اپنے مقامی ڈاکٹر یا ہیلپ لائن کا درست نمبر درج کریں:'
+                        : 'Enter your local poultry veterinarian or clinic phone number for instant one-touch emergency calls:',
+                    style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondaryLight, height: 1.4),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _vetPhoneController,
+                          keyboardType: TextInputType.phone,
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.phone_rounded, size: 20),
+                            hintText: isUrdu ? 'مثال: 03001234567' : 'e.g., 03001234567',
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: () async {
+                          final newNumber = _vetPhoneController.text.trim();
+                          await settings.saveVetPhone(newNumber);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isUrdu
+                                      ? (newNumber.isNotEmpty
+                                          ? 'ڈاکٹر کا نمبر محفوظ ہو گیا ہے'
+                                          : 'ڈاکٹر کا نمبر ہٹا دیا گیا ہے')
+                                      : (newNumber.isNotEmpty
+                                          ? 'Vet phone number saved successfully.'
+                                          : 'Vet phone number removed.'),
+                                ),
+                                backgroundColor: AppColors.primary,
+                              ),
+                            );
+                          }
+                        },
+                        child: Text(
+                          isUrdu ? 'محفوظ کریں' : 'Save',
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (settings.vetPhone != null && settings.vetPhone!.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      isUrdu
+                          ? 'محفوظ شدہ رابطہ: ${BidiUtils.ltr(settings.vetPhone!)}'
+                          : 'Currently Saved: ${settings.vetPhone}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -183,7 +286,13 @@ class SettingsScreen extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          isUrdu ? 'ویٹرنری ہیلپ لائن: +92 300 1234567' : 'Veterinary Helpline: +92 300 1234567',
+                          isUrdu
+                              ? (settings.vetPhone != null && settings.vetPhone!.isNotEmpty
+                                  ? 'محفوظ شدہ ڈاکٹر: ${BidiUtils.ltr(settings.vetPhone!)}'
+                                  : 'ویٹرنری ڈاکٹر: نمبر محفوظ نہیں (اوپر درج کریں)')
+                              : (settings.vetPhone != null && settings.vetPhone!.isNotEmpty
+                                  ? 'Saved Vet: ${settings.vetPhone}'
+                                  : 'Veterinary Doctor: None saved (configure above)'),
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -206,8 +315,8 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   CustomButton(
-                    text: isUrdu ? 'سپورٹ ہیلپ لائن پر کال کریں' : 'Call Support Helpline',
-                    onPressed: () => _callHelpline(context),
+                    text: isUrdu ? 'اپنے ویٹرنری ڈاکٹر کو کال کریں' : 'Call Saved Veterinary Doctor',
+                    onPressed: () => VetCallHelper.dialVet(context),
                   ),
                 ],
               ),

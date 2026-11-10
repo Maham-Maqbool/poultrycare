@@ -12,6 +12,7 @@ class SessionService {
   static const String keyLocale = 'session_locale';
   static const String keyDarkMode = 'session_dark_mode';
   static const String keyOnboardingCompleted = 'session_onboarding_completed';
+  static const String keyVetPhone = 'session_vet_phone';
 
   static final SessionService instance = SessionService._internal();
   SessionService._internal();
@@ -100,6 +101,18 @@ class SessionService {
   Future<void> saveDarkMode(bool isDark) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(keyDarkMode, isDark);
+  }
+
+  /// Retrieves saved veterinarian phone number.
+  Future<String?> getVetPhone() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(keyVetPhone);
+  }
+
+  /// Persists veterinarian phone number.
+  Future<void> saveVetPhone(String phone) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(keyVetPhone, phone.trim());
   }
 
   /// Clears session upon logout.

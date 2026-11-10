@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/vet_call_helper.dart';
+import '../../../core/utils/bidi_utils.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_image_view.dart';
 import '../../../core/widgets/audio_player_widget.dart';
@@ -49,24 +50,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   Future<void> _callEmergencyVet(BuildContext context) async {
-    const phoneNumber = '+923001234567';
-    final uri = Uri.parse('tel:$phoneNumber');
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } catch (_) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Emergency Helpline: +92 300 1234567'),
-            backgroundColor: AppColors.severe,
-          ),
-        );
-      }
-    }
+    await VetCallHelper.dialVet(context);
   }
 
   @override
@@ -550,8 +534,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                           const SizedBox(height: 2),
                           Text(
                             isUrdu
-                                ? 'ہنگامی مشورے کے لیے فوراً کال کریں: +92 300 1234567'
-                                : 'One-touch direct vet call: +92 300 1234567',
+                                ? (settings.vetPhone != null && settings.vetPhone!.isNotEmpty
+                                    ? 'ڈاکٹر کو کال کریں: ${BidiUtils.ltr(settings.vetPhone!)}'
+                                    : 'ہنگامی مشورے کے لیے اپنے ڈاکٹر کا نمبر سیٹ کریں')
+                                : (settings.vetPhone != null && settings.vetPhone!.isNotEmpty
+                                    ? 'Call saved vet: ${settings.vetPhone}'
+                                    : 'One-touch emergency call to your saved vet'),
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF7F1D1D),
