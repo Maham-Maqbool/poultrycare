@@ -26,8 +26,8 @@ class DashboardController extends ChangeNotifier {
   int get flockCount => _flockCount;
   int get severeAlerts => _severeAlerts;
 
-  double get healthyRate {
-    if (_totalScans == 0) return 100.0;
+  double? get healthyRate {
+    if (_totalScans == 0) return null;
     return (_healthyScans / _totalScans * 100).clamp(0.0, 100.0);
   }
 

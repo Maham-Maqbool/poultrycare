@@ -290,7 +290,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   Expanded(
                     child: _buildMetricCard(
                       title: isUrdu ? 'صحت مند شرح' : 'Healthy Rate',
-                      value: '${dashboard.healthyRate.toStringAsFixed(0)}%',
+                      value: dashboard.healthyRate != null
+                          ? BidiUtils.ltr('${dashboard.healthyRate!.toStringAsFixed(0)}%')
+                          : (isUrdu ? 'کوئی اسکین نہیں' : '-'),
                       icon: Icons.health_and_safety_outlined,
                       color: AppColors.healthy,
                     ),
@@ -311,7 +313,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: _buildMetricCard(
-                      title: isUrdu ? 'شدید خطرات' : 'Severe Alerts',
+                      title: isUrdu
+                          ? 'شدید خطرات'
+                          : (dashboard.severeAlerts == 1 ? 'Severe Alert' : 'Severe Alerts'),
                       value: '${dashboard.severeAlerts}',
                       icon: Icons.notification_important_outlined,
                       color: AppColors.severe,

@@ -469,7 +469,7 @@ class ScannerScreen extends StatelessWidget {
               child: TextButton.icon(
                 icon: const Icon(Icons.science_outlined, size: 18),
                 label: Text(
-                  isUrdu ? 'یا تصدیق شدہ نمونہ تصویر چنیں (4 اقسام)' : 'Or Choose Test Fecal Sample (4 Classes)',
+                  isUrdu ? 'یا تصدیق شدہ نمونہ تصویر چنیں (4 اقسام) [ڈیمو]' : 'Or Choose Test Fecal Sample (4 Classes) [Demo]',
                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                 ),
                 onPressed: () => _showSamplePicker(context, isUrdu),
@@ -495,17 +495,23 @@ class ScannerScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: scanner.isImageValid ? AppColors.healthyLight : AppColors.severeLight,
+                          color: scanner.selectedImagePath == null
+                              ? AppColors.borderLight
+                              : (scanner.isImageValid ? AppColors.healthyLight : AppColors.severeLight),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          scanner.isImageValid
-                              ? (isUrdu ? 'تشخیص کے لیے تیار' : 'Ready for AI')
-                              : (isUrdu ? 'معیار چیک کریں' : 'Check Quality'),
+                          scanner.selectedImagePath == null
+                              ? (isUrdu ? 'پہلے تصویر لیں' : 'Select Photo First')
+                              : (scanner.isImageValid
+                                  ? (isUrdu ? 'تشخیص کے لیے تیار' : 'Ready for AI')
+                                  : (isUrdu ? '3 معیارات تصدیق کریں' : 'Confirm 3 Checks')),
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: scanner.isImageValid ? AppColors.healthy : AppColors.severe,
+                            color: scanner.selectedImagePath == null
+                                ? AppColors.textMutedLight
+                                : (scanner.isImageValid ? AppColors.healthy : AppColors.severe),
                           ),
                         ),
                       ),
@@ -769,44 +775,66 @@ class ScannerScreen extends StatelessWidget {
                 ),
               ),
             ] else ...[
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: (scanner.selectedImagePath != null && scanner.isImageValid)
-                        ? AppColors.primary
-                        : Colors.grey.shade400,
-                    foregroundColor: Colors.white,
-                    elevation: (scanner.selectedImagePath != null && scanner.isImageValid) ? 3 : 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppDimensions.borderRadiusMedium,
+              Builder(
+                builder: (context) {
+                  final bool hasPhoto = scanner.selectedImagePath != null;
+                  final bool isValidImage = scanner.isImageValid;
+                  final bool isTriageDone = scanner.isTriageComplete;
+                  final bool canRunDiagnosis = hasPhoto && isValidImage && isTriageDone;
+
+                  String buttonLabel;
+                  if (!hasPhoto) {
+                    buttonLabel = isUrdu
+                        ? 'تشخیص کے لیے پہلے تصویر لیں یا منتخب کریں'
+                        : 'Select or Capture Photo to Run AI Diagnosis';
+                  } else if (!isValidImage) {
+                    buttonLabel = isUrdu
+                        ? 'تصویر کے 3 معیارات کی تصدیق کریں'
+                        : 'Confirm 3 Image Quality Checks Above';
+                  } else if (!isTriageDone) {
+                    buttonLabel = isUrdu
+                        ? 'پرندوں کی 3 جسمانی علامات منتخب کریں'
+                        : 'Select 3 Flock Triage Answers Above';
+                  } else {
+                    buttonLabel = isUrdu
+                        ? 'اے آئی تشخیص اور شدت معلوم کریں'
+                        : 'Run AI Disease & Severity Diagnosis';
+                  }
+
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: canRunDiagnosis
+                            ? AppColors.primary
+                            : Colors.grey.shade400,
+                        foregroundColor: Colors.white,
+                        elevation: canRunDiagnosis ? 3 : 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: AppDimensions.borderRadiusMedium,
+                        ),
+                      ),
+                      icon: const Icon(Icons.analytics_outlined, size: 22),
+                      label: Text(
+                        buttonLabel,
+                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                      ),
+                      onPressed: canRunDiagnosis
+                          ? () async {
+                              final res = await scanner.executeDiagnosis();
+                              if (res != null && context.mounted) {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.diagnosticResult,
+                                  arguments: res,
+                                );
+                              }
+                            }
+                          : null,
                     ),
-                  ),
-                  icon: const Icon(Icons.analytics_outlined, size: 22),
-                  label: Text(
-                    scanner.selectedImagePath != null
-                        ? (isUrdu
-                            ? 'اے آئی تشخیص اور شدت معلوم کریں'
-                            : 'Run AI Disease & Severity Diagnosis')
-                        : (isUrdu
-                            ? 'تشخیص کے لیے پہلے تصویر لیں یا منتخب کریں'
-                            : 'Select or Capture Photo to Run AI Diagnosis'),
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5),
-                  ),
-                  onPressed: (scanner.selectedImagePath != null && scanner.isImageValid)
-                      ? () async {
-                          final res = await scanner.executeDiagnosis();
-                          if (res != null && context.mounted) {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.diagnosticResult,
-                              arguments: res,
-                            );
-                          }
-                        }
-                      : null,
-                ),
+                  );
+                },
               ),
             ],
             const SizedBox(height: AppDimensions.space32),

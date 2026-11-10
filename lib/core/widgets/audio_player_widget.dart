@@ -3,6 +3,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import '../../services/disease_audio_service.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
+import '../utils/bidi_utils.dart';
 import 'status_badge.dart';
 
 /// AudioPlayerWidget provides dynamic, disease-specific spoken voice narration
@@ -160,10 +161,40 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
       final profile = _getProfile();
       try {
         if (widget.isUrdu) {
-          // Attempt regional Urdu, fallback to generic ur
-          final dynamic langRes = await _flutterTts.setLanguage('ur-PK');
-          if (langRes == 0) {
-            await _flutterTts.setLanguage('ur');
+          bool urduAvailable = false;
+          try {
+            final isPk = await _flutterTts.isLanguageAvailable('ur-PK');
+            final isUr = await _flutterTts.isLanguageAvailable('ur');
+            if (isPk == true || isPk == 1) {
+              await _flutterTts.setLanguage('ur-PK');
+              urduAvailable = true;
+            } else if (isUr == true || isUr == 1) {
+              await _flutterTts.setLanguage('ur');
+              urduAvailable = true;
+            }
+          } catch (_) {}
+
+          try {
+            final List<dynamic>? voices = await _flutterTts.getVoices;
+            if (voices != null) {
+              for (final v in voices) {
+                if (v is Map) {
+                  final loc = v['locale']?.toString().toLowerCase() ?? '';
+                  if (loc.contains('ur') || loc.contains('pk')) {
+                    await _flutterTts.setVoice({'name': v['name']?.toString() ?? '', 'locale': v['locale']});
+                    urduAvailable = true;
+                    break;
+                  }
+                }
+              }
+            }
+          } catch (_) {}
+
+          if (!urduAvailable) {
+            final dynamic langRes = await _flutterTts.setLanguage('ur-PK');
+            if (langRes == 0) {
+              await _flutterTts.setLanguage('ur');
+            }
           }
         } else {
           await _flutterTts.setLanguage('en-US');
@@ -181,14 +212,26 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
           });
         }
       } catch (e) {
-        debugPrint('[AudioPlayerWidget] TTS speak fallback: $e');
+        debugPrint('[AudioPlayerWidget] TTS speak error: $e');
         if (mounted) {
           setState(() {
-            _isPlaying = true;
-            _progress = 0.45;
-            _animController.repeat(reverse: true);
+            _isPlaying = false;
+            _progress = 0.0;
+            _animController.stop();
           });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                widget.isUrdu
+                    ? 'آڈیو چلانے میں مسئلہ پیش آیا۔ فون میں اردو آواز چیک کریں۔'
+                    : 'Audio narration could not be played.',
+              ),
+              duration: const Duration(seconds: 3),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
         }
+        return;
       }
 
       if (mounted) {
@@ -256,7 +299,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
                         Flexible(
                           child: Text(
                             widget.title,
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontWeight: FontWeight.w800,
@@ -266,7 +309,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
                           ),
                         ),
                         Text(
-                          _isPlaying ? '0:25 / ${widget.durationText}' : widget.durationText,
+                          _isPlaying ? BidiUtils.ltr('0:25 / ${widget.durationText}') : BidiUtils.ltr(widget.durationText),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -374,7 +417,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
                             border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
                           ),
                           child: Text(
-                            '${(widget.confidenceScore! * 100).toStringAsFixed(1)}% ${widget.isUrdu ? 'یقینی' : 'Confidence'}',
+                            '${BidiUtils.ltr('${(widget.confidenceScore! * 100).toStringAsFixed(1)}%')} ${widget.isUrdu ? 'یقینی' : 'Confidence'}',
                             style: const TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w700,
@@ -392,10 +435,10 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.audiotrack_rounded, size: 12, color: AppColors.secondary),
+                            const Icon(Icons.record_voice_over_rounded, size: 12, color: AppColors.secondary),
                             const SizedBox(width: 4),
                             Text(
-                              profile.audioAssetPath.split('/').last,
+                              widget.isUrdu ? 'صوتی رہنمائی' : 'HD Voice Guide',
                               style: const TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w700,

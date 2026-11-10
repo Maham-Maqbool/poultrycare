@@ -111,6 +111,11 @@ void main() {
     final diagnosticRepo = DiagnosticRepository();
     final controller = ScannerController(diagnosticRepo, diseaseRepo);
 
+    // M1: Quality checks default to false until confirmed by user
+    expect(controller.isImageValid, isFalse);
+    controller.toggleLighting(true);
+    controller.toggleSharpness(true);
+    controller.toggleSingleDropping(true);
     expect(controller.isImageValid, isTrue);
     controller.selectSampleImage('https://images.unsplash.com/sample', targetDisease: 'coccidiosis');
     expect(controller.selectedImagePath, 'https://images.unsplash.com/sample');

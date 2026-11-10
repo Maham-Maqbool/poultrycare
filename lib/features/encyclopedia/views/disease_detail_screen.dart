@@ -40,6 +40,39 @@ class _DiseaseDetailScreenState extends State<DiseaseDetailScreen> {
     });
   }
 
+  String _translateSeverityUrdu(String sev) {
+    switch (sev.toLowerCase()) {
+      case 'severe':
+        return 'شدید';
+      case 'moderate':
+        return 'درمیانی';
+      default:
+        return 'ہلکی';
+    }
+  }
+
+  Color _severityBgColor(String sev) {
+    switch (sev.toLowerCase()) {
+      case 'severe':
+        return AppColors.severeLight;
+      case 'moderate':
+        return AppColors.moderateLight;
+      default:
+        return AppColors.healthyLight;
+    }
+  }
+
+  Color _severityTextColor(String sev) {
+    switch (sev.toLowerCase()) {
+      case 'severe':
+        return AppColors.severe;
+      case 'moderate':
+        return AppColors.moderate;
+      default:
+        return AppColors.healthy;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsController>();
@@ -68,10 +101,19 @@ class _DiseaseDetailScreenState extends State<DiseaseDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       StatusBadge.forDisease(d.code, isLarge: true),
+                      StatusBadge(
+                        label: isUrdu
+                            ? 'عام طور پر: ${_translateSeverityUrdu(d.baselineSeverity)}'
+                            : 'Typically ${d.baselineSeverity.toUpperCase()}',
+                        backgroundColor: _severityBgColor(d.baselineSeverity),
+                        textColor: _severityTextColor(d.baselineSeverity),
+                      ),
                       StatusBadge.forUrgency(d.baselineUrgency),
                     ],
                   ),
@@ -98,7 +140,7 @@ class _DiseaseDetailScreenState extends State<DiseaseDetailScreen> {
               isUrdu: isUrdu,
               durationText: '1:30',
               diseaseName: d.code,
-              severity: 'moderate',
+              severity: null,
             ),
             const SizedBox(height: AppDimensions.space16),
 
