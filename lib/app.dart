@@ -17,7 +17,7 @@ class PoultryCareApp extends StatelessWidget {
     return MaterialApp(
       title: 'PoultryCare',
       debugShowCheckedModeBanner: false,
-      locale: Locale(settings.locale),
+      locale: Locale(settings.locale.startsWith('ur') ? 'ur' : 'en'),
       supportedLocales: const [
         Locale('en', 'US'),
         Locale('ur', 'PK'),

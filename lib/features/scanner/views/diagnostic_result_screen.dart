@@ -77,9 +77,16 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
 
     TreatmentModel? treatment;
     if (record != null) {
-      final disease = record.prediction.predictedClass ?? 'healthy';
-      final severity = record.prediction.severity ?? 'mild';
-      treatment = await diseaseRepo.getTreatment(disease, severity);
+      try {
+        final disease = record.prediction.predictedClass ?? 'healthy';
+        final severity = record.prediction.severity ?? 'mild';
+        if (disease != 'healthy') {
+          treatment = await diseaseRepo.getTreatment(disease, severity);
+        }
+      } catch (e) {
+        debugPrint('[DiagnosticResultScreen] Treatment lookup safely caught: $e');
+        treatment = null;
+      }
     }
 
     if (mounted) {

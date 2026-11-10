@@ -16,13 +16,19 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  late final TextEditingController _vetPhoneController;
+  final TextEditingController _vetPhoneController = TextEditingController();
+  bool _initialized = false;
 
   @override
-  void initState() {
-    super.initState();
-    final settings = Provider.of<SettingsController>(context, listen: false);
-    _vetPhoneController = TextEditingController(text: settings.vetPhone ?? '');
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final settings = Provider.of<SettingsController>(context);
+      if (settings.vetPhone != null && settings.vetPhone!.isNotEmpty) {
+        _vetPhoneController.text = settings.vetPhone!;
+      }
+      _initialized = true;
+    }
   }
 
   @override
@@ -33,6 +39,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('[SettingsScreen] build() START');
     final settings = context.watch<SettingsController>();
     final isUrdu = settings.isUrdu;
     final String currentDropdownLocale = settings.locale.startsWith('ur') ? 'ur' : 'en';
@@ -44,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Display & Localization
             Text(
@@ -53,6 +60,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 10),
             AppCard(
+              width: double.infinity,
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
@@ -74,16 +82,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     leading: const Icon(Icons.language_rounded, color: AppColors.primary),
                     title: Text(isUrdu ? 'ایپ کی زبان (Language)' : 'App Language (زبان)'),
                     subtitle: Text(isUrdu ? 'اردو (Urdu)' : 'English'),
-                    trailing: DropdownButton<String>(
-                      value: currentDropdownLocale,
-                      underline: const SizedBox(),
-                      items: const [
-                        DropdownMenuItem(value: 'en', child: Text('English')),
-                        DropdownMenuItem(value: 'ur', child: Text('اردو (Urdu)')),
-                      ],
-                      onChanged: (val) {
-                        if (val != null) settings.setLocale(val);
-                      },
+                    trailing: SizedBox(
+                      width: 120,
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: currentDropdownLocale,
+                          items: const [
+                            DropdownMenuItem(value: 'en', child: Text('English')),
+                            DropdownMenuItem(value: 'ur', child: Text('اردو (Urdu)')),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) settings.setLocale(val);
+                          },
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -98,6 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 10),
             AppCard(
+              width: double.infinity,
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,7 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: TextFormField(
+                        child: TextField(
                           controller: _vetPhoneController,
                           keyboardType: TextInputType.phone,
                           decoration: InputDecoration(
@@ -197,6 +211,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 10),
             AppCard(
+              width: double.infinity,
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,6 +271,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 10),
             AppCard(
+              width: double.infinity,
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

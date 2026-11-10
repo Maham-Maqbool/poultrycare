@@ -6,12 +6,19 @@ import '../../../core/constants/app_assets.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_image_view.dart';
 import '../../../routes/app_routes.dart';
+import '../../../data/repositories/diagnostic_repository.dart';
 import '../controllers/scanner_controller.dart';
 import '../../flocks/controllers/flock_controller.dart';
 import '../../profile/controllers/settings_controller.dart';
 
-class ScannerScreen extends StatelessWidget {
+class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
+
+  @override
+  State<ScannerScreen> createState() => _ScannerScreenState();
+}
+
+class _ScannerScreenState extends State<ScannerScreen> {
 
   void _showSamplePicker(BuildContext context, bool isUrdu) {
     final scanner = context.read<ScannerController>();
@@ -847,63 +854,81 @@ class ScannerScreen extends StatelessWidget {
                 ),
               ),
             ] else ...[
-              Builder(
-                builder: (context) {
-                  final bool hasPhoto = scanner.selectedImagePath != null;
-                  final bool isValidImage = scanner.isImageValid;
-                  final bool isTriageDone = scanner.isTriageComplete;
-                  final bool canRunDiagnosis = hasPhoto && isValidImage && isTriageDone;
+              () {
+                final bool hasPhoto = scanner.selectedImagePath != null;
+                final bool isValidImage = scanner.isImageValid;
+                final bool isTriageDone = scanner.isTriageComplete;
+                final bool canRunDiagnosis = hasPhoto && isValidImage && isTriageDone;
 
-                  String buttonLabel;
-                  if (!hasPhoto) {
-                    buttonLabel = isUrdu
-                        ? 'تشخیص کے لیے پہلے تصویر لیں یا منتخب کریں'
-                        : 'Select or Capture Photo to Run AI Diagnosis';
-                  } else if (!isValidImage) {
-                    buttonLabel = isUrdu
-                        ? 'تصویر کے 3 معیارات کی تصدیق کریں'
-                        : 'Confirm 3 Image Quality Checks Above';
-                  } else if (!isTriageDone) {
-                    buttonLabel = isUrdu
-                        ? 'پرندوں کی 3 جسمانی علامات منتخب کریں'
-                        : 'Select 3 Flock Triage Answers Above';
-                  } else {
-                    buttonLabel = isUrdu
-                        ? 'اے آئی تشخیص اور شدت معلوم کریں'
-                        : 'Run AI Disease & Severity Diagnosis';
-                  }
+                String buttonLabel;
+                if (!hasPhoto) {
+                  buttonLabel = isUrdu
+                      ? 'تشخیص کے لیے پہلے تصویر لیں یا منتخب کریں'
+                      : 'Select or Capture Photo to Run AI Diagnosis';
+                } else if (!isValidImage) {
+                  buttonLabel = isUrdu
+                      ? 'تصویر کے 3 معیارات کی تصدیق کریں'
+                      : 'Confirm 3 Image Quality Checks Above';
+                } else if (!isTriageDone) {
+                  buttonLabel = isUrdu
+                      ? 'پرندوں کی 3 جسمانی علامات منتخب کریں'
+                      : 'Select 3 Flock Triage Answers Above';
+                } else {
+                  buttonLabel = isUrdu
+                      ? 'اے آئی تشخیص اور شدت معلوم کریں'
+                      : 'Run AI Disease & Severity Diagnosis';
+                }
 
-                  return SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: canRunDiagnosis
-                            ? AppColors.primary
-                            : Colors.grey.shade400,
-                        foregroundColor: Colors.white,
-                        elevation: canRunDiagnosis ? 3 : 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: AppDimensions.borderRadiusMedium,
-                        ),
+                return SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: canRunDiagnosis
+                          ? AppColors.primary
+                          : Colors.grey.shade400,
+                      foregroundColor: Colors.white,
+                      elevation: canRunDiagnosis ? 3 : 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppDimensions.borderRadiusMedium,
                       ),
-                      icon: const Icon(Icons.analytics_outlined, size: 22),
-                      label: Text(
-                        buttonLabel,
-                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
-                      ),
-                      onPressed: canRunDiagnosis
-                          ? () async {
-                              final res = await scanner.executeDiagnosis();
-                              if (!context.mounted) return;
-                              if (res != null) {
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.diagnosticResult,
-                                  arguments: res,
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                    ),
+                    icon: const Icon(Icons.analytics_outlined, size: 22),
+                    label: Text(
+                      buttonLabel,
+                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                    ),
+                    onPressed: canRunDiagnosis
+                        ? () async {
+                            final navigator = Navigator.of(context);
+                            final messenger = ScaffoldMessenger.of(context);
+                            final diagRepo = context.read<DiagnosticRepository>();
+
+                            final res = await scanner.executeDiagnosis();
+                            debugPrint('[ScannerScreen DEBUG] executeDiagnosis res: ${res != null ? "RECORD_OK id=${res.scan.id}" : "NULL"}, errorMessage: ${scanner.errorMessage}');
+                            if (!mounted) return;
+                            if (res != null) {
+                              navigator.pushNamed(
+                                AppRoutes.diagnosticResult,
+                                arguments: res,
+                              );
+                            } else {
+                              // Failsafe per Round-3 item 4: if scan was persisted to SQLite, navigate on saved record anyway
+                              try {
+                                final allScans = await diagRepo.getAllRecords();
+                                if (allScans.isNotEmpty && mounted) {
+                                  debugPrint('[ScannerScreen DEBUG] Navigating on latest persisted SQLite scan: ${allScans.first.scan.id}');
+                                  navigator.pushNamed(
+                                    AppRoutes.diagnosticResult,
+                                    arguments: allScans.first,
+                                  );
+                                  return;
+                                }
+                              } catch (e) {
+                                debugPrint('[ScannerScreen DEBUG] Fallback record lookup error: $e');
+                              }
+                              if (mounted) {
+                                messenger.showSnackBar(
                                   SnackBar(
                                     content: Text(
                                       isUrdu
@@ -915,11 +940,11 @@ class ScannerScreen extends StatelessWidget {
                                 );
                               }
                             }
-                          : null,
-                    ),
-                  );
-                },
-              ),
+                          }
+                        : null,
+                  ),
+                );
+              }(),
             ],
             const SizedBox(height: AppDimensions.space32),
           ],

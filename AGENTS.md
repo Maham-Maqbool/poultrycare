@@ -350,3 +350,19 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Executed `flutter test`: 29/29 tests passed across all unit, widget, and overflow test suites (100% pass rate).
     - Preserved 100% of FCR math, diagnostic neural network, biosecurity protocols, and feedback forms.
     - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 27 Complete (Settings Blank Screen Root Cause Resolution & Scanner Navigation Hardening):
+  - Settings Screen Blank Screen Root Cause Diagnosed via Logcat:
+    - Traced logcat assertion failure on physical device: Failed assertion: line 2251 pos 12: 'hasSize' in RenderBox during paint/layout.
+    - Root Cause 1: AppCard wrapped its content in an unconstrained Stack(fit: StackFit.loose) by default. Refactored AppCard to render Padding(child: child) directly when accentColor == null, eliminating loose constraint sizing failures.
+    - Root Cause 2: Bare DropdownButton inside ListTile.trailing received unbounded width constraints. Wrapped dropdown in bounded SizedBox(width: 120, child: DropdownButtonHideUnderline(child: DropdownButton(isExpanded: true, ...))).
+    - Added ErrorWidget.builder and FlutterError.onError in main.dart to visibly report any rendering exceptions on screen.
+    - Verified all 4 settings sections render smoothly in both English and Urdu (Appearance, My Vet Number, Storage Hygiene, Commercial Support).
+  - Scanner Screen AI Diagnostic Navigation Hardening:
+    - Converted ScannerScreen to StatefulWidget, removing inner unmounting Builder that previously invalidated context.mounted.
+    - Captured Navigator.of(context) and DiagnosticRepository before the asynchronous gap.
+    - Added fallback SQLite lookup in ScannerScreen so if res == null but a scan record was persisted, navigation still opens the result screen immediately.
+    - Wrapped post-save treatment lookup in DiagnosticResultScreen in try/catch to ensure healthy and disease scans always navigate and display properly.
+  - Verification & Testing:
+    - Executed flutter analyze: 0 issues found (clean static analysis).
+    - Executed flutter test: 32/32 tests passed across overflow_test.dart, services_test.dart, settings_test.dart, and widget_test.dart (100% pass rate).
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
