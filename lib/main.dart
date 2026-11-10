@@ -15,6 +15,25 @@ import 'features/profile/controllers/settings_controller.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    debugPrint('[FLUTTER_ERROR] ${details.exceptionAsString()}');
+    debugPrint('[FLUTTER_STACK] ${details.stack}');
+  };
+
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Flutter Error Caught')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: SelectableText(
+          'ERROR DETAILS:\n${details.exceptionAsString()}\n\nSTACK TRACE:\n${details.stack}',
+          style: const TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  };
+
   // Instantiate Repositories
   final authRepository = AuthRepository();
   final flockRepository = FlockRepository();

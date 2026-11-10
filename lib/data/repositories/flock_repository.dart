@@ -1,23 +1,18 @@
 import '../models/flock_model.dart';
-import '../mock/mock_flocks_data.dart';
+import '../../services/database_service.dart';
 
-/// FlockRepository manages farmer flocks/sheds in memory
-/// enforcing the commercial tier limit of 20 flocks per user.
+/// FlockRepository manages farmer flocks/sheds with local SQLite persistence
+/// via DatabaseService, enforcing the commercial tier limit of 20 flocks per user.
+/// Fresh installs start with an empty list.
 class FlockRepository {
-  final List<FlockModel> _flocks = List.from(mockFlocksData);
+  final DatabaseService _db = DatabaseService.instance;
 
   Future<List<FlockModel>> getFlocks() async {
-    await Future.delayed(const Duration(milliseconds: 250));
-    return List.unmodifiable(_flocks);
+    return await _db.fetchAllFlocks();
   }
 
   Future<FlockModel?> getFlockById(String id) async {
-    await Future.delayed(const Duration(milliseconds: 150));
-    try {
-      return _flocks.firstWhere((f) => f.id == id);
-    } catch (_) {
-      return null;
-    }
+    return await _db.getFlockById(id);
   }
 
   Future<FlockModel> addFlock({
@@ -26,8 +21,8 @@ class FlockRepository {
     String? breed,
     String? notes,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    if (_flocks.length >= 20) {
+    final currentFlocks = await _db.fetchAllFlocks();
+    if (currentFlocks.length >= 20) {
       throw Exception('Maximum limit of 20 flocks reached per farm.');
     }
     final newFlock = FlockModel(
@@ -40,22 +35,15 @@ class FlockRepository {
       createdAt: DateTime.now(),
       activeDiseaseCount: 0,
     );
-    _flocks.insert(0, newFlock);
+    await _db.insertFlock(newFlock);
     return newFlock;
   }
 
   Future<FlockModel> updateFlock(FlockModel updated) async {
-    await Future.delayed(const Duration(milliseconds: 250));
-    final index = _flocks.indexWhere((f) => f.id == updated.id);
-    if (index != -1) {
-      _flocks[index] = updated;
-      return updated;
-    }
-    throw Exception('Flock not found');
+    return await _db.updateFlock(updated);
   }
 
   Future<void> deleteFlock(String id) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    _flocks.removeWhere((f) => f.id == id);
+    await _db.deleteFlock(id);
   }
 }

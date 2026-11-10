@@ -6,6 +6,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/empty_state_view.dart';
 import '../controllers/flock_controller.dart';
+import '../../history/controllers/history_controller.dart';
 import '../../profile/controllers/settings_controller.dart';
 import 'add_flock_modal.dart';
 import 'flock_detail_screen.dart';
@@ -16,6 +17,7 @@ class FlocksListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final flockController = context.watch<FlockController>();
+    final history = context.watch<HistoryController>();
     final settings = context.watch<SettingsController>();
     final isUrdu = settings.isUrdu;
     final flocks = flockController.flocks;
@@ -53,7 +55,7 @@ class FlocksListScreen extends StatelessWidget {
               itemCount: flocks.length,
               itemBuilder: (context, index) {
                 final flock = flocks[index];
-                final hasDisease = flock.activeDiseaseCount > 0;
+                final hasDisease = history.isFlockAtRisk(flock.id);
 
                 return AppCard(
                   margin: const EdgeInsets.only(bottom: 12.0),

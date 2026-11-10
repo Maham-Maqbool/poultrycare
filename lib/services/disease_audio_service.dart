@@ -46,62 +46,98 @@ class DiseaseAudioProfile {
 
   /// Dynamically synthesizes the spoken audio script tailored to the model's
   /// predicted class, confidence percentage, and clinical severity level.
+  /// For encyclopedia / library overviews (where confidenceScore is null),
+  /// no certainty claim is stated (no "high certainty", no "100%", no "اعلیٰ یقین").
   String buildSpokenScript({
     required bool isUrdu,
     String? severity,
     double? confidenceScore,
   }) {
-    final confPercent = confidenceScore != null
-        ? '${(confidenceScore * 100).toStringAsFixed(0)}%'
-        : (isUrdu ? 'اعلیٰ یقین' : 'high certainty');
     final sevStr = severity?.toLowerCase() ?? 'mild';
 
     if (isUrdu) {
       String sevUrdu;
       switch (sevStr) {
         case 'severe':
-          sevUrdu = 'شدید (Severe)';
+          sevUrdu = 'شدید';
           break;
         case 'moderate':
-          sevUrdu = 'درمیانی (Moderate)';
+          sevUrdu = 'درمیانی';
           break;
         case 'uncertain':
-          sevUrdu = 'غیر یقینی (Uncertain)';
+          sevUrdu = 'غیر یقینی';
           break;
         default:
-          sevUrdu = 'ہلکی (Mild)';
+          sevUrdu = 'ہلکی';
       }
 
-      switch (type) {
-        case PoultryDiseaseType.newcastle:
-          return 'محترم فارمر: نمونے میں رانی کھیت کی خطرناک علامات سامنے آئی ہیں جن کی شدت $sevUrdu اور یقین $confPercent ہے۔ علامات میں سبز پتلی بیٹھیں، گردن مڑنا، لرزنا اور سانس کی تنگی شامل ہیں۔ فوری طور پر بیمار پرندوں کو صحت مند فلاک سے الگ کریں، شیڈ میں بیرونی افراد کا داخلہ بند کریں، پانی میں امیون بوسٹر اور الیکٹرولائٹس شامل کریں اور فوراً ویٹرنری ڈاکٹر سے رابطہ کریں۔';
+      // If confidence is present, format it dynamically to 1 decimal place (e.g. 96.0 فیصد)
+      if (confidenceScore != null) {
+        final confPercent = '${(confidenceScore * 100).toStringAsFixed(1)} فیصد';
+        switch (type) {
+          case PoultryDiseaseType.newcastle:
+            return 'محترم کسان: آپ کے نمونے میں رانی کھیت کی خطرناک علامات پائی گئی ہیں، اس کی شدت $sevUrdu اور یقین $confPercent ہے۔ علامات میں سبز پتلی بیٹھیں، گردن مڑنا، لرزنا اور سانس کی تنگی شامل ہیں۔ بیمار پرندوں کو فوراً صحت مند پرندوں سے الگ کر دیں، شیڈ میں باہر کے لوگوں کو نہ آنے دیں، پانی میں الیکٹرولائٹس شامل کریں اور فوراً ویٹرنری ڈاکٹر سے رابطہ کریں۔';
 
-        case PoultryDiseaseType.coccidiosis:
-          return 'محترم فارمر: آپ کے فلاک میں کوکسیڈیوسس یعنی خونی پیچش کی تشخیص ہوئی ہے جس کی شدت $sevUrdu اور یقین $confPercent ہے۔ علامات میں بیٹھوں میں خون کا آنا، پرندوں کا سست بیٹھنا اور خوراک کی کمی شامل ہے۔ علاج کے لیے فوری طور پر پینے کے پانی میں ایمپرولیم یا ٹولٹرازوریل دو دن شامل کریں، خون روکنے کے لیے وٹامن کے دیں اور شیڈ کا تمام گیلا برادہ فوراً تبدیل کریں۔';
+          case PoultryDiseaseType.coccidiosis:
+            return 'محترم کسان: آپ کے فلاک میں کوکسیڈیوسس یعنی خونی پیچش کی تشخیص ہوئی ہے، اس کی شدت $sevUrdu اور یقین $confPercent ہے۔ علامات میں بیٹھوں میں خون آنا، پرندوں کا سست بیٹھنا اور خوراک کی کمی شامل ہے۔ علاج کے لیے پینے کے پانی میں ایمپرولیم یا ٹولٹرازوریل دو دن شامل کریں، خون روکنے کے لیے وٹامن کے دیں اور شیڈ کا تمام گیلا برادہ فوراً تبدیل کر دیں۔';
 
-        case PoultryDiseaseType.salmonella:
-          return 'محترم فارمر: آپ کے نمونے میں سالمونیلا یعنی سفید پیچش کی تصدیق ہوئی ہے جس کی شدت $sevUrdu اور یقین $confPercent ہے۔ علامات میں سفید چاک جیسا فضلہ اور پرندوں کا سردی سے اکٹھے ہو کر سست بیٹھنا شامل ہے۔ علاج کے لیے پینے کے پانی میں اینروفلوکساسین یا نیومائسن تین سے پانچ دن دیں اور پانی کے برتنوں کو روزانہ جراثیم کش محلول سے صاف کریں۔';
+          case PoultryDiseaseType.salmonella:
+            return 'محترم کسان: آپ کے نمونے میں سالمونیلا یعنی سفید پیچش کی تصدیق ہوئی ہے، اس کی شدت $sevUrdu اور یقین $confPercent ہے۔ علامات میں سفید چاک جیسا فضلہ اور پرندوں کا سردی سے اکٹھا ہو کر سست بیٹھنا شامل ہے۔ علاج کے لیے پینے کے پانی میں اینروفلوکساسین یا نیومائسن تین سے پانچ دن دیں اور پانی کے برتنوں کو روزانہ جراثیم کش محلول سے صاف کریں۔';
 
-        case PoultryDiseaseType.healthy:
-          return 'محترم فارمر: مبارک ہو، آپ کا پرندہ اور اس کا نظام انہضام بالکل تندرست اور نارمل ہے جس کی تصدیق $confPercent ہے۔ فضلہ بہترین بناوٹ میں ہے۔ اس حالت کو برقرار رکھنے کے لیے پرندوں کو متوازن خوراک اور صاف پانی دیں اور حفاظتی ٹیکوں کا شیڈول وقت پر مکمل رکھیں۔';
+          case PoultryDiseaseType.healthy:
+            return 'محترم کسان: مبارک ہو، آپ کا پرندہ اور اس کا نظام انہضام بالکل تندرست اور نارمل ہے، جس میں $confPercent یقین ہے۔ فضلہ بہترین بناوٹ میں ہے۔ اس حالت کو برقرار رکھنے کے لیے پرندوں کو متوازن خوراک اور صاف پانی دیں اور حفاظتی ٹیکوں کا شیڈول وقت پر مکمل رکھیں۔';
+        }
+      } else {
+        // Library overview: State NO certainty claims at all
+        switch (type) {
+          case PoultryDiseaseType.newcastle:
+            return 'محترم کسان: رانی کھیت پولٹری کی ایک انتہائی خطرناک اور متعدی وائرل بیماری ہے۔ اس کی علامات میں سبز پتلی بیٹھیں، گردن مڑنا، لرزنا اور سانس کی تنگی شامل ہیں۔ بیمار پرندوں کو فوراً صحت مند پرندوں سے الگ کر دیں، شیڈ میں بیرونی افراد کا داخلہ بند کریں، پانی میں الیکٹرولائٹس فراہم کریں اور بروقت ویکسینیشن کا شیڈول یقینی بنائیں۔';
+
+          case PoultryDiseaseType.coccidiosis:
+            return 'محترم کسان: کوکسیڈیوسس یعنی خونی پیچش پولٹری میں پروٹوزوا کی وجہ سے پھیلنے والی عام بیماری ہے۔ علامات میں بیٹھوں میں خون آنا، پرندوں کا سست بیٹھنا اور خوراک کی کمی شامل ہے۔ علاج کے لیے پینے کے پانی میں ایمپرولیم یا ٹولٹرازوریل دو دن شامل کریں، خون روکنے کے لیے وٹامن کے دیں اور شیڈ کا تمام گیلا برادہ فوراً تبدیل کر کے خشکی برقرار رکھیں۔';
+
+          case PoultryDiseaseType.salmonella:
+            return 'محترم کسان: سالمونیلا یعنی سفید پیچش ایک بیکٹیریل انفیکشن ہے۔ علامات میں سفید چاک جیسا فضلہ اور پرندوں کا سردی سے اکٹھا ہو کر سست بیٹھنا شامل ہے۔ علاج کے لیے پینے کے پانی میں اینروفلوکساسین یا نیومائسن تین سے پانچ دن دیں اور پانی کے برتنوں کو روزانہ جراثیم کش محلول سے صاف کریں۔';
+
+          case PoultryDiseaseType.healthy:
+            return 'محترم کسان: صحت مند پرندوں کا نظام انہضام نارمل ہوتا ہے اور فضلہ بہترین بناوٹ میں ہوتا ہے۔ اس حالت کو برقرار رکھنے کے لیے پرندوں کو متوازن خوراک اور صاف پانی دیں اور حفاظتی ٹیکوں کا شیڈول وقت پر مکمل رکھیں۔';
+        }
       }
     } else {
       final sevCapitalized = sevStr.isNotEmpty
           ? '${sevStr[0].toUpperCase()}${sevStr.substring(1)}'
           : 'Mild';
 
-      switch (type) {
-        case PoultryDiseaseType.newcastle:
-          return 'Attention Farmer: High-risk Newcastle Disease indicators detected with $sevCapitalized severity and $confPercent model confidence. Clinical signs include watery greenish droppings, neck twisting, and respiratory distress. Immediately isolate symptomatic birds in quarantine, enforce strict biosecurity, provide electrolytes, and dial the emergency veterinary helpline immediately.';
+      if (confidenceScore != null) {
+        final confPercent = '${(confidenceScore * 100).toStringAsFixed(1)}%';
+        switch (type) {
+          case PoultryDiseaseType.newcastle:
+            return 'Attention Farmer: High-risk Newcastle Disease indicators detected with $sevCapitalized severity and $confPercent model confidence. Clinical signs include watery greenish droppings, neck twisting, and respiratory distress. Immediately isolate symptomatic birds in quarantine, enforce strict biosecurity, provide electrolytes, and dial the emergency veterinary helpline immediately.';
 
-        case PoultryDiseaseType.coccidiosis:
-          return 'Farmer Notice: Coccidiosis protozoal infection diagnosed with $sevCapitalized severity and $confPercent confidence. Primary symptoms include bloody mucoid droppings, ruffled feathers, and loss of appetite. Treat immediately by administering Toltrazuril or Amprolium in drinking water for 48 hours, give Vitamin K to stop bleeding, and replace wet litter immediately.';
+          case PoultryDiseaseType.coccidiosis:
+            return 'Farmer Notice: Coccidiosis protozoal infection diagnosed with $sevCapitalized severity and $confPercent confidence. Primary symptoms include bloody mucoid droppings, ruffled feathers, and loss of appetite. Treat immediately by administering Toltrazuril or Amprolium in drinking water for 48 hours, give Vitamin K to stop bleeding, and replace wet litter immediately.';
 
-        case PoultryDiseaseType.salmonella:
-          return 'Farmer Notice: Salmonella bacterial infection identified with $sevCapitalized severity and $confPercent confidence. Symptoms feature chalky white diarrhea pasting the vent and persistent huddling. Administer prescribed Enrofloxacin or Neomycin in drinking water for 3 to 5 days and thoroughly sanitize water drinker lines.';
+          case PoultryDiseaseType.salmonella:
+            return 'Farmer Notice: Salmonella bacterial infection identified with $sevCapitalized severity and $confPercent confidence. Symptoms feature chalky white diarrhea pasting the vent and persistent huddling. Administer prescribed Enrofloxacin or Neomycin in drinking water for 3 to 5 days and thoroughly sanitize water drinker lines.';
 
-        case PoultryDiseaseType.healthy:
-          return 'Farmer Notice: Specimen analysis confirms normal healthy digestion with $confPercent confidence. Droppings exhibit proper consistency with white uric acid cap. No medication required. Maintain standard biosecurity protocols and balanced hydration.';
+          case PoultryDiseaseType.healthy:
+            return 'Farmer Notice: Specimen analysis confirms normal healthy digestion with $confPercent confidence. Droppings exhibit proper consistency with white uric acid cap. No medication required. Maintain standard biosecurity protocols and balanced hydration.';
+        }
+      } else {
+        // Library overview: State NO certainty claims at all
+        switch (type) {
+          case PoultryDiseaseType.newcastle:
+            return 'Farmer Guide: Newcastle Disease is a severe and highly contagious viral poultry infection. Clinical signs include watery greenish droppings, torticollis neck twisting, tremors, and respiratory distress. Immediately quarantine affected birds, restrict flock access, administer electrolytes, and maintain strict biosecurity.';
+
+          case PoultryDiseaseType.coccidiosis:
+            return 'Farmer Guide: Coccidiosis is an intestinal protozoal infection affecting broilers and layers. Key symptoms include bloody mucoid droppings, ruffled plumage, and sharp feed intake drop. Treatment includes Toltrazuril or Amprolium in drinking water with Vitamin K, accompanied by immediate replacement of wet bedding litter.';
+
+          case PoultryDiseaseType.salmonella:
+            return 'Farmer Guide: Salmonella infection is a systemic bacterial disease in poultry. Key symptoms include white chalky vent pasting and severe huddling. Prescribed treatment includes veterinary-directed antibiotic therapy such as Enrofloxacin, alongside continuous disinfection of water lines.';
+
+          case PoultryDiseaseType.healthy:
+            return 'Farmer Guide: Healthy flock droppings exhibit normal consistency with a characteristic white uric acid cap. Maintain balanced nutritional feed, clean water sanitation, and standard vaccination schedules to sustain flock wellness.';
+        }
       }
     }
   }

@@ -14,6 +14,7 @@ class AppCard extends StatelessWidget {
   final Gradient? gradient;
   final Color? accentColor;
   final List<BoxShadow>? customShadow;
+  final double? width;
 
   const AppCard({
     super.key,
@@ -27,6 +28,7 @@ class AppCard extends StatelessWidget {
     this.gradient,
     this.accentColor,
     this.customShadow,
+    this.width,
   });
 
   @override
@@ -73,7 +75,36 @@ class AppCard extends StatelessWidget {
                 ),
               ]);
 
+    Widget content = Padding(
+      padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
+      child: child,
+    );
+
+    if (accentColor != null) {
+      content = Stack(
+        children: [
+          Positioned(
+            top: 0,
+            bottom: 0,
+            left: 0,
+            child: Container(
+              width: 4,
+              decoration: BoxDecoration(
+                color: accentColor!,
+                borderRadius: BorderRadius.only(
+                  topLeft: effectiveRadius.topLeft,
+                  bottomLeft: effectiveRadius.bottomLeft,
+                ),
+              ),
+            ),
+          ),
+          content,
+        ],
+      );
+    }
+
     final cardWidget = Container(
+      width: width,
       margin: margin,
       decoration: BoxDecoration(
         color: gradient == null ? (color ?? (isDark ? theme.cardColor : Colors.white)) : null,
@@ -88,30 +119,7 @@ class AppCard extends StatelessWidget {
         child: InkWell(
           borderRadius: effectiveRadius,
           onTap: onTap,
-          child: Stack(
-            children: [
-              if (accentColor != null)
-                Positioned(
-                  top: 0,
-                  bottom: 0,
-                  left: 0,
-                  child: Container(
-                    width: 4,
-                    decoration: BoxDecoration(
-                      color: accentColor!,
-                      borderRadius: BorderRadius.only(
-                        topLeft: effectiveRadius.topLeft,
-                        bottomLeft: effectiveRadius.bottomLeft,
-                      ),
-                    ),
-                  ),
-                ),
-              Padding(
-                padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
-                child: child,
-              ),
-            ],
-          ),
+          child: content,
         ),
       ),
     );

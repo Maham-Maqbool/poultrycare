@@ -74,7 +74,7 @@ class ProfileScreen extends StatelessWidget {
                     child: Text(
                       user.isGuest
                           ? (isUrdu ? 'مہمان موڈ' : 'Guest Mode')
-                          : (isUrdu ? 'تصدیق شدہ فارمر' : 'Verified Farmer'),
+                          : (isUrdu ? 'رجسٹرڈ فارمر' : 'Registered Farmer'),
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
@@ -94,7 +94,12 @@ class ProfileScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildStatItem(isUrdu ? 'کل اسکینز' : 'Total Scans', '${dashboard.totalScans}'),
-                  _buildStatItem(isUrdu ? 'صحت مند شرح' : 'Healthy Rate', '${dashboard.healthyRate.toStringAsFixed(0)}%'),
+                  _buildStatItem(
+                    isUrdu ? 'صحت مند شرح' : 'Healthy Rate',
+                    dashboard.healthyRate != null
+                        ? '${dashboard.healthyRate!.toStringAsFixed(0)}%'
+                        : (isUrdu ? 'کوئی ڈیٹا نہیں' : '-'),
+                  ),
                   _buildStatItem(isUrdu ? 'فعال شیڈز' : 'Active Sheds', '${dashboard.flockCount}'),
                 ],
               ),

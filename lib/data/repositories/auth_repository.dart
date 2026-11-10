@@ -24,7 +24,7 @@ class AuthRepository {
         id: id,
         displayName: name,
         email: isGuest ? null : 'farmer@poultrycare.farm',
-        phone: '+92 300 1234567',
+        phone: null,
         role: 'farmer',
         locale: locale,
         consentToRetainImages: true,

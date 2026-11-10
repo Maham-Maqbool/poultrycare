@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/vet_call_helper.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_image_view.dart';
 import '../../../core/widgets/audio_player_widget.dart';
@@ -77,9 +77,16 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
 
     TreatmentModel? treatment;
     if (record != null) {
-      final disease = record.prediction.predictedClass ?? 'healthy';
-      final severity = record.prediction.severity ?? 'mild';
-      treatment = await diseaseRepo.getTreatment(disease, severity);
+      try {
+        final disease = record.prediction.predictedClass ?? 'healthy';
+        final severity = record.prediction.severity ?? 'mild';
+        if (disease != 'healthy') {
+          treatment = await diseaseRepo.getTreatment(disease, severity);
+        }
+      } catch (e) {
+        debugPrint('[DiagnosticResultScreen] Treatment lookup safely caught: $e');
+        treatment = null;
+      }
     }
 
     if (mounted) {
@@ -112,28 +119,13 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
     }
   }
 
-  /// Launches the phone dialer with the 24/7 Poultry Veterinary Helpline.
+  /// Launches phone dialer with the farmer's saved Veterinary Expert.
   Future<void> _callVeterinaryExpert(BuildContext context) async {
-    const phoneNumber = '+923001234567'; // 24/7 Poultry Veterinary Helpline
-    final uri = Uri.parse('tel:$phoneNumber');
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Helpline available directly at: +92 300 1234567',
-            ),
-            backgroundColor: AppColors.severe,
-          ),
-        );
-      }
-    }
+    await VetCallHelper.dialVet(context);
+  }
+
+  String _formatFriendlyScanId(String rawId, bool isUrdu) {
+    return AppFormatters.formatScanId(rawId, isUrdu: isUrdu);
   }
 
   @override
@@ -272,8 +264,8 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                             icon: const Icon(Icons.phone_in_talk_rounded, size: 16),
                             label: Text(
                               isUrdu
-                                  ? 'ہیلپ لائن پر کال کریں (+92 300 1234567)'
-                                  : 'Call Veterinary Emergency Hotline',
+                                  ? 'ویٹرنری ڈاکٹر کو فوراً کال کریں'
+                                  : 'Call Veterinary Doctor Urgently',
                               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12.5),
                             ),
                             onPressed: () => _callVeterinaryExpert(context),
@@ -316,7 +308,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'ID: ${scan.id} | ${AppFormatters.relativeTime(scan.createdAt)}',
+                              '${_formatFriendlyScanId(scan.id, isUrdu)} | ${AppFormatters.formatDate(scan.createdAt)}',
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 color: AppColors.textMutedLight,
@@ -428,7 +420,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
             AudioPlayerWidget(
               title: isUrdu
                   ? 'سنیں: بیماری کی صوتی وضاحت اور علاج'
-                  : 'Listen: Diagnostic Voice Narration',
+                  : 'Diagnostic Voice Guide',
               isUrdu: isUrdu,
               durationText: '1:15',
               diseaseName: diseaseCode,
@@ -441,7 +433,38 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
             const SizedBox(height: AppDimensions.space16),
 
             // 4. Clinical Medical Guidance & Official Veterinary Prescription (Rx)
-            if (treatment != null) ...[
+            if (diseaseCode == 'healthy') ...[
+              AppCard(
+                padding: const EdgeInsets.all(18),
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                border: BorderSide(color: AppColors.healthy.withValues(alpha: 0.4)),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_circle_outline_rounded, color: AppColors.healthy, size: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isUrdu ? 'کسی دوا کی ضرورت نہیں ہے' : 'No Medication Needed',
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.healthy),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isUrdu
+                                ? 'پرندے صحت مند ہیں۔ روزانہ معمول کی نگرانی، متوازن خوراک اور پینے کا صاف پانی جاری رکھیں۔'
+                                : 'Flock is healthy. Continue routine daily monitoring, balanced feeding, and clean water sanitation.',
+                            style: const TextStyle(fontSize: 13, color: AppColors.textSecondaryLight, height: 1.35),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppDimensions.space16),
+            ] else if (treatment != null) ...[
               AppCard(
                 padding: const EdgeInsets.all(18),
                 color: isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -662,6 +685,25 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size.fromHeight(40),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppDimensions.space16),
+            ] else ...[
+              AppCard(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: AppColors.moderate, size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        isUrdu
+                            ? 'اس مرض اور شدت کا مخصوص نسخہ فی الحال دستیاب نہیں ہے۔ براہ کرم ویٹرنری ڈاکٹر سے رجوع کریں۔'
+                            : 'Treatment protocol not available for this tier. Consult your veterinarian for tailored dosage.',
+                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondaryLight),
                       ),
                     ),
                   ],
@@ -996,8 +1038,8 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
             // Emergency Vet Call Feature & Navigation Actions
             CustomButton(
               text: isUrdu
-                  ? 'ویٹرنری ڈاکٹر کو کال کریں (+92 300 1234567)'
-                  : 'Call Veterinary Expert (+92 300 1234567)',
+                  ? 'ویٹرنری ڈاکٹر کو کال کریں'
+                  : 'Call Veterinary Expert',
               icon: Icons.phone_in_talk_rounded,
               onPressed: () => _callVeterinaryExpert(context),
             ),
@@ -1289,6 +1331,32 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
     return 'healthy';
   }
 
+  static String _translateTriageValue(String val, bool isUrdu) {
+    if (!isUrdu) return val;
+    switch (val) {
+      case 'None':
+        return 'کوئی نہیں';
+      case 'Under 10% of birds':
+        return '10 فیصد سے کم';
+      case 'Over 10% of birds':
+        return '10 فیصد سے زیادہ';
+      case 'Normal':
+        return 'معمول کے مطابق';
+      case 'Reduced consumption':
+        return 'کچھ کمی آئی ہے';
+      case 'Severely dropped':
+        return 'شدید کمی آئی ہے';
+      case 'None in 24h':
+        return 'کوئی موت نہیں';
+      case '1 to 2 birds':
+        return '1 یا 2 پرندے';
+      case 'Multiple birds died':
+        return 'کئی پرندے مرے';
+      default:
+        return val;
+    }
+  }
+
   static Widget _buildTriageVitalTile({
     required String label,
     required String value,
@@ -1327,13 +1395,13 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            value,
+            _translateTriageValue(value, isUrdu),
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w700,
               color: statusColor,
             ),
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ],

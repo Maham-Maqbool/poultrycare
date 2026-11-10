@@ -218,7 +218,7 @@ void main() {
       final script = profile.buildSpokenScript(isUrdu: true, severity: 'severe', confidenceScore: 0.96);
       expect(script.contains('رانی کھیت'), isTrue);
       expect(script.contains('تندرست اور صحت مند'), isFalse); // Never defaults to healthy!
-      expect(script.contains('96%'), isTrue);
+      expect(script.contains('96.0 فیصد'), isTrue);
       expect(script.contains('شدید'), isTrue);
     });
 
@@ -233,7 +233,7 @@ void main() {
       final script = profile.buildSpokenScript(isUrdu: true, severity: 'moderate', confidenceScore: 0.88);
       expect(script.contains('کوکسیڈیوسس'), isTrue);
       expect(script.contains('ایمپرولیم'), isTrue);
-      expect(script.contains('88%'), isTrue);
+      expect(script.contains('88.0 فیصد'), isTrue);
     });
 
     test('Salmonella profile contains dedicated audio asset and Salmonella-specific Urdu script', () {
@@ -247,7 +247,7 @@ void main() {
       final script = profile.buildSpokenScript(isUrdu: true, severity: 'mild', confidenceScore: 0.91);
       expect(script.contains('سالمونیلا'), isTrue);
       expect(script.contains('اینروفلوکساسین'), isTrue);
-      expect(script.contains('91%'), isTrue);
+      expect(script.contains('91.0 فیصد'), isTrue);
     });
 
     test('Healthy profile contains healthy spoken reassurance', () {
@@ -259,7 +259,7 @@ void main() {
 
       final script = profile.buildSpokenScript(isUrdu: true, severity: 'mild', confidenceScore: 0.99);
       expect(script.contains('تندرست اور نارمل'), isTrue);
-      expect(script.contains('99%'), isTrue);
+      expect(script.contains('99.0 فیصد'), isTrue);
     });
   });
 }

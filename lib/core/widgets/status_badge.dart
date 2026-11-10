@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
+import '../utils/formatters.dart';
 
 /// StatusBadge renders colored pill badges for disease classes,
 /// clinical severity rankings, and urgency flags.
@@ -142,12 +143,33 @@ class StatusBadge extends StatelessWidget {
   }
 
   // Factory constructor for Certainty Levels
-  factory StatusBadge.forCertainty(String? certainty, {bool isLarge = false}) {
-    final c = (certainty ?? 'confident').toLowerCase();
+  factory StatusBadge.forCertainty(
+    String? certainty, {
+    double? confidenceScore,
+    bool isUrdu = false,
+    bool isLarge = false,
+  }) {
+    String c = (certainty ?? 'high').toLowerCase();
+    if (confidenceScore != null) {
+      if (confidenceScore >= 0.95) {
+        c = 'high';
+      } else if (confidenceScore >= 0.80) {
+        c = 'moderate';
+      } else {
+        c = 'uncertain';
+      }
+    } else if (c == 'confident') {
+      c = 'high';
+    }
+
+    final scoreSuffix = confidenceScore != null
+        ? ': ${AppFormatters.formatConfidence(confidenceScore)}'
+        : '';
+
     switch (c) {
       case 'cannot_tell':
         return StatusBadge(
-          label: 'Cannot Determine',
+          label: isUrdu ? 'تعین نا ممکن$scoreSuffix' : 'Cannot Determine$scoreSuffix',
           backgroundColor: const Color(0xFFF1F5F9),
           textColor: const Color(0xFF475569),
           icon: Icons.help_outline,
@@ -155,16 +177,34 @@ class StatusBadge extends StatelessWidget {
         );
       case 'uncertain':
         return StatusBadge(
-          label: 'Uncertain Prediction',
+          label: isUrdu
+              ? (confidenceScore != null
+                  ? 'اے آئی یقین: غیر یقینی ($scoreSuffix)'
+                  : 'غیر یقینی پیش گوئی')
+              : (confidenceScore != null
+                  ? 'AI Confidence$scoreSuffix (Uncertain)'
+                  : 'Uncertain Prediction'),
           backgroundColor: const Color(0xFFFEF9C3),
           textColor: const Color(0xFF854D0E),
           icon: Icons.question_mark_outlined,
           isLarge: isLarge,
         );
-      case 'confident':
+      case 'moderate':
+        return StatusBadge(
+          label: isUrdu
+              ? 'درمیانی یقین$scoreSuffix'
+              : 'AI Confidence$scoreSuffix (Moderate)',
+          backgroundColor: const Color(0xFFE0F2FE),
+          textColor: const Color(0xFF0369A1),
+          icon: Icons.info_outline,
+          isLarge: isLarge,
+        );
+      case 'high':
       default:
         return StatusBadge(
-          label: 'High Confidence',
+          label: isUrdu
+              ? 'اعلیٰ یقین$scoreSuffix'
+              : 'AI Confidence$scoreSuffix (High)',
           backgroundColor: const Color(0xFFDCFCE7),
           textColor: const Color(0xFF15803D),
           icon: Icons.verified_outlined,

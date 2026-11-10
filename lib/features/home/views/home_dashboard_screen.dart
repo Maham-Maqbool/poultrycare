@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/vet_call_helper.dart';
+import '../../../core/utils/bidi_utils.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_image_view.dart';
 import '../../../core/widgets/audio_player_widget.dart';
@@ -13,6 +14,7 @@ import '../controllers/dashboard_controller.dart';
 import '../../scanner/controllers/scanner_controller.dart';
 import '../../flocks/controllers/flock_controller.dart';
 import '../../profile/controllers/settings_controller.dart';
+import '../../../data/models/flock_model.dart';
 import '../../../data/repositories/disease_repository.dart';
 import '../../../routes/app_routes.dart';
 
@@ -49,24 +51,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 
   Future<void> _callEmergencyVet(BuildContext context) async {
-    const phoneNumber = '+923001234567';
-    final uri = Uri.parse('tel:$phoneNumber');
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } catch (_) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Emergency Helpline: +92 300 1234567'),
-            backgroundColor: AppColors.severe,
-          ),
-        );
-      }
-    }
+    await VetCallHelper.dialVet(context);
   }
 
   @override
@@ -306,7 +291,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   Expanded(
                     child: _buildMetricCard(
                       title: isUrdu ? 'صحت مند شرح' : 'Healthy Rate',
-                      value: '${dashboard.healthyRate.toStringAsFixed(0)}%',
+                      value: dashboard.healthyRate != null
+                          ? BidiUtils.ltr('${dashboard.healthyRate!.toStringAsFixed(0)}%')
+                          : (isUrdu ? 'کوئی اسکین نہیں' : '-'),
                       icon: Icons.health_and_safety_outlined,
                       color: AppColors.healthy,
                     ),
@@ -327,7 +314,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: _buildMetricCard(
-                      title: isUrdu ? 'شدید خطرات' : 'Severe Alerts',
+                      title: isUrdu
+                          ? 'شدید خطرات'
+                          : (dashboard.severeAlerts == 1 ? 'Severe Alert' : 'Severe Alerts'),
                       value: '${dashboard.severeAlerts}',
                       icon: Icons.notification_important_outlined,
                       color: AppColors.severe,
@@ -650,8 +639,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                           const SizedBox(height: 2),
                           Text(
                             isUrdu
-                                ? 'ہنگامی مشورے کے لیے فوراً کال کریں: +92 300 1234567'
-                                : 'One-touch direct vet call: +92 300 1234567',
+                                ? (settings.vetPhone != null && settings.vetPhone!.isNotEmpty
+                                    ? 'ڈاکٹر کو کال کریں: ${BidiUtils.ltr(settings.vetPhone!)}'
+                                    : 'ہنگامی مشورے کے لیے اپنے ڈاکٹر کا نمبر سیٹ کریں')
+                                : (settings.vetPhone != null && settings.vetPhone!.isNotEmpty
+                                    ? 'Call saved vet: ${settings.vetPhone}'
+                                    : 'One-touch emergency call to your saved vet'),
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF7F1D1D),
@@ -686,8 +679,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               // Daily Audio Advisory Tip (With Real Text-to-Speech Voice Guide)
               AudioPlayerWidget(
                 title: isUrdu
-                    ? 'روزانہ کی آڈیو رہنمائی: برادے کی نمی کنٹرول'
-                    : 'Daily Advisory: Broiler Litter Moisture Control',
+                    ? 'روزانہ کی آڈیو رہنمائی: برادے کی نمی'
+                    : 'Advisory: Litter Moisture Control',
                 durationText: '0:45',
                 isUrdu: isUrdu,
                 customScript: isUrdu
@@ -764,6 +757,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     final scan = item.scan;
                     final disease = pred.predictedClass ?? 'healthy';
 
+                    final flock = flockController.flocks.cast<FlockModel?>().firstWhere(
+                      (f) => f?.id == scan.flockId,
+                      orElse: () => null,
+                    );
+                    final shedName = flock?.name ??
+                        (scan.flockId == null
+                            ? (isUrdu ? 'عام معائنہ' : 'General Screening')
+                            : (isUrdu ? 'شیڈ: ${scan.flockId}' : 'Shed: ${scan.flockId}'));
+
                     return AppCard(
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.all(12),
@@ -799,6 +801,27 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      AppFormatters.formatScanId(scan.id, isUrdu: isUrdu),
+                                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        shedName,
+                                        style: const TextStyle(
+                                          fontSize: 11.5,
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
                                 Wrap(
                                   spacing: 6,
                                   runSpacing: 4,
@@ -809,16 +832,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                                 ),
                                 const SizedBox(height: 5),
                                 Text(
-                                  '${AppFormatters.formatConfidence(pred.calibratedConfidence)} ${isUrdu ? 'یقینی' : 'confidence'}',
+                                  '${AppFormatters.formatConfidence(pred.calibratedConfidence)} ${isUrdu ? 'یقینی' : 'confidence'} \u2022 ${AppFormatters.formatDate(scan.createdAt)}',
                                   style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w500,
                                     color: AppColors.textSecondaryLight,
                                   ),
-                                ),
-                                Text(
-                                  AppFormatters.relativeTime(scan.createdAt),
-                                  style: const TextStyle(fontSize: 11, color: AppColors.textMutedLight),
                                 ),
                               ],
                             ),

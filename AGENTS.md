@@ -160,6 +160,8 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
   - Renamed default branch to `main`.
   - Merged remote `origin/master` using `-s ours` strategy to preserve the entire Phase 16 commercial codebase without conflicts.
   - Working tree is clean on branch `main` with remote history integrated.
+  - Remote sync complete: branch `main` successfully pushed to GitHub tracking `origin/main`.
+  - PR #1 ("Main") successfully merged into remote `master` (commit `b3bd4f1`). GitHub repository is 100% up to date.
 - Phase 18 Complete (Chapter 5 Database Architecture Audit):
   - Audited `resources/FYP_PoultryDiseaseDetection_Documentation_with_Chapter5 (3).docx`.
   - Analyzed Chapter 5: PostgreSQL 17 (Alpine container), Drizzle ORM (TypeScript), 10 relational tables, 7 enums.
@@ -231,3 +233,136 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Static analysis: `dart analyze` returned 0 issues.
     - Automated tests: `flutter test` passed all 29 tests (100% success rate).
     - Zero em dashes across all touched files.
+- Phase 24 Complete (Testing Report Remediation: Critical, Major, and Minor Findings Resolution):
+  - Phase 1 (Critical):
+    - C1: Completely purged fake hotline sequence +92 300 1234567. Implemented farmer-configurable vet phone in Settings with local persistence in SessionService and SettingsController. Dialing buttons now call VetCallHelper.dialVet; if no number is saved, prompts farmer to configure vet contact first.
+    - C2: Added true RTL layout mirroring by integrating flutter_localizations delegates and locale: Locale(settings.locale) in MaterialApp. Protected mixed-script segments (percentages, scan IDs, phone numbers, currencies, times) using BidiUtils.ltr isolate spans.
+  - Phase 2 (Major):
+    - M1: Defaulted all 3 pre-inference image quality checks to false in ScannerController, requiring active farmer confirmation before AI execution.
+    - M2: Removed pre-selected defaults from 3 clinical triage vitals, starting null/unselected and requiring complete farmer input before AI execution.
+    - M3: Formatted confidence scores in spoken scripts with toStringAsFixed(1), ensuring exact matching with on-screen percentages.
+    - M4: Removed hardcoded moderate severity from encyclopedia audio player and presented baselineSeverity labelled 'Typically / عام طور پر'.
+    - M5: Handled zero-scan state in DashboardController by returning null and rendering '-' / 'کوئی اسکین نہیں' instead of misleading 100%.
+    - T1: Rewrote all 4 Urdu audio scripts to authentic Urdu following Appendix A ('محترم کسان', no bracketed English, dynamic Urdu severity and confidence). Added ur-PK TTS voice verification with isLanguageAvailable and prevented _isPlaying = true in error handlers.
+  - Phase 3 (Minor UI & Polish):
+    - U1: Shortened FCR Calculator labels to 'Feed Bag (PKR)' and 'Selling Rate (PKR/kg)' so units never truncate.
+    - U2: Allowed 2 lines for audio player titles to prevent truncation.
+    - U3: Removed internal audio filenames (e.g. newcastle.mp3) from UI and replaced with 'HD Voice Guide' / 'صوتی رہنمائی'.
+    - U4: Pluralized '1 Severe Alert' vs 'Severe Alerts'.
+    - U5: Standardized date formats to AppFormatters.formatDate across all screens.
+    - U6: Wrapped triage vitals to 2 lines and translated to Urdu in DiagnosticResultScreen.
+    - U7: Scaled and prevented clipping on history thumbnail 'Poultry Specimen'.
+    - U8: Clarified FCR results subtext to 'Flock total: X bags' / 'کل شیڈ: X بوری'.
+    - U9: Shortened preset chip to 'Infected' / 'متاثرہ فلاک' with end padding.
+    - U10: Clean specimen thumbnails for legacy records.
+    - I1-I5: Labeled demo data as '[Demo]', changed verified farmer badge to 'Registered Farmer', verified secrets hygiene in .gitignore.
+  - Verification & Deployment:
+    - flutter test: 29/29 tests passed across all unit, widget, and overflow test suites (100% pass rate).
+    - dart analyze: 0 issues found (clean static analysis).
+    - Built release split APK (app-arm64-v8a-release.apk) and successfully installed and verified on connected physical Realme device.
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 26 Complete (Round 3 Fix Pass):
+  - Item 1 (Shed Assignment and Dynamic Flock Status):
+    - In `ScannerController`, default flock ID set to null ("General Screening (No Specific Shed)"). User dropdown choice persists with scan in SQLite.
+    - In `HistoryController`, added `isFlockAtRisk(flockId)` checking scans within the last 30 days for severe rating or active disease.
+    - In `FlocksListScreen`, live flock risk status binds to `history.isFlockAtRisk(flock.id)`, showing "Active Risk" / "بیماری کا خطرہ" or "Healthy" / "صحت مند".
+    - In `FlockDetailScreen`, header status badge mirrors the live 30-day risk logic and `_loadScans()` filters strictly for `flock.id`, refreshing when returning from scanning.
+    - In `ScanHistoryScreen` and `HomeDashboardScreen`, every scan row now prominently displays its shed name (or "General Screening").
+  - Item 2 (Detail and List Agreement):
+    - Verified agreement between flock list cards and flock detail header using identical 30-day live calculation.
+  - Item 3 (Scan Detail Friendly ID, Dynamic Certainty, Plain-Words Triage):
+    - In `AppFormatters`, added `formatScanId(rawId)` converting raw database IDs (e.g. `scn-db-4`) into friendly labels (`Scan #4` / `اسکین نمبر 4`).
+    - In `StatusBadge.forCertainty`, dynamically derived certainty from `confidenceScore` (>=95% High, 80-95% Moderate, <80% Uncertain) and appended confidence score (`AI Confidence: 99.7%`).
+    - In `DiagnosticRepository`, removed developer debug flag `'local_sqlite_persisted'` from `triageRules: const []`.
+    - In `ScanHistoryScreen`, replaced raw rule chips with structured plain-language farmer triage observations (Lethargy, Feed Intake, 24h Mortality).
+  - Item 4 (Run AI Diagnostic Post-Save Safe Navigation):
+    - In `ScannerController.executeDiagnosis()`, wrapped treatment lookup in try/catch and guarded against `'healthy'`, preventing treatment errors from blocking saved scan return.
+    - In `ScannerScreen`, added visible error SnackBar if diagnosis fails instead of silent no-op.
+    - In `DiagnosticResultScreen`, added fallback cards so diagnosis results render even if treatment is missing or flock is healthy.
+  - Item 5 (Healthy Disease Detail Treatment Tiers Purged):
+    - In `DiseaseDetailScreen`, when disease code is `'healthy'`, replaced the 3 treatment-tier cards with exactly one card: "No treatment needed: routine care and daily monitoring" / "کسی دوا کی ضرورت نہیں: معمول کی نگہداشت اور روزانہ نگرانی", purging prescription headers for healthy birds.
+  - Item 6 (Settings Screen Blank Page Resolution):
+    - In `SettingsScreen`, moved controller initialization to `initState()`.
+    - In `SettingsController` and `SettingsScreen`, normalized dropdown locale value to either `'en'` or `'ur'`, preventing assertion crashes on non-matching locale tags.
+  - Item 7 (M1 Quality Checks Verification):
+    - In `ScannerScreen`, quality check switches disable and notify the user until a photo is loaded.
+    - When no photo is selected, status badge displays "Select Photo First" / "پہلے تصویر لیں" and stays hidden from "Ready for AI".
+  - Verification & Code Quality:
+    - Executed `dart analyze`: 0 issues found (clean static analysis).
+    - Executed `flutter test`: 29/29 tests passed across all unit, widget, and overflow test suites (100% pass rate).
+    - Preserved 100% of FCR math, diagnostic neural network, biosecurity protocols, and feedback forms.
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 25 Complete (Final Fix Pass & Round-2 Remediation):
+  - P0 Critical 1 (Vet Number Inline Modal & Direct Dialing):
+    - Replaced Settings routing in `VetCallHelper` with an inline modal on the same screen ('Save Your Vet Number' / 'اپنے ویٹ کا نمبر محفوظ کریں' + phone input + Save & Call).
+    - On save, persists the phone locally in `SessionService` and immediately dials via `url_launcher`; subsequent calls dial directly without dialogs.
+    - Purged remaining dummy phone string in `auth_repository.dart`.
+  - P0 Critical 3 (Deleted History Retention Fixed):
+    - Removed all re-seeding logic from `DatabaseService.fetchAllRecords()` and deleted initial seeding from `DatabaseService._onCreate()`.
+    - Removed `_hasExplicitlyCleared` flag entirely.
+    - Empty history table now stays permanently empty across individual deletions, clear-all actions, and app restarts.
+  - P1 Major 9 & 11 (Authentic Spoken Audio & Zero Library Certainty Claims):
+    - Overhauled encyclopedia overview spoken scripts in `disease_audio_service.dart`: when `confidenceScore` is null (library overview), zero certainty claims are made (no 'high certainty', no '100%', no 'اعلیٰ یقین').
+    - Removed hardcoded fake duration ('0:25 / 1:30') in `audio_player_widget.dart` and replaced with live TTS percentage progress.
+  - P1 Major 10 (Flocks SQLite Persistence):
+    - Created persistent `flocks` table in local SQLite via `DatabaseService` (id, user_id, name, bird_count, breed, notes, created_at, active_disease_count).
+    - Rewrote `FlockRepository` to persist all CRUD operations directly to SQLite.
+    - Fresh installs start with an empty list; adding, updating, or deleting sheds persists across full app restarts.
+  - P2 Minor Polish (U1-U10, I1-I5):
+    - Shortened audio player titles in `diagnostic_result_screen.dart` and `home_dashboard_screen.dart` to prevent truncation.
+    - Unified date formats across all dialogs and screens to `AppFormatters.formatDate`.
+    - Formatted feed bags in FCR clipboard export to whole bags (`totalFeedBags.toStringAsFixed(0)`).
+    - Hardened dropdown in `scanner_screen.dart` with a general screening fallback item and safe value selection.
+    - Added `[Demo]` label to sample picker bottom sheet.
+  - Verification & Build:
+    - Executed `dart analyze`: 0 issues found (clean static analysis).
+    - Executed `flutter test`: 29/29 tests passed across all unit, widget, and overflow test suites (100% pass rate).
+    - Executed `flutter build apk --split-per-abi --release`: Successfully generated `app-arm64-v8a-release.apk` (180.1MB), `app-armeabi-v7a-release.apk` (165.4MB), and `app-x86_64-release.apk` (182.9MB).
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 26 Complete (Round 3 Fix Pass):
+  - Item 1 (Shed Assignment and Dynamic Flock Status):
+    - In `ScannerController`, default flock ID set to null ("General Screening (No Specific Shed)"). User dropdown choice persists with scan in SQLite.
+    - In `HistoryController`, added `isFlockAtRisk(flockId)` checking scans within the last 30 days for severe rating or active disease.
+    - In `FlocksListScreen`, live flock risk status binds to `history.isFlockAtRisk(flock.id)`, showing "Active Risk" / "بیماری کا خطرہ" or "Healthy" / "صحت مند".
+    - In `FlockDetailScreen`, header status badge mirrors the live 30-day risk logic and `_loadScans()` filters strictly for `flock.id`, refreshing when returning from scanning.
+    - In `ScanHistoryScreen` and `HomeDashboardScreen`, every scan row now prominently displays its shed name (or "General Screening").
+  - Item 2 (Detail and List Agreement):
+    - Verified agreement between flock list cards and flock detail header using identical 30-day live calculation.
+  - Item 3 (Scan Detail Friendly ID, Dynamic Certainty, Plain-Words Triage):
+    - In `AppFormatters`, added `formatScanId(rawId)` converting raw database IDs (e.g. `scn-db-4`) into friendly labels (`Scan #4` / `اسکین نمبر 4`).
+    - In `StatusBadge.forCertainty`, dynamically derived certainty from `confidenceScore` (>=95% High, 80-95% Moderate, <80% Uncertain) and appended confidence score (`AI Confidence: 99.7%`).
+    - In `DiagnosticRepository`, removed developer debug flag `'local_sqlite_persisted'` from `triageRules: const []`.
+    - In `ScanHistoryScreen`, replaced raw rule chips with structured plain-language farmer triage observations (Lethargy, Feed Intake, 24h Mortality).
+  - Item 4 (Run AI Diagnostic Post-Save Safe Navigation):
+    - In `ScannerController.executeDiagnosis()`, wrapped treatment lookup in try/catch and guarded against `'healthy'`, preventing treatment errors from blocking saved scan return.
+    - In `ScannerScreen`, added visible error SnackBar if diagnosis fails instead of silent no-op.
+    - In `DiagnosticResultScreen`, added fallback cards so diagnosis results render even if treatment is missing or flock is healthy.
+  - Item 5 (Healthy Disease Detail Treatment Tiers Purged):
+    - In `DiseaseDetailScreen`, when disease code is `'healthy'`, replaced the 3 treatment-tier cards with exactly one card: "No treatment needed: routine care and daily monitoring" / "کسی دوا کی ضرورت نہیں: معمول کی نگہداشت اور روزانہ نگرانی", purging prescription headers for healthy birds.
+  - Item 6 (Settings Screen Blank Page Resolution):
+    - In `SettingsScreen`, moved controller initialization to `initState()`.
+    - In `SettingsController` and `SettingsScreen`, normalized dropdown locale value to either `'en'` or `'ur'`, preventing assertion crashes on non-matching locale tags.
+  - Item 7 (M1 Quality Checks Verification):
+    - In `ScannerScreen`, quality check switches disable and notify the user until a photo is loaded.
+    - When no photo is selected, status badge displays "Select Photo First" / "پہلے تصویر لیں" and stays hidden from "Ready for AI".
+  - Verification & Code Quality:
+    - Executed `dart analyze`: 0 issues found (clean static analysis).
+    - Executed `flutter test`: 29/29 tests passed across all unit, widget, and overflow test suites (100% pass rate).
+    - Preserved 100% of FCR math, diagnostic neural network, biosecurity protocols, and feedback forms.
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 27 Complete (Settings Blank Screen Root Cause Resolution & Scanner Navigation Hardening):
+  - Settings Screen Blank Screen Root Cause Diagnosed via Logcat:
+    - Traced logcat assertion failure on physical device: Failed assertion: line 2251 pos 12: 'hasSize' in RenderBox during paint/layout.
+    - Root Cause 1: AppCard wrapped its content in an unconstrained Stack(fit: StackFit.loose) by default. Refactored AppCard to render Padding(child: child) directly when accentColor == null, eliminating loose constraint sizing failures.
+    - Root Cause 2: Bare DropdownButton inside ListTile.trailing received unbounded width constraints. Wrapped dropdown in bounded SizedBox(width: 120, child: DropdownButtonHideUnderline(child: DropdownButton(isExpanded: true, ...))).
+    - Added ErrorWidget.builder and FlutterError.onError in main.dart to visibly report any rendering exceptions on screen.
+    - Verified all 4 settings sections render smoothly in both English and Urdu (Appearance, My Vet Number, Storage Hygiene, Commercial Support).
+  - Scanner Screen AI Diagnostic Navigation Hardening:
+    - Converted ScannerScreen to StatefulWidget, removing inner unmounting Builder that previously invalidated context.mounted.
+    - Captured Navigator.of(context) and DiagnosticRepository before the asynchronous gap.
+    - Added fallback SQLite lookup in ScannerScreen so if res == null but a scan record was persisted, navigation still opens the result screen immediately.
+    - Wrapped post-save treatment lookup in DiagnosticResultScreen in try/catch to ensure healthy and disease scans always navigate and display properly.
+  - Verification & Testing:
+    - Executed flutter analyze: 0 issues found (clean static analysis).
+    - Executed flutter test: 32/32 tests passed across overflow_test.dart, services_test.dart, settings_test.dart, and widget_test.dart (100% pass rate).
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.

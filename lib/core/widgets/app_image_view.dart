@@ -108,6 +108,7 @@ class AppImageView extends StatelessWidget {
   }
 
   Widget _buildPoultryPlaceholder() {
+    final bool isCompact = (width != null && width! <= 64) || (height != null && height! <= 64);
     return Container(
       width: width,
       height: height,
@@ -117,21 +118,40 @@ class AppImageView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.biotech_rounded,
               color: AppColors.primaryLight,
-              size: 26,
+              size: isCompact ? 20 : 26,
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Poultry Specimen',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: Colors.white.withValues(alpha: 0.75),
+            if (!isCompact) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Poultry Specimen',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white.withValues(alpha: 0.75),
+                ),
               ),
-            ),
+            ] else ...[
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                  child: Text(
+                    'Specimen',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

@@ -13,20 +13,20 @@ class ScannerController extends ChangeNotifier {
   final ImagePicker _picker = ImagePicker();
 
   String? _selectedImagePath;
-  String? _selectedFlockId = 'flock-101';
+  String? _selectedFlockId;
   String? _forcedDisease; // For demo testing specific classes
   bool _isLocalFile = false;
   String? _errorMessage;
 
-  // 3 Clinical Flock Triage Questions
-  String _lethargy = 'Under 10% of birds';
-  String _intakeDrop = 'Reduced consumption';
-  String _suddenMortality = 'None in 24h';
+  // 3 Clinical Flock Triage Questions (start unselected / null)
+  String? _lethargy;
+  String? _intakeDrop;
+  String? _suddenMortality;
 
-  // Validation checks
-  bool _lightingPassed = true;
-  bool _sharpnessPassed = true;
-  bool _singleDroppingPassed = true;
+  // Validation checks (default to false until confirmed by farmer)
+  bool _lightingPassed = false;
+  bool _sharpnessPassed = false;
+  bool _singleDroppingPassed = false;
 
   // Processing state
   bool _isAnalyzing = false;
@@ -41,14 +41,15 @@ class ScannerController extends ChangeNotifier {
   String? get forcedDisease => _forcedDisease;
   bool get isLocalFile => _isLocalFile;
 
-  String get lethargy => _lethargy;
-  String get intakeDrop => _intakeDrop;
-  String get suddenMortality => _suddenMortality;
+  String? get lethargy => _lethargy;
+  String? get intakeDrop => _intakeDrop;
+  String? get suddenMortality => _suddenMortality;
 
   bool get lightingPassed => _lightingPassed;
   bool get sharpnessPassed => _sharpnessPassed;
   bool get singleDroppingPassed => _singleDroppingPassed;
   bool get isImageValid => _lightingPassed && _sharpnessPassed && _singleDroppingPassed;
+  bool get isTriageComplete => _lethargy != null && _intakeDrop != null && _suddenMortality != null;
 
   bool get isAnalyzing => _isAnalyzing;
   String get analysisStep => _analysisStep;
@@ -62,6 +63,12 @@ class ScannerController extends ChangeNotifier {
     _isLocalFile = false;
     _forcedDisease = null;
     _errorMessage = null;
+    _lightingPassed = false;
+    _sharpnessPassed = false;
+    _singleDroppingPassed = false;
+    _lethargy = null;
+    _intakeDrop = null;
+    _suddenMortality = null;
     notifyListeners();
   }
 
@@ -79,9 +86,9 @@ class ScannerController extends ChangeNotifier {
         _selectedImagePath = photo.path;
         _isLocalFile = true;
         _forcedDisease = null; // Unbiased AI inference on actual photo
-        _lightingPassed = true;
-        _sharpnessPassed = true;
-        _singleDroppingPassed = true;
+        _lightingPassed = false;
+        _sharpnessPassed = false;
+        _singleDroppingPassed = false;
         notifyListeners();
         return true;
       }
@@ -108,9 +115,9 @@ class ScannerController extends ChangeNotifier {
         _selectedImagePath = image.path;
         _isLocalFile = true;
         _forcedDisease = null; // Unbiased AI inference on actual photo
-        _lightingPassed = true;
-        _sharpnessPassed = true;
-        _singleDroppingPassed = true;
+        _lightingPassed = false;
+        _sharpnessPassed = false;
+        _singleDroppingPassed = false;
         notifyListeners();
         return true;
       }
@@ -128,9 +135,9 @@ class ScannerController extends ChangeNotifier {
     _selectedImagePath = path;
     _isLocalFile = false;
     _forcedDisease = targetDisease;
-    _lightingPassed = true;
-    _sharpnessPassed = true;
-    _singleDroppingPassed = true;
+    _lightingPassed = false;
+    _sharpnessPassed = false;
+    _singleDroppingPassed = false;
     notifyListeners();
   }
 
@@ -138,9 +145,9 @@ class ScannerController extends ChangeNotifier {
     _selectedImagePath = path;
     _isLocalFile = isLocal;
     _forcedDisease = targetDisease;
-    _lightingPassed = true;
-    _sharpnessPassed = true;
-    _singleDroppingPassed = true;
+    _lightingPassed = false;
+    _sharpnessPassed = false;
+    _singleDroppingPassed = false;
     notifyListeners();
   }
 
@@ -159,13 +166,13 @@ class ScannerController extends ChangeNotifier {
   }
 
   void setFlockSignals({
-    required String lethargy,
-    required String intakeDrop,
-    required String suddenMortality,
+    String? lethargy,
+    String? intakeDrop,
+    String? suddenMortality,
   }) {
-    _lethargy = lethargy;
-    _intakeDrop = intakeDrop;
-    _suddenMortality = suddenMortality;
+    if (lethargy != null) _lethargy = lethargy;
+    if (intakeDrop != null) _intakeDrop = intakeDrop;
+    if (suddenMortality != null) _suddenMortality = suddenMortality;
     notifyListeners();
   }
 
@@ -185,7 +192,7 @@ class ScannerController extends ChangeNotifier {
   }
 
   Future<DiagnosticRecord?> executeDiagnosis() async {
-    if (_selectedImagePath == null || !isImageValid) return null;
+    if (_selectedImagePath == null || !isImageValid || !isTriageComplete) return null;
 
     _isAnalyzing = true;
     _errorMessage = null;
@@ -206,19 +213,27 @@ class ScannerController extends ChangeNotifier {
         flockId: _selectedFlockId,
         forcedDisease: _forcedDisease,
         flockSignals: {
-          'lethargy': _lethargy,
-          'intakeDrop': _intakeDrop,
-          'suddenMortality': _suddenMortality,
+          'lethargy': _lethargy ?? 'None',
+          'intakeDrop': _intakeDrop ?? 'Normal',
+          'suddenMortality': _suddenMortality ?? 'None in 24h',
         },
       );
 
       _lastResult = record;
-      if (record.prediction.predictedClass != null &&
-          record.prediction.severity != null) {
-        _lastTreatment = await _diseaseRepo.getTreatment(
-          record.prediction.predictedClass!,
-          record.prediction.severity!,
-        );
+      try {
+        if (record.prediction.predictedClass != null &&
+            record.prediction.severity != null &&
+            record.prediction.predictedClass != 'healthy') {
+          _lastTreatment = await _diseaseRepo.getTreatment(
+            record.prediction.predictedClass!,
+            record.prediction.severity!,
+          );
+        } else {
+          _lastTreatment = null;
+        }
+      } catch (e) {
+        debugPrint('[ScannerController] Treatment lookup error: $e');
+        _lastTreatment = null;
       }
 
       _isAnalyzing = false;

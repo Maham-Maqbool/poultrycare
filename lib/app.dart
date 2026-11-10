@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'routes/app_routes.dart';
@@ -16,6 +17,18 @@ class PoultryCareApp extends StatelessWidget {
     return MaterialApp(
       title: 'PoultryCare',
       debugShowCheckedModeBanner: false,
+      locale: Locale(settings.locale.startsWith('ur') ? 'ur' : 'en'),
+      supportedLocales: const [
+        Locale('en', 'US'),
+        Locale('ur', 'PK'),
+        Locale('en'),
+        Locale('ur'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: settings.themeMode,

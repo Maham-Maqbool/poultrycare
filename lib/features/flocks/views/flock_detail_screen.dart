@@ -45,6 +45,14 @@ class _FlockDetailScreenState extends State<FlockDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final flock = widget.flock;
+    final now = DateTime.now();
+    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+    final recentScans = _flockScans.where((s) => s.scan.createdAt.isAfter(thirtyDaysAgo));
+    final hasActiveRisk = recentScans.any((s) {
+      final disease = s.prediction.predictedClass?.toLowerCase() ?? 'healthy';
+      final severity = s.prediction.severity?.toLowerCase() ?? 'mild';
+      return disease != 'healthy' || severity == 'severe';
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -72,6 +80,22 @@ class _FlockDetailScreenState extends State<FlockDetailScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: hasActiveRisk ? AppColors.severeLight : AppColors.healthyLight,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          hasActiveRisk ? 'Active Risk' : 'Healthy',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: hasActiveRisk ? AppColors.severe : AppColors.healthy,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
@@ -139,10 +163,13 @@ class _FlockDetailScreenState extends State<FlockDetailScreen> {
             CustomButton(
               text: 'Scan Dropping for this Flock',
               icon: Icons.camera_alt_outlined,
-              onPressed: () {
+              onPressed: () async {
                 final scanner = context.read<ScannerController>();
                 scanner.setFlockId(flock.id);
-                Navigator.pushNamed(context, AppRoutes.scanner);
+                await Navigator.pushNamed(context, AppRoutes.scanner);
+                if (mounted) {
+                  _loadScans();
+                }
               },
             ),
             const SizedBox(height: AppDimensions.space24),
@@ -184,12 +211,20 @@ class _FlockDetailScreenState extends State<FlockDetailScreen> {
                   return AppCard(
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(12),
+                    onTap: () {
+                      context.read<ScannerController>().setLastResult(item);
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.diagnosticResult,
+                        arguments: item,
+                      );
+                    },
                     child: Row(
                       children: [
                         AppImageView(
                           imagePath: item.scan.imagePath,
-                          width: 52,
-                          height: 52,
+                          width: 58,
+                          height: 58,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         const SizedBox(width: 12),

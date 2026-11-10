@@ -79,7 +79,7 @@ class AppStrings {
   static const String callVet = 'Call Veterinary Expert';
   static const String callVetUr = 'ویٹرنری ڈاکٹر کو کال کریں';
 
-  static const String emergencyHotline = '+92 300 1234567';
+  static const String emergencyHotlineLabel = 'Veterinary Helpline';
 
   // Helper method for dynamic localization
   static String get(String enText, String urText, bool isUrdu) {

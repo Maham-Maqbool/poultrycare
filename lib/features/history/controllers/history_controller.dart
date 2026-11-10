@@ -21,6 +21,22 @@ class HistoryController extends ChangeNotifier {
   String get selectedDiseaseFilter => _selectedDiseaseFilter;
   String get selectedSeverityFilter => _selectedSeverityFilter;
   String get searchQuery => _searchQuery;
+  List<DiagnosticRecord> get allRecords => _records;
+
+  /// Computes whether a flock currently has active risk based on scans in the last 30 days.
+  /// If any scan in the last 30 days is Severe or has disease != 'healthy', returns true.
+  bool isFlockAtRisk(String flockId) {
+    final now = DateTime.now();
+    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+    final flockScans = _records.where((r) =>
+        r.scan.flockId == flockId && r.scan.createdAt.isAfter(thirtyDaysAgo));
+
+    return flockScans.any((r) {
+      final disease = r.prediction.predictedClass?.toLowerCase() ?? 'healthy';
+      final severity = r.prediction.severity?.toLowerCase() ?? 'mild';
+      return disease != 'healthy' || severity == 'severe';
+    });
+  }
 
   List<DiagnosticRecord> get filteredRecords {
     var list = _records;

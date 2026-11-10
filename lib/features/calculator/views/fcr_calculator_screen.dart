@@ -327,6 +327,7 @@ class _FcrCalculatorScreenState extends State<FcrCalculatorScreen> {
                 Expanded(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.only(right: 16),
                     child: Row(
                       children: [
                         _buildPresetChip(
@@ -352,7 +353,7 @@ class _FcrCalculatorScreenState extends State<FcrCalculatorScreen> {
                         ),
                         const SizedBox(width: 6),
                         _buildPresetChip(
-                          label: isUrdu ? 'متاثرہ فلاک (کوکسیڈیوسس)' : 'Infected Flock',
+                          label: isUrdu ? 'متاثرہ فلاک' : 'Infected',
                           onTap: () => _applyPreset(
                             flockSize: 2000,
                             avgWeight: 1.85,
@@ -486,7 +487,7 @@ class _FcrCalculatorScreenState extends State<FcrCalculatorScreen> {
                       Expanded(
                         child: _buildInputField(
                           controller: _feedBagPriceController,
-                          label: isUrdu ? 'فیڈ بوری قیمت (PKR)' : 'Feed Bag Price (PKR)',
+                          label: isUrdu ? 'بوری قیمت (PKR)' : 'Feed Bag (PKR)',
                           hint: '7200',
                           icon: Icons.price_change_outlined,
                           isInteger: false,
@@ -496,7 +497,7 @@ class _FcrCalculatorScreenState extends State<FcrCalculatorScreen> {
                       Expanded(
                         child: _buildInputField(
                           controller: _liveSellingRateController,
-                          label: isUrdu ? 'منڈی زندہ ریٹ (PKR/kg)' : 'Live Selling Rate (PKR/kg)',
+                          label: isUrdu ? 'زندہ ریٹ (PKR/kg)' : 'Selling Rate (PKR/kg)',
                           hint: '420',
                           icon: Icons.trending_up_rounded,
                           isInteger: false,
@@ -586,7 +587,9 @@ class _FcrCalculatorScreenState extends State<FcrCalculatorScreen> {
                   child: _buildResultTile(
                     label: isUrdu ? 'خوراک فی پرندہ' : 'Feed / Bird',
                     value: '${feedPerBirdKg.toStringAsFixed(2)} kg',
-                    subtext: '${totalFeedBags.toStringAsFixed(1)} ${isUrdu ? "بوریاں" : "bags"}',
+                    subtext: isUrdu
+                        ? 'کل شیڈ: ${totalFeedBags.toStringAsFixed(0)} بوری'
+                        : 'Flock total: ${totalFeedBags.toStringAsFixed(0)} bags',
                     icon: Icons.inventory_2_rounded,
                     accentColor: AppColors.secondary,
                   ),
@@ -842,7 +845,7 @@ class _FcrCalculatorScreenState extends State<FcrCalculatorScreen> {
 Flock Size: $flockSize birds
 Avg Weight: $avgWeight kg
 Total Live Biomass: ${totalLiveWeightKg.toStringAsFixed(0)} kg
-Feed Consumed: ${totalFeedKg.toStringAsFixed(0)} kg (${totalFeedBags.toStringAsFixed(1)} bags)
+Feed Consumed: ${totalFeedKg.toStringAsFixed(0)} kg (${totalFeedBags.toStringAsFixed(0)} bags)
 FCR: ${fcr.toStringAsFixed(3)} ($fcrBadgeText)
 Feed Cost / kg Meat: Rs. ${feedCostPerKgMeat.toStringAsFixed(1)}
 Expected Revenue: Rs. ${_formatCurrency(totalRevenue)}

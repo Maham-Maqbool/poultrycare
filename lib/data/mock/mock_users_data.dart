@@ -5,9 +5,9 @@ import '../models/user_model.dart';
 final List<UserModel> mockUsersData = [
   UserModel(
     id: 'usr-001',
-    displayName: 'Chaudhry Poultry Farms',
+    displayName: 'My Poultry Farm [Demo]',
     email: 'farmer@poultrycare.farm',
-    phone: '+92 300 1234567',
+    phone: null,
     role: 'farmer',
     locale: 'ur',
     consentToRetainImages: true,
@@ -16,9 +16,9 @@ final List<UserModel> mockUsersData = [
   ),
   UserModel(
     id: 'usr-002',
-    displayName: 'Dr. Tariq Veterinary Clinic',
+    displayName: 'Veterinary Clinic [Demo]',
     email: 'vet.support@poultrycare.farm',
-    phone: '+92 321 7654321',
+    phone: null,
     role: 'admin',
     locale: 'ur',
     consentToRetainImages: true,
