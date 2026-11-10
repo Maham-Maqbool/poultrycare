@@ -162,8 +162,74 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
   - Working tree is clean on branch `main` with remote history integrated.
   - Remote sync complete: branch `main` successfully pushed to GitHub tracking `origin/main`.
   - PR #1 ("Main") successfully merged into remote `master` (commit `b3bd4f1`). GitHub repository is 100% up to date.
-
-
-
-
-
+- Phase 18 Complete (Chapter 5 Database Architecture Audit):
+  - Audited `resources/FYP_PoultryDiseaseDetection_Documentation_with_Chapter5 (3).docx`.
+  - Analyzed Chapter 5: PostgreSQL 17 (Alpine container), Drizzle ORM (TypeScript), 10 relational tables, 7 enums.
+  - Compared with codebase: Schema and entities are 100% mirrored in Dart models (`lib/data/models/`), but physical PostgreSQL 17 database is not running or connected yet.
+  - Documented root causes: Frontend-first mobile scope, mobile direct database security restriction, and Python inference backend vs TypeScript Drizzle ORM stack separation.
+- Phase 19 Complete (PostgreSQL 17 Database & Write-Path Integration):
+  - Created local project virtual environment in `backend/.venv` with `psycopg2-binary`, `sqlalchemy`, `pillow`, `numpy`, and `python-dotenv`.
+  - Implemented `backend/db.py` supporting PostgreSQL 17 `DATABASE_URL` with connection pooling and local SQLite fallback.
+  - Implemented `backend/models_db.py` declaring all 10 Chapter 5 tables (`users`, `sessions`, `flocks`, `diseases`, `treatments`, `model_versions`, `scans`, `predictions`, `feedback`, `audit_logs`) and 7 enums.
+  - Implemented `backend/seed_db.py` for automated schema creation and bilingual English/Urdu clinical encyclopedia seeding.
+  - Connected `backend/inference_server.py` to execute the Chapter 5 write path (`scans` -> `predictions`) upon AI diagnosis, returning persistent `scan_id`. Added `/api/diseases`, `/api/flocks`, `/api/scans`, and `/api/feedback` endpoints.
+  - Created `DATABASE_SETUP_GUIDE.md` and `.env.example` documenting 60-second free cloud PostgreSQL setup (Neon / Supabase) and Docker instructions.
+  - Verified with `backend/test_database_api.py` (3/3 tests passed) and `flutter test` (4/4 tests passed).
+- Phase 20 Complete (Live Cloud PostgreSQL 17 Deployment & Seeding):
+  - Connected project to user's live Neon cloud PostgreSQL database (`ep-curly-poetry-bcc34vgu-pooler.c-16.us-east-1.aws.neon.tech`).
+  - Executed `seed_db.py`: successfully provisioned all 10 tables and populated bilingual English/Urdu clinical content in cloud database.
+  - Executed `test_database_api.py` against live cloud PostgreSQL: verified write-path (`scans` -> `predictions`), clinical triage persistence, and feedback logging (100% test pass rate).
+- Phase 21 Complete (Standalone Offline SQLite Transition, FCR & Economics Calculator & Professional Rx Prescription UI Overhaul):
+  - Standalone Offline SQLite Transition:
+    - Completely shifted the Flutter mobile application to embedded local SQLite (sqflite), operating 100% offline and standalone with zero external cloud or server dependencies during FYP thesis defense.
+    - Streamlined DiagnosticRepository.runDiagnosis by eliminating network timeouts (_callInferenceApi), running instant on-device TFLiteService inference in ~35ms, and persisting directly to local SQLite (DatabaseService).
+  - Feed Conversion Ratio (FCR) & Economics Calculator (lib/features/calculator/views/fcr_calculator_screen.dart):
+    - Formulated practical poultry formula: FCR = Total Feed Consumed (kg) / Total Weight Gain (kg).
+    - Implemented dual unit feed toggling (50kg Bags vs Kilograms) tailored to Pakistani commercial farm practices.
+    - Implemented 4 quick preset scenarios (Standard 2K, Commercial 5K, Infected Flock, Custom).
+    - Built comprehensive commercial financial economics: Total Expected Revenue, Total Feed Cost, Chick & Operational Cost, Gross Margin Over Feed, Flock Net Profit, Net Profit per Bird, and ROI percentage.
+    - Integrated Disease Impact Simulator linking FCR penalties (e.g. +0.18 for Coccidiosis) with avoidable financial loss in PKR, including direct navigation to the AI Vision Scanner.
+    - Added FCR Calculator quick navigation card to HomeDashboardScreen and registered declarative route AppRoutes.fcrCalculator.
+  - Professional Veterinary Medicine Prescription (Rx) Pad (lib/features/scanner/views/diagnostic_result_screen.dart):
+    - Completely redesigned the medicine prescription section into an authentic veterinary Rx pad.
+    - Added stylized Rx header (Rx symbol), official clinical protocol badge, and prescription date metadata.
+    - Structured medications into individual clinical cards featuring route chips (Drinking Water, Feed Mix, Supportive Tonic), dosage guidelines, and administration duration.
+    - Integrated a mandatory Withdrawal Period safety alert card explaining chemical clearance timelines (5-7 days for anticoccidials, 7-10 days for antibiotics) for food safety regulations.
+    - Added structured patient care, hydration, and biosecurity checklists with numbered steps.
+    - Added one-touch prescription summary clipboard export for farm managers and direct veterinary dialer consultation.
+  - Quality Assurance & Rule Compliance:
+    - Passed all 29 automated tests in flutter test (100% pass rate).
+    - Static analysis: dart analyze returned 0 issues.
+    - Verified 0 layout overflows across all screens on narrow 360x640 mobile viewports in both English and Urdu.
+    - Strict Rule 7 compliance: Verified 0 em dashes across all modified and created files.
+- Phase 22 Complete (Field Feedback Exception Resolution, Clinical Triage Revamp, FCR Deep Linking & Executive UI/UX Overhaul):
+  - Field Feedback Exception Resolution (lib/features/scanner/views/diagnostic_result_screen.dart):
+    - Diagnosed and fixed the unhandled Flutter assertion crash when clicking "Confirmed Licensed Poultry Veterinarian" in the feedback form.
+    - Root cause: Dropdown items mapped Newcastle to 'ncd', while the inference pipeline and database used 'newcastle', violating DropdownButton's item value matching assertion.
+    - Added _normalizeDropdownValue and migrated to initialValue to ensure robust dropdown binding across all 4 diagnostic classes.
+  - Clinical Triage Evaluation Section Revamp (lib/features/scanner/views/diagnostic_result_screen.dart):
+    - Completely replaced raw developer tags (e.g. tflite_ondevice_inference, local_sqlite_persisted) with a farmer-centric, 3-tile Flock Vitals grid (Lethargy, Feed Intake Drop, 24h Mortality).
+    - Integrated an explainable clinical deduction banner dynamically translating vital signals and pathogen severity into plain English and Urdu clinical recommendations.
+    - Added clinical protocol verification chips (Contagion Alert, Intestinal Enteritis, Clinical Floor) for immediate reassurance.
+  - FCR & Economics Deep Linking (lib/features/scanner/views/diagnostic_result_screen.dart):
+    - Placed a dedicated "Calculate Flock FCR & Feed Efficiency Loss" shortcut card directly under the diagnosis header, allowing farmers to translate gut pathogen detections directly into feed waste and economic loss calculations.
+  - Executive UI/UX Overhaul (AppCard, AppColors, HomeDashboard, Scanner):
+    - Upgraded AppCard (lib/core/widgets/app_card.dart) with uniform tinted borders, 4px left accent indicators via Stack, and soft ambient multi-layer drop shadows (AppColors.subtleShadow and AppColors.cardShadow).
+    - Overhauled HomeDashboardScreen (lib/features/home/views/home_dashboard_screen.dart) with jewel-tone icon gradients (emeraldCardGradient, cyanCardGradient, amberCardGradient, purpleCardGradient, redCardGradient), left-accented metric tiles, and severity-color-coded recent scan records.
+    - Overhauled ScannerScreen (lib/features/scanner/views/scanner_screen.dart) with accent-bordered quality check cards, shed selectors, and high-contrast camera/gallery action cards.
+  - Verification & Rule Compliance:
+    - Executed flutter test: 29/29 tests passed across all unit, widget, and overflow test suites (100% success rate).
+    - Executed dart analyze: 0 issues found (clean static analysis).
+    - Verified strict Rule 7 compliance: Zero em dashes across the entire codebase and documentation.
+- Phase 23 Complete (Newcastle Disease Title & Repository Normalization):
+  - Diagnosed Root Cause of Title Mismatch:
+    - In DiagnosticResultScreen, the top title card rendered "Healthy Digestive Output" even though the badge, AI confidence (99.6%), severity (Severe), urgency (Vet Now), and audio narration indicated Newcastle Disease.
+    - Root cause: The title ternary expression checked `diseaseCode == 'ncd'`. Because TFLite model output and SQLite history use canonical `newcastle`, the check failed and fell through to the fallback branch (`Healthy Digestive Output`).
+  - Implemented Robust Normalization across Subsystems:
+    - Replaced the brittle inline ternary in `DiagnosticResultScreen` with `_getDiseaseTitle(diseaseCode, isUrdu)`, properly handling all aliases (`newcastle` / `ncd`, `coccidiosis`, `salmonella`, `healthy`) in both English and Urdu.
+    - Updated `PredictionModel.isNotifiable` to recognize `predictedClass == 'newcastle'` as well as `'ncd'`.
+    - Added `_normalizeCode` in `DiseaseRepository` so `getDiseaseByCode` and `getTreatment` seamlessly match `newcastle` to `ncd` in the veterinary treatments dataset.
+  - Verification & Testing:
+    - Static analysis: `dart analyze` returned 0 issues.
+    - Automated tests: `flutter test` passed all 29 tests (100% success rate).
+    - Zero em dashes across all touched files.

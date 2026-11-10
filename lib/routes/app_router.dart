@@ -11,6 +11,7 @@ import '../features/flocks/views/flocks_list_screen.dart';
 import '../features/history/views/scan_history_screen.dart';
 import '../features/encyclopedia/views/disease_library_screen.dart';
 import '../features/profile/views/settings_screen.dart';
+import '../features/calculator/views/fcr_calculator_screen.dart';
 
 /// AppRouter defines the declarative route generation for PoultryCare.
 class AppRouter {
@@ -49,6 +50,9 @@ class AppRouter {
 
       case AppRoutes.settings:
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
+
+      case AppRoutes.fcrCalculator:
+        return MaterialPageRoute(builder: (_) => const FcrCalculatorScreen());
 
       default:
         return MaterialPageRoute(

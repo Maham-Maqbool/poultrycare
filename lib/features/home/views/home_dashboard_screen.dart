@@ -335,21 +335,29 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               // CARD 1: QUICK SCAN (Scan Fecal Image)
               AppCard(
                 padding: const EdgeInsets.all(14),
-                color: isDark ? const Color(0xFF132D18) : const Color(0xFFF0FDF4),
-                border: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+                accentColor: AppColors.primary,
+                customShadow: AppColors.subtleShadow,
+                color: isDark ? const Color(0xFF132D18) : Colors.white,
                 onTap: () => _navigateToTabOrRoute(1, AppRoutes.scanner),
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.primary,
+                        gradient: AppColors.emeraldCardGradient,
                         borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
                       child: const Icon(
                         Icons.camera_enhance_rounded,
                         color: Colors.white,
-                        size: 32,
+                        size: 30,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -391,21 +399,33 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               // CARD 2: FLOCK STATUS
               AppCard(
                 padding: const EdgeInsets.all(14),
-                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-                border: BorderSide(color: AppColors.secondary.withValues(alpha: 0.3)),
+                accentColor: AppColors.secondary,
+                customShadow: AppColors.subtleShadow,
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
                 onTap: () => _navigateToTabOrRoute(2, AppRoutes.flocks),
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.secondary,
+                        gradient: LinearGradient(
+                          colors: [AppColors.secondary, AppColors.secondary.withValues(alpha: 0.85)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                         borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.secondary.withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
                       child: const Icon(
                         Icons.home_work_rounded,
                         color: Colors.white,
-                        size: 32,
+                        size: 30,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -444,24 +464,96 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               ),
               const SizedBox(height: 10),
 
-              // CARD 3: DISEASE LIBRARY
+              // CARD 3: FCR & ECONOMICS CALCULATOR
               AppCard(
                 padding: const EdgeInsets.all(14),
-                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFFAF5FF),
-                border: BorderSide(color: const Color(0xFF8B5CF6).withValues(alpha: 0.3)),
+                accentColor: const Color(0xFF0284C7),
+                customShadow: AppColors.subtleShadow,
+                color: isDark ? const Color(0xFF0C243B) : Colors.white,
+                onTap: () => Navigator.pushNamed(context, AppRoutes.fcrCalculator),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.cyanCardGradient,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.calculate_rounded,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isUrdu ? 'ایف سی آر و منافع کیلکولیٹر' : 'FCR & Economics Calculator',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                              color: Color(0xFF0284C7),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            isUrdu
+                                ? 'خوراک کی کھپت، وزن اور فی پرندہ منافع کا حساب لگائیں'
+                                : 'Calculate feed conversion ratio, meat costs & flock profit',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondaryLight,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Color(0xFF0284C7)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // CARD 4: DISEASE LIBRARY
+              AppCard(
+                padding: const EdgeInsets.all(14),
+                accentColor: const Color(0xFF8B5CF6),
+                customShadow: AppColors.subtleShadow,
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
                 onTap: () => _navigateToTabOrRoute(3, AppRoutes.encyclopedia),
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF8B5CF6),
+                        gradient: AppColors.purpleCardGradient,
                         borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
                       child: const Icon(
                         Icons.menu_book_rounded,
                         color: Colors.white,
-                        size: 32,
+                        size: 30,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -500,24 +592,32 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               ),
               const SizedBox(height: 10),
 
-              // CARD 4: EMERGENCY VET HELPLINE
+              // CARD 5: EMERGENCY VET HELPLINE
               AppCard(
                 padding: const EdgeInsets.all(14),
-                color: isDark ? const Color(0xFF2D1515) : const Color(0xFFFEF2F2),
-                border: BorderSide(color: AppColors.severe.withValues(alpha: 0.4)),
+                accentColor: AppColors.severe,
+                customShadow: AppColors.subtleShadow,
+                color: isDark ? const Color(0xFF2D1515) : Colors.white,
                 onTap: () => _callEmergencyVet(context),
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.severe,
+                        gradient: AppColors.redCardGradient,
                         borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.severe.withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
                       child: const Icon(
                         Icons.phone_in_talk_rounded,
                         color: Colors.white,
-                        size: 32,
+                        size: 30,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -659,6 +759,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                     return AppCard(
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.all(12),
+                      accentColor: disease == 'healthy'
+                          ? AppColors.healthy
+                          : (pred.severity == 'severe'
+                              ? AppColors.severe
+                              : (pred.severity == 'moderate' ? AppColors.moderate : AppColors.mild)),
+                      customShadow: AppColors.subtleShadow,
                       onTap: () async {
                         final treat = await context
                             .read<DiseaseRepository>()
@@ -735,6 +841,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }) {
     return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      accentColor: color,
+      customShadow: AppColors.subtleShadow,
       child: Row(
         children: [
           Container(
