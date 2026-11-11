@@ -366,3 +366,16 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Executed flutter analyze: 0 issues found (clean static analysis).
     - Executed flutter test: 32/32 tests passed across overflow_test.dart, services_test.dart, settings_test.dart, and widget_test.dart (100% pass rate).
     - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 28 Complete (Settings Screen Root Layout Failure: Infinite Width Constraints Resolution):
+  - Root Layout Exception Traced in Logcat:
+    - Logcat captured the exact root exception at line 137 of log: "[FLUTTER_ERROR] BoxConstraints forces an infinite width" with offending constraints "BoxConstraints(w=Infinity, 52.0<=h<=Infinity)" thrown by RenderConstrainedBox.performLayout inside _RenderInputPadding (ButtonStyleButton) during RenderFlex.performLayout.
+    - Root Cause Identified: In app_theme.dart, elevatedButtonTheme and outlinedButtonTheme had minimumSize configured as Size(double.infinity, AppDimensions.buttonHeight). When the Save ElevatedButton was placed inside a horizontal Row in the My Vet Number section of SettingsScreen, the button inherited the infinite minimum width within an unbounded horizontal flex axis, triggering BoxConstraints forces an infinite width. This failed the entire Scaffold layout and cascaded into the hasSize assertion error, leaving the settings body blank.
+  - Fix Applied:
+    - In app_theme.dart: Updated minimumSize in elevatedButtonThemeData and outlinedButtonThemeData (both light and dark modes) to Size(64, AppDimensions.buttonHeight).
+    - In settings_screen.dart: Added minimumSize: const Size(0, 48) explicitly to the Save ElevatedButton inside the Row.
+  - Verification & Builds:
+    - Executed flutter analyze: 0 issues found (clean static analysis).
+    - Executed flutter test test/settings_test.dart: 3/3 passed.
+    - Executed flutter test test/overflow_test.dart: 13/13 passed.
+    - Built split debug APK: build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk assembled successfully.
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
