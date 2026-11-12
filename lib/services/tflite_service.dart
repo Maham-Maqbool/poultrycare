@@ -168,13 +168,14 @@ class TFLiteService {
     if (rawImage == null) {
       throw Exception('Failed to decode image from path: $imagePath');
     }
+    final oriented = img.bakeOrientation(rawImage);
 
-    final rawWidth = rawImage.width;
-    final rawHeight = rawImage.height;
+    final rawWidth = oriented.width;
+    final rawHeight = oriented.height;
 
     // 3. Direct resize to 224x224 (no crop/padding, average interpolation)
     final resized = img.copyResize(
-      rawImage,
+      oriented,
       width: 224,
       height: 224,
       interpolation: img.Interpolation.average,

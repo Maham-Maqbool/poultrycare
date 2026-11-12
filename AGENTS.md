@@ -526,3 +526,13 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Automated tests: `flutter test` passed all 47/47 tests (100% success rate).
     - Guardrails strictly preserved: TFLite model, disease encyclopedia, treatment protocols, FCR math, scan flow, and triage questions untouched.
     - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 36 Complete (EXIF Orientation Normalization in TFLite Inference):
+  - In `lib/services/tflite_service.dart` (`diagnoseImage()`):
+    - Added `final oriented = img.bakeOrientation(rawImage);` directly after decoding bytes.
+    - Derived `rawWidth` and `rawHeight` from `oriented` (`rawImageWidth` and `rawImageHeight`).
+    - Passed `oriented` to `img.copyResize()` for 224x224 average interpolation resizing, preventing rotated phone camera photos from feeding sideways into the neural network.
+    - All inference inputs (0..255 float32, RGB), ratio calculations, and severity derivations preserved identically.
+  - Quality Verification:
+    - Executed `flutter analyze`: No issues found (0 issues).
+    - Executed `flutter test`: 47/47 tests passed (100% success rate).
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
