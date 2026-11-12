@@ -4,9 +4,12 @@ import '../../../data/mock/mock_scans_data.dart';
 import '../../../data/models/treatment_model.dart';
 import '../../../data/repositories/diagnostic_repository.dart';
 import '../../../data/repositories/disease_repository.dart';
+import '../../../services/image_quality_service.dart';
+import '../../../services/clinical_ratio_service.dart';
 
 /// ScannerController manages camera capture, local gallery selection,
-/// image quality validation, 3-question flock triage input, and diagnostic execution.
+/// automated real-time image quality validation, 3-question flock triage input,
+/// and diagnostic execution.
 class ScannerController extends ChangeNotifier {
   final DiagnosticRepository _diagRepo;
   final DiseaseRepository _diseaseRepo;
@@ -18,15 +21,17 @@ class ScannerController extends ChangeNotifier {
   bool _isLocalFile = false;
   String? _errorMessage;
 
+  // Clinical sign pixel ratios and derived severity
+  ClinicalSignRatios? _clinicalRatios;
+
   // 3 Clinical Flock Triage Questions (start unselected / null)
   String? _lethargy;
   String? _intakeDrop;
   String? _suddenMortality;
 
-  // Validation checks (default to false until confirmed by farmer)
-  bool _lightingPassed = false;
-  bool _sharpnessPassed = false;
-  bool _singleDroppingPassed = false;
+  // Automated image quality report (starts at initial / not checked)
+  ImageQualityReport _qualityReport = ImageQualityReport.initial();
+  bool _qualityCheckFailed = false;
 
   // Processing state
   bool _isAnalyzing = false;
@@ -40,15 +45,18 @@ class ScannerController extends ChangeNotifier {
   String? get selectedFlockId => _selectedFlockId;
   String? get forcedDisease => _forcedDisease;
   bool get isLocalFile => _isLocalFile;
+  ClinicalSignRatios? get clinicalRatios => _clinicalRatios;
 
   String? get lethargy => _lethargy;
   String? get intakeDrop => _intakeDrop;
   String? get suddenMortality => _suddenMortality;
 
-  bool get lightingPassed => _lightingPassed;
-  bool get sharpnessPassed => _sharpnessPassed;
-  bool get singleDroppingPassed => _singleDroppingPassed;
-  bool get isImageValid => _lightingPassed && _sharpnessPassed && _singleDroppingPassed;
+  ImageQualityReport get qualityReport => _qualityReport;
+  bool get isCheckingQuality => _isAnalyzing;
+  bool get lightingPassed => _qualityReport.lightingStatus == QualityCheckStatus.passed;
+  bool get sharpnessPassed => _qualityReport.sharpnessStatus == QualityCheckStatus.passed;
+  bool get isImageValid => _selectedImagePath != null && !_qualityCheckFailed;
+  bool get isQualityFailed => _qualityCheckFailed;
   bool get isTriageComplete => _lethargy != null && _intakeDrop != null && _suddenMortality != null;
 
   bool get isAnalyzing => _isAnalyzing;
@@ -63,18 +71,43 @@ class ScannerController extends ChangeNotifier {
     _isLocalFile = false;
     _forcedDisease = null;
     _errorMessage = null;
-    _lightingPassed = false;
-    _sharpnessPassed = false;
-    _singleDroppingPassed = false;
+    _qualityCheckFailed = false;
+    _qualityReport = ImageQualityReport.initial();
+    _clinicalRatios = null;
     _lethargy = null;
     _intakeDrop = null;
     _suddenMortality = null;
     notifyListeners();
   }
 
+  /// Computes clinical sign pixel ratios and derived severity score on-device.
+  Future<void> _computeClinicalRatios(String path) async {
+    try {
+      _clinicalRatios = await ClinicalRatioService.computeFromPath(path);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[ScannerController] Notice computing clinical ratios: $e');
+    }
+  }
+
+  /// Evaluates lighting and focal sharpness silently on the chosen photo.
+  Future<ImageQualityReport> evaluateQualitySilently() async {
+    if (_selectedImagePath == null) return ImageQualityReport.initial();
+    final report = await ImageQualityService.evaluateImage(_selectedImagePath!);
+    _qualityReport = report;
+    _qualityCheckFailed = !report.isPassed;
+    if (_qualityCheckFailed) {
+      _errorMessage = report.getPrimaryFailureMessage(false);
+    }
+    notifyListeners();
+    return report;
+  }
+
   /// Captures a live photograph using the device camera.
   Future<bool> pickImageFromCamera() async {
     _errorMessage = null;
+    _qualityCheckFailed = false;
+    _qualityReport = ImageQualityReport.initial();
     try {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
@@ -86,9 +119,10 @@ class ScannerController extends ChangeNotifier {
         _selectedImagePath = photo.path;
         _isLocalFile = true;
         _forcedDisease = null; // Unbiased AI inference on actual photo
-        _lightingPassed = false;
-        _sharpnessPassed = false;
-        _singleDroppingPassed = false;
+        _errorMessage = null;
+        _qualityCheckFailed = false;
+        _qualityReport = ImageQualityReport.initial();
+        _computeClinicalRatios(photo.path);
         notifyListeners();
         return true;
       }
@@ -104,6 +138,8 @@ class ScannerController extends ChangeNotifier {
   /// Selects an authentic poultry photo from local device gallery.
   Future<bool> pickImageFromGallery() async {
     _errorMessage = null;
+    _qualityCheckFailed = false;
+    _qualityReport = ImageQualityReport.initial();
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
@@ -115,9 +151,10 @@ class ScannerController extends ChangeNotifier {
         _selectedImagePath = image.path;
         _isLocalFile = true;
         _forcedDisease = null; // Unbiased AI inference on actual photo
-        _lightingPassed = false;
-        _sharpnessPassed = false;
-        _singleDroppingPassed = false;
+        _errorMessage = null;
+        _qualityCheckFailed = false;
+        _qualityReport = ImageQualityReport.initial();
+        _computeClinicalRatios(image.path);
         notifyListeners();
         return true;
       }
@@ -135,9 +172,10 @@ class ScannerController extends ChangeNotifier {
     _selectedImagePath = path;
     _isLocalFile = false;
     _forcedDisease = targetDisease;
-    _lightingPassed = false;
-    _sharpnessPassed = false;
-    _singleDroppingPassed = false;
+    _errorMessage = null;
+    _qualityCheckFailed = false;
+    _qualityReport = ImageQualityReport.initial();
+    _computeClinicalRatios(path);
     notifyListeners();
   }
 
@@ -145,9 +183,10 @@ class ScannerController extends ChangeNotifier {
     _selectedImagePath = path;
     _isLocalFile = isLocal;
     _forcedDisease = targetDisease;
-    _lightingPassed = false;
-    _sharpnessPassed = false;
-    _singleDroppingPassed = false;
+    _errorMessage = null;
+    _qualityCheckFailed = false;
+    _qualityReport = ImageQualityReport.initial();
+    _computeClinicalRatios(path);
     notifyListeners();
   }
 
@@ -176,35 +215,39 @@ class ScannerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleLighting(bool value) {
-    _lightingPassed = value;
-    notifyListeners();
-  }
-
-  void toggleSharpness(bool value) {
-    _sharpnessPassed = value;
-    notifyListeners();
-  }
-
-  void toggleSingleDropping(bool value) {
-    _singleDroppingPassed = value;
-    notifyListeners();
-  }
-
   Future<DiagnosticRecord?> executeDiagnosis() async {
-    if (_selectedImagePath == null || !isImageValid || !isTriageComplete) return null;
+    if (_selectedImagePath == null || !isTriageComplete) return null;
 
     _isAnalyzing = true;
     _errorMessage = null;
-    _analysisStep = 'Preprocessing image tensor (224x224 RGB)...';
+    _qualityCheckFailed = false;
+    _analysisStep = 'Validating specimen image quality...';
     notifyListeners();
 
     try {
-      await Future.delayed(const Duration(milliseconds: 150));
+      // 1. Silent automatic quality checks before inference
+      final qualityReport =
+          await ImageQualityService.evaluateImage(_selectedImagePath!);
+      _qualityReport = qualityReport;
+
+      if (!qualityReport.isPassed) {
+        _isAnalyzing = false;
+        _qualityCheckFailed = true;
+        _errorMessage = qualityReport.getPrimaryFailureMessage(false);
+        _analysisStep = 'Quality check failed';
+        notifyListeners();
+        return null;
+      }
+
+      // 2. Preprocessing & model inference
+      _analysisStep = 'Preprocessing image tensor (224x224 RGB)...';
+      notifyListeners();
+
+      await Future.delayed(const Duration(milliseconds: 100));
       _analysisStep = 'Executing on-device AI vision diagnosis...';
       notifyListeners();
 
-      await Future.delayed(const Duration(milliseconds: 150));
+      await Future.delayed(const Duration(milliseconds: 100));
       _analysisStep = 'Synthesizing clinical flock triage rules...';
       notifyListeners();
 

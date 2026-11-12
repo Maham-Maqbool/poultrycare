@@ -823,7 +823,7 @@ class _FcrCalculatorScreenState extends State<FcrCalculatorScreen> {
                   ),
                   const SizedBox(height: 12),
                   CustomButton(
-                    text: isUrdu ? 'بیٹھ کا AI اسکین کریں (کوکسیڈیوسس چیک کریں)' : 'Scan Fecal Specimen for Coccidiosis',
+                    text: isUrdu ? 'بیٹھ کا AI اسکین کریں' : 'Scan Fecal Specimen',
                     icon: Icons.camera_enhance_rounded,
                     variant: ButtonVariant.outlined,
                     onPressed: () {

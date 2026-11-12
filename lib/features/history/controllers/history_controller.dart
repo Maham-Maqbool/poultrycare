@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/flock_status_helper.dart';
 import '../../../data/mock/mock_scans_data.dart';
 import '../../../data/repositories/diagnostic_repository.dart';
 
@@ -24,18 +25,8 @@ class HistoryController extends ChangeNotifier {
   List<DiagnosticRecord> get allRecords => _records;
 
   /// Computes whether a flock currently has active risk based on scans in the last 30 days.
-  /// If any scan in the last 30 days is Severe or has disease != 'healthy', returns true.
   bool isFlockAtRisk(String flockId) {
-    final now = DateTime.now();
-    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
-    final flockScans = _records.where((r) =>
-        r.scan.flockId == flockId && r.scan.createdAt.isAfter(thirtyDaysAgo));
-
-    return flockScans.any((r) {
-      final disease = r.prediction.predictedClass?.toLowerCase() ?? 'healthy';
-      final severity = r.prediction.severity?.toLowerCase() ?? 'mild';
-      return disease != 'healthy' || severity == 'severe';
-    });
+    return FlockStatusHelper.isAtRiskFromRecords(_records, flockId: flockId);
   }
 
   List<DiagnosticRecord> get filteredRecords {

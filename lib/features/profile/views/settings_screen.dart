@@ -154,6 +154,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const SizedBox(width: 10),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(0, 48),
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

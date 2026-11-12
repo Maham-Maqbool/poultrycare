@@ -126,11 +126,17 @@ class DatabaseService {
         record.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
+      if (record.flockId != null && record.flockId!.isNotEmpty) {
+        await recalculateFlockRisk(record.flockId!);
+      }
       return id;
     } catch (e) {
       debugPrint('[DatabaseService] Native SQLite insert error: $e');
       final fallbackId = _memoryFallback.length + 1;
       _memoryFallback.insert(0, record.copyWith(id: fallbackId));
+      if (record.flockId != null && record.flockId!.isNotEmpty) {
+        await recalculateFlockRisk(record.flockId!);
+      }
       return fallbackId;
     }
   }
@@ -180,15 +186,29 @@ class DatabaseService {
   Future<int> deleteRecord(int id) async {
     try {
       final db = await database;
-      return await db.delete(
+      // Query flockId prior to deletion to recalculate risk
+      final rec = await getRecordById(id);
+      final flockId = rec?.flockId;
+
+      final result = await db.delete(
         tableHistory,
         where: 'id = ?',
         whereArgs: [id],
       );
+
+      if (flockId != null && flockId.isNotEmpty) {
+        await recalculateFlockRisk(flockId);
+      }
+      return result;
     } catch (e) {
       debugPrint('[DatabaseService] Native SQLite delete error: $e');
+      final rec = _memoryFallback.where((r) => r.id == id).firstOrNull;
+      final flockId = rec?.flockId;
       final initialLen = _memoryFallback.length;
       _memoryFallback.removeWhere((r) => r.id == id);
+      if (flockId != null && flockId.isNotEmpty) {
+        await recalculateFlockRisk(flockId);
+      }
       return initialLen - _memoryFallback.length;
     }
   }
@@ -198,11 +218,19 @@ class DatabaseService {
   Future<int> deleteAllRecords() async {
     try {
       final db = await database;
-      return await db.delete(tableHistory);
+      final count = await db.delete(tableHistory);
+      await db.update(tableFlocks, {'active_disease_count': 0});
+      for (int i = 0; i < _flocksMemoryFallback.length; i++) {
+        _flocksMemoryFallback[i] = _flocksMemoryFallback[i].copyWith(activeDiseaseCount: 0);
+      }
+      return count;
     } catch (e) {
       debugPrint('[DatabaseService] Native SQLite clear error: $e');
       final count = _memoryFallback.length;
       _memoryFallback.clear();
+      for (int i = 0; i < _flocksMemoryFallback.length; i++) {
+        _flocksMemoryFallback[i] = _flocksMemoryFallback[i].copyWith(activeDiseaseCount: 0);
+      }
       return count;
     }
   }
@@ -249,6 +277,7 @@ class DatabaseService {
   /// Fetches all flocks stored in the local database.
   Future<List<FlockModel>> fetchAllFlocks() async {
     try {
+      await syncAllFlocksRisk();
       final db = await database;
       final maps = await db.query(
         tableFlocks,
@@ -344,6 +373,62 @@ class DatabaseService {
     } catch (e) {
       debugPrint('[DatabaseService] Native SQLite deleteAllFlocks error: $e');
       _flocksMemoryFallback.clear();
+    }
+  }
+
+  /// Recalculates the active disease count for a specific flock based on
+  /// scans within the last 30 days and updates the flocks table.
+  Future<void> recalculateFlockRisk(String flockId) async {
+    try {
+      final db = await database;
+      final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30)).toIso8601String();
+      final scans = await db.query(
+        tableHistory,
+        where: 'flock_id = ? AND timestamp >= ?',
+        whereArgs: [flockId, thirtyDaysAgo],
+      );
+
+      int activeCount = 0;
+      for (final s in scans) {
+        final disease = (s['disease_name'] as String? ?? '').toLowerCase();
+        final severity = (s['severity_level'] as String? ?? '').toLowerCase();
+        if (disease != 'healthy') {
+          if (severity == 'severe' || severity == 'moderate') {
+            activeCount++;
+          }
+        }
+      }
+
+      await db.update(
+        tableFlocks,
+        {'active_disease_count': activeCount},
+        where: 'id = ?',
+        whereArgs: [flockId],
+      );
+
+      final idx = _flocksMemoryFallback.indexWhere((f) => f.id == flockId);
+      if (idx != -1) {
+        final current = _flocksMemoryFallback[idx];
+        _flocksMemoryFallback[idx] = current.copyWith(activeDiseaseCount: activeCount);
+      }
+    } catch (e) {
+      debugPrint('[DatabaseService] recalculateFlockRisk error: $e');
+    }
+  }
+
+  /// Synchronizes active risk status for all flocks in the database.
+  Future<void> syncAllFlocksRisk() async {
+    try {
+      final db = await database;
+      final flocks = await db.query(tableFlocks, columns: ['id']);
+      for (final f in flocks) {
+        final fid = f['id'] as String?;
+        if (fid != null && fid.isNotEmpty) {
+          await recalculateFlockRisk(fid);
+        }
+      }
+    } catch (e) {
+      debugPrint('[DatabaseService] syncAllFlocksRisk error: $e');
     }
   }
 

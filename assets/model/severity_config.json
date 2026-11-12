@@ -1,9 +1,12 @@
 {
   "uncertain_below": 0.5,
-  "mild_max": 0.67,
-  "moderate_max": 0.83,
+  "blood_ceiling": 0.2239,
+  "abnormal_ceiling": 0.05,
+  "watery_ceiling": 0.1676,
+  "mild_band_max": 1.0,
+  "moderate_band_max": 2.0,
   "min_severity_by_class": {
     "Newcastle": "Moderate"
   },
-  "note": "Severity is a model-certainty-based risk level, not a clinical grade."
+  "note": "Severity is derived from visible clinical signs (blood, abnormal colour, watery consistency) measured as pixel ratios, not from model confidence."
 }

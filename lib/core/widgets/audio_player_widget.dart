@@ -402,7 +402,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
                     ],
                   ),
 
-                  // Status Badges & Confidence Pill
+                  // Status Badges
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 8,
@@ -412,23 +412,6 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
                       StatusBadge.forDisease(profile.canonicalName),
                       if (widget.severity != null)
                         StatusBadge.forSeverity(widget.severity),
-                      if (widget.confidenceScore != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF0F172A) : AppColors.primaryContainerLight,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-                          ),
-                          child: Text(
-                            '${BidiUtils.ltr('${(widget.confidenceScore! * 100).toStringAsFixed(1)}%')} ${widget.isUrdu ? 'یقینی' : 'Confidence'}',
-                            style: const TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
                       // Audio asset / stream indicator badge
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),

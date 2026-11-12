@@ -30,11 +30,14 @@ class DiagnosticRepository {
       createdAt: dbRec.timestamp,
     );
 
-    final String diseaseCode = dbRec.diseaseName.toLowerCase();
-    final String severity = dbRec.severityLevel.toLowerCase();
-    final String urgency = (severity == 'severe' || diseaseCode == 'newcastle')
-        ? 'vet_now'
-        : (severity == 'healthy' ? 'monitor' : 'treat_today');
+    final String diseaseCode = dbRec.diseaseName.toLowerCase().trim();
+    final String rawSev = dbRec.severityLevel.toLowerCase().trim();
+    final String severity = (rawSev == 'healthy') ? 'mild' : rawSev;
+    final String urgency = (diseaseCode == 'healthy')
+        ? 'monitor'
+        : ((severity == 'severe' || diseaseCode == 'newcastle')
+            ? 'vet_now'
+            : 'treat_today');
 
     final String derivedCertainty = dbRec.confidenceScore >= 0.95
         ? 'high'
@@ -178,37 +181,33 @@ class DiagnosticRepository {
     String predictedClass = 'healthy';
     double confidence = 0.95;
     Map<String, double> probabilities = {'healthy': 0.95};
-    String derivedSeverity = 'mild';
+    String derivedSeverity = 'healthy';
     String derivedUrgency = 'monitor';
     final List<String> rulesFired = [];
     String modelVersionId = 'PC-VisionAI-v2.4';
 
     if (tfliteResult != null) {
       predictedClass =
-          (forcedDisease ?? tfliteResult.predictedClass).toLowerCase();
+          (forcedDisease ?? tfliteResult.predictedClass).toLowerCase().trim();
       confidence = tfliteResult.confidence;
       probabilities = tfliteResult.probabilities
-          .map((k, v) => MapEntry(k.toLowerCase(), v));
-      derivedSeverity = tfliteResult.severity.toLowerCase();
-      derivedUrgency = tfliteResult.urgency.toLowerCase();
+          .map((k, v) => MapEntry(k.toLowerCase().trim(), v));
+      derivedSeverity = tfliteResult.severity.toLowerCase().trim();
       preprocessMs = tfliteResult.preprocessMs;
       decodeMs = 12.0;
       inferenceMs = tfliteResult.inferenceMs;
       modelVersionId = tfliteResult.modelName;
       rulesFired.add('tflite_ondevice_inference');
-      rulesFired.add('calibrated_severity_${derivedSeverity.toLowerCase()}');
+      rulesFired.add('ratio_severity_$derivedSeverity');
     } else {
       predictedClass = (forcedDisease ??
               _detectClassFromImage(imagePath, flockSignals))
-          .toLowerCase();
+          .toLowerCase().trim();
       confidence = 0.94;
       probabilities = {predictedClass: 0.94};
       derivedSeverity = (predictedClass == 'newcastle')
           ? 'severe'
           : (predictedClass == 'healthy' ? 'mild' : 'moderate');
-      derivedUrgency = (predictedClass == 'newcastle')
-          ? 'vet_now'
-          : (predictedClass == 'healthy' ? 'monitor' : 'treat_today');
       rulesFired.add('baseline_${predictedClass}_protocol');
     }
 
@@ -219,26 +218,43 @@ class DiagnosticRepository {
     final String suddenMortality =
         (flockSignals['suddenMortality'] ?? 'None in 24h').toString();
 
-    if (suddenMortality.contains('Multiple') ||
-        suddenMortality.contains('died')) {
-      derivedSeverity = 'severe';
+    if (predictedClass != 'healthy') {
+      if (suddenMortality.contains('Multiple') ||
+          suddenMortality.contains('died')) {
+        derivedSeverity = 'severe';
+        rulesFired.add('mortality_escalation_severe');
+      } else if (suddenMortality.contains('1 to 2')) {
+        if (derivedSeverity == 'mild') {
+          derivedSeverity = 'moderate';
+          rulesFired.add('mortality_early_warning_escalation');
+        }
+      }
+
+      if (intakeDrop.contains('Severely') && derivedSeverity != 'severe') {
+        derivedSeverity = 'moderate';
+        rulesFired.add('feed_intake_drop_escalation');
+      }
+
+      if (lethargy.contains('Over 10%') && derivedSeverity != 'severe') {
+        derivedSeverity = 'moderate';
+        rulesFired.add('flock_wide_lethargy_escalation');
+      }
+    }
+
+    // 3. Urgency mapping rule (do not change):
+    // Healthy -> MONITOR (green);
+    // Mild/Moderate -> TREAT TODAY (orange);
+    // Severe -> VET NOW (red);
+    // Newcastle -> VET NOW.
+    if (predictedClass == 'healthy') {
+      derivedUrgency = 'monitor';
+      rulesFired.add('healthy_specimen_routine_monitoring');
+    } else if (predictedClass == 'newcastle' || derivedSeverity == 'severe') {
       derivedUrgency = 'vet_now';
-      rulesFired.add('mortality_escalation_severe');
-    } else if (suddenMortality.contains('1 to 2')) {
-      if (derivedSeverity == 'mild') derivedSeverity = 'moderate';
-      if (derivedUrgency == 'monitor') derivedUrgency = 'treat_today';
-      rulesFired.add('mortality_early_warning_escalation');
-    }
-
-    if (intakeDrop.contains('Severely') && derivedSeverity != 'severe') {
-      derivedSeverity = 'moderate';
-      if (derivedUrgency == 'monitor') derivedUrgency = 'treat_today';
-      rulesFired.add('feed_intake_drop_escalation');
-    }
-
-    if (lethargy.contains('Over 10%') && derivedSeverity != 'severe') {
-      derivedSeverity = 'moderate';
-      rulesFired.add('flock_wide_lethargy_escalation');
+      rulesFired.add('pathogen_or_severity_urgent_vet');
+    } else {
+      derivedUrgency = 'treat_today';
+      rulesFired.add('standard_treatment_protocol');
     }
 
     final now = DateTime.now();

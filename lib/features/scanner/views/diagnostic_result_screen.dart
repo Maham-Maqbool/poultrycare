@@ -179,10 +179,16 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
 
     final pred = record.prediction;
     final scan = record.scan;
-    final diseaseCode = pred.predictedClass ?? 'healthy';
-    final severity = pred.severity ?? 'mild';
-    final urgency = pred.urgency ?? 'monitor';
-    final isNotifiable = pred.isNotifiable;
+    final diseaseCode = (pred.predictedClass ?? 'healthy').toLowerCase().trim();
+    final rawSeverity = (pred.severity ?? 'mild').toLowerCase().trim();
+    final severity = (rawSeverity == 'healthy') ? 'mild' : rawSeverity;
+    final rawUrgency = (pred.urgency ?? '').toLowerCase().replaceAll(' ', '_').trim();
+    final urgency = (diseaseCode == 'healthy')
+        ? 'monitor'
+        : ((diseaseCode == 'newcastle' || severity == 'severe' || rawUrgency == 'vet_now' || rawUrgency.contains('vet'))
+            ? 'vet_now'
+            : (rawUrgency == 'vet_soon' ? 'vet_soon' : 'treat_today'));
+    final isNotifiable = pred.isNotifiable || diseaseCode == 'newcastle';
 
     return Scaffold(
       appBar: AppBar(
@@ -322,30 +328,24 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                   ),
                   const Divider(height: 24),
 
-                  // Metrics Row: AI Confidence, Severity & Urgency
+                  // Metrics Row: Clinical Severity & Action Urgency
                   Row(
                     children: [
-                      Expanded(
-                        child: _buildMetricTile(
-                          label: isUrdu ? 'یقینی شرح' : 'AI Confidence',
-                          value: AppFormatters.formatConfidence(pred.calibratedConfidence),
-                          badgeColor: AppColors.primary,
-                        ),
-                      ),
-                      Container(width: 1, height: 36, color: AppColors.borderLight),
                       Expanded(
                         child: _buildMetricTile(
                           label: isUrdu ? 'مرض کی شدت' : 'Clinical Severity',
                           value: isUrdu
                               ? (severity == 'severe'
                                   ? 'شدید'
-                                  : (severity == 'moderate' ? 'درمیانی' : 'ہلکی'))
+                                  : (severity == 'moderate'
+                                      ? 'درمیانی'
+                                      : 'ہلکی'))
                               : severity.toUpperCase(),
                           badgeColor: severity == 'severe'
                               ? AppColors.severe
-                              : severity == 'moderate'
+                              : (severity == 'moderate'
                                   ? AppColors.moderate
-                                  : AppColors.healthy,
+                                  : AppColors.mild),
                         ),
                       ),
                       Container(width: 1, height: 36, color: AppColors.borderLight),
@@ -353,11 +353,23 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                         child: _buildMetricTile(
                           label: isUrdu ? 'ضروری اقدام' : 'Action Urgency',
                           value: isUrdu
-                              ? (urgency == 'vet_now' ? 'فوری ڈاکٹر' : 'آج ہی علاج')
-                              : urgency.replaceAll('_', ' ').toUpperCase(),
+                              ? (urgency == 'vet_now'
+                                  ? 'فوری ڈاکٹر'
+                                  : (urgency == 'monitor' ? 'نگرانی' : 'آج ہی علاج'))
+                              : (urgency == 'monitor'
+                                  ? 'MONITOR'
+                                  : (urgency == 'vet_now'
+                                      ? 'VET NOW'
+                                      : (urgency == 'vet_soon'
+                                          ? 'VET SOON'
+                                          : 'TREAT TODAY'))),
                           badgeColor: urgency == 'vet_now'
                               ? AppColors.urgencyVetNow
-                              : AppColors.urgencyTreatToday,
+                              : (urgency == 'monitor'
+                                  ? AppColors.urgencyMonitor
+                                  : (urgency == 'vet_soon'
+                                      ? AppColors.urgencyVetSoon
+                                      : AppColors.urgencyTreatToday)),
                         ),
                       ),
                     ],
@@ -751,8 +763,8 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                             ),
                             Text(
                               isUrdu
-                                  ? 'تصویر کے معائنے کے ساتھ فارم کے 3 اہم سگنلز کا تجزیہ'
-                                  : 'Triaged from specimen vision combined with 3 flock signals',
+                                  ? 'بیٹھ کی تصویر اور پرندوں کی 3 اہم علامات کی بنیاد پر'
+                                  : 'Based on the specimen photo and 3 flock signs',
                               style: const TextStyle(fontSize: 11.5, color: AppColors.textMutedLight),
                             ),
                           ],
@@ -869,30 +881,6 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                         ],
                       );
                     },
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Protocol Verification Chips
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      _buildTriageChip(
-                        isUrdu ? 'نیورل ویژن ایج اے آئی' : 'Neural Vision Edge AI',
-                        Icons.visibility_outlined,
-                        isDark,
-                      ),
-                      _buildTriageChip(
-                        isUrdu ? 'کلینیکل بائیو سیکیورٹی پروٹوکول' : 'Clinical Triage Protocol',
-                        Icons.verified_outlined,
-                        isDark,
-                      ),
-                      _buildTriageChip(
-                        isUrdu ? 'آف لائن لوکل ڈیٹا بیس محفوظ' : 'Offline Relational Storage',
-                        Icons.storage_outlined,
-                        isDark,
-                      ),
-                    ],
                   ),
                 ],
               ),
@@ -1421,51 +1409,24 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
 
     if (mortality.contains('Multiple') || mortality.contains('1 to 2')) {
       return isUrdu
-          ? 'ٹریج تجزیہ: گزشتہ 24 گھنٹوں میں ہنگامی اموات کی نشاندہی ہوئی۔ کیس کو فوری ترجیحی بنیاد پر شدید درجے (Severe) میں منتقل کر کے ہنگامی ویٹرنری ہیلپ لائن فعال کر دی گئی ہے۔'
-          : 'Triage Assessment: Sudden mortality detected within 24 hours. The clinical rules engine escalated severity to Severe and prioritized immediate emergency veterinary consultation.';
+          ? 'گزشتہ 24 گھنٹوں میں اموات کی نشاندہی ہوئی۔ شدت شدید (Severe) ہے۔ براہ کرم فوراً ویٹرنری ڈاکٹر سے رابطہ کریں۔'
+          : 'Sudden mortality detected within 24 hours. Severity is Severe. Please consult a veterinarian immediately.';
     }
 
     if (intake.contains('Severely') || lethargy.contains('Over 10%')) {
       return isUrdu
-          ? 'ٹریج تجزیہ: خوراک میں 30 فیصد سے زائد کمی اور فلاک میں سستی شدید اندرونی آنتوں کی سوزش کی علامت ہے۔ شدت کو درمیانے سے شدید کی طرف مانیٹر کیا جا رہا ہے۔'
-          : 'Triage Assessment: Severe feed intake drop (>30%) and flock lethargy confirm acute intestinal enteritis. Diagnostic triage escalated severity to Moderate.';
+          ? 'خوراک میں 30 فیصد سے زائد کمی اور فلاک میں سستی بیماری کی علامت ہے۔'
+          : 'Severe feed intake drop and flock lethargy confirm illness. Severity is Moderate.';
     }
 
     if (diseaseCode == 'newcastle' || diseaseCode == 'ncd') {
       return isUrdu
-          ? 'ٹریج تجزیہ: رانی کھیت کی وائرل نوعیت کے پیش نظر کم از کم درمیانی سے شدید قرنطینہ پروٹوکول خودکار طور پر لاگو کیا گیا ہے۔'
-          : 'Triage Assessment: Highly contagious viral pathogen (Newcastle) detected. Automatic clinical safety floor enforced at Moderate to Severe urgency.';
+          ? 'رانی کھیت ایک متعدی بیماری ہے۔ براہ کرم فلاک کو قرنطینہ میں رکھیں۔'
+          : 'Highly contagious Newcastle disease detected. Please quarantine the flock.';
     }
 
     return isUrdu
-        ? 'ٹریج تجزیہ: فلاک کے وائٹلز تسلی بخش ہیں۔ کوئی غیر معمولی اموات یا شدید سستی نہیں پائی گئی۔ آن ڈیوائس ماڈل کا بنیادی تشخیصی پروٹوکول مؤثر ہے۔'
-        : 'Triage Assessment: Flock vital signals are stable with normal feed intake and zero unexplained mortality. Standard baseline diagnostic protocol is active.';
-  }
-
-  static Widget _buildTriageChip(String label, IconData icon, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 12, color: AppColors.primary),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
+        ? 'فلاک کے وائٹلز تسلی بخش ہیں۔ کوئی غیر معمولی اموات یا شدید سستی نہیں پائی گئی۔'
+        : 'Flock vital signals are stable with normal feed intake and zero unexplained mortality.';
   }
 }

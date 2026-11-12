@@ -2,17 +2,53 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
+import '../../../core/utils/flock_status_helper.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/empty_state_view.dart';
+import '../../../data/models/flock_model.dart';
 import '../controllers/flock_controller.dart';
 import '../../history/controllers/history_controller.dart';
 import '../../profile/controllers/settings_controller.dart';
 import 'add_flock_modal.dart';
 import 'flock_detail_screen.dart';
 
-class FlocksListScreen extends StatelessWidget {
+class FlocksListScreen extends StatefulWidget {
   const FlocksListScreen({super.key});
+
+  @override
+  State<FlocksListScreen> createState() => _FlocksListScreenState();
+}
+
+class _FlocksListScreenState extends State<FlocksListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<FlockController>().loadFlocks();
+        context.read<HistoryController>().loadRecords();
+      }
+    });
+  }
+
+  Future<void> _handleAddFlock() async {
+    await AddFlockModal.show(context);
+    if (!mounted) return;
+    context.read<FlockController>().loadFlocks();
+  }
+
+  Future<void> _handleOpenFlockDetail(FlockModel flock) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FlockDetailScreen(flock: flock),
+      ),
+    );
+    if (!mounted) return;
+    context.read<FlockController>().loadFlocks();
+    context.read<HistoryController>().loadRecords();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +65,7 @@ class FlocksListScreen extends StatelessWidget {
           IconButton(
             tooltip: isUrdu ? 'شیڈ شامل کریں' : 'Add Shed',
             icon: const Icon(Icons.add_circle_outline_rounded),
-            onPressed: () => AddFlockModal.show(context),
+            onPressed: _handleAddFlock,
           ),
         ],
       ),
@@ -38,7 +74,7 @@ class FlocksListScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
         label: Text(isUrdu ? 'نیا شیڈ' : 'New Flock'),
-        onPressed: () => AddFlockModal.show(context),
+        onPressed: _handleAddFlock,
       ),
       body: flocks.isEmpty
           ? EmptyStateView(
@@ -48,26 +84,22 @@ class FlocksListScreen extends StatelessWidget {
                   ? 'اپنے فارم کے شیڈز کو الگ الگ ٹریک کرنے کے لیے نیا شیڈ رجسٹر کریں'
                   : 'Organize your poultry sheds to track clinical history separately.',
               actionText: isUrdu ? 'پہلا شیڈ رجسٹر کریں' : 'Register First Flock',
-              onAction: () => AddFlockModal.show(context),
+              onAction: _handleAddFlock,
             )
           : ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               itemCount: flocks.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (itemCtx, index) {
                 final flock = flocks[index];
-                final hasDisease = history.isFlockAtRisk(flock.id);
+                final hasDisease = FlockStatusHelper.isAtRisk(
+                  flock: flock,
+                  records: history.allRecords,
+                );
 
                 return AppCard(
                   margin: const EdgeInsets.only(bottom: 12.0),
                   padding: const EdgeInsets.all(16.0),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => FlockDetailScreen(flock: flock),
-                      ),
-                    );
-                  },
+                  onTap: () => _handleOpenFlockDetail(flock),
                   child: Row(
                     children: [
                       Container(

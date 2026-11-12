@@ -832,7 +832,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                                 ),
                                 const SizedBox(height: 5),
                                 Text(
-                                  '${AppFormatters.formatConfidence(pred.calibratedConfidence)} ${isUrdu ? 'یقینی' : 'confidence'} \u2022 ${AppFormatters.formatDate(scan.createdAt)}',
+                                  AppFormatters.formatDate(scan.createdAt),
                                   style: const TextStyle(
                                     fontSize: 11.5,
                                     fontWeight: FontWeight.w500,

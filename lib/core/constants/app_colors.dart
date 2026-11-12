@@ -55,6 +55,7 @@ class AppColors {
   static const Color warning = Color(0xFFF59E0B);
   static const Color error = Color(0xFFEF4444);
   static const Color info = Color(0xFF0284C7);
+  static const Color infoLight = Color(0xFFE0F2FE);
 
   // Executive Gradients for Healthcare & Agriculture
   static const LinearGradient heroGradient = LinearGradient(

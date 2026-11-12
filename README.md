@@ -75,11 +75,11 @@ Quick start:
    ```
 
 ## Directory Structure
-- `lib/core/`: Design system, themes (Light and Dark), Plus Jakarta Sans typography, custom buttons, text fields, cards, status badges, AppImageView, and synchronized audio narration widget.
+- `lib/core/`: Design system, themes (Light and Dark), Plus Jakarta Sans typography, custom buttons, text fields, cards, status badges, AppImageView, FlockStatusHelper, and synchronized audio narration widget.
 - `lib/data/`: Domain models, mock repositories, and clinical triage rules engine.
-- `lib/features/`: Feature modules (Auth, Dashboard, Scanner Studio, Flocks, History, Encyclopedia, Profile/Settings).
+- `lib/features/`: Feature modules (Auth, Dashboard, Scanner Studio, Flocks, History, Encyclopedia, Profile/Settings, FCR Calculator).
 - `lib/routes/`: Declarative AppRouter with named routes.
-- `lib/services/`: On-device inference service, SQLite database service, and session persistence service.
+- `lib/services/`: On-device inference service, automated image quality validation service (lighting and focal blur detection), SQLite database service, session persistence service, and disease audio voice narration service.
 - `resources/`: Model metadata, labels, severity config, and exported model artifacts.
 - `backend/`: Inference server, database engine (`db.py`), 10-table ORM models (`models_db.py`), seeder (`seed_db.py`), and test suites.
 - `DATABASE_SETUP_GUIDE.md`: Step-by-step guide to connecting PostgreSQL on cloud or local Docker.
