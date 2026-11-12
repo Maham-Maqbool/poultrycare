@@ -90,6 +90,17 @@ class ImageQualityReport {
             : 'Photo is blurry - hold steady and retake';
     }
   }
+
+  /// Returns the specific plain failure guidance message if any check failed.
+  String? getPrimaryFailureMessage(bool isUrdu) {
+    if (sharpnessStatus == QualityCheckStatus.failed) {
+      return getSharpnessMessage(isUrdu);
+    }
+    if (lightingStatus == QualityCheckStatus.failed) {
+      return getLightingMessage(isUrdu);
+    }
+    return null;
+  }
 }
 
 /// ImageQualityService provides real-time automated visual quality validation

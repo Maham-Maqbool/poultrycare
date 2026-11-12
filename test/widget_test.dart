@@ -144,4 +144,21 @@ void main() {
     expect(record.prediction.urgency, 'vet_now');
     expect(record.prediction.probabilities.isNotEmpty, isTrue);
   });
+
+  test('DiagnosticRepository preserves Healthy specimen severity as healthy and urgency as monitor', () async {
+    final diagnosticRepo = DiagnosticRepository();
+    final record = await diagnosticRepo.runDiagnosis(
+      imagePath: 'assets/images/samples/healthy.png',
+      flockSignals: {
+        'lethargy': 'Under 10% of birds',
+        'intakeDrop': 'Reduced slightly',
+        'suddenMortality': '1 to 2 birds died',
+      },
+      forcedDisease: 'healthy',
+    );
+
+    expect(record.prediction.predictedClass, 'healthy');
+    expect(record.prediction.severity, 'healthy');
+    expect(record.prediction.urgency, 'monitor');
+  });
 }

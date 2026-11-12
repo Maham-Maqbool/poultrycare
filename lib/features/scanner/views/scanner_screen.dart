@@ -7,7 +7,6 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_image_view.dart';
 import '../../../routes/app_routes.dart';
 import '../../../data/repositories/diagnostic_repository.dart';
-import '../../../services/image_quality_service.dart';
 import '../controllers/scanner_controller.dart';
 import '../../flocks/controllers/flock_controller.dart';
 import '../../profile/controllers/settings_controller.dart';
@@ -517,134 +516,71 @@ class _ScannerScreenState extends State<ScannerScreen> {
             ),
             const SizedBox(height: AppDimensions.space12),
 
-            // Pre-Inference Quality Checklist
-            AppCard(
-              padding: const EdgeInsets.all(14.0),
-              accentColor: AppColors.info,
-              customShadow: AppColors.subtleShadow,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          isUrdu ? 'تصویر کے معیار کی خودکار جانچ' : 'Automated Quality Validation',
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: scanner.selectedImagePath == null
-                              ? AppColors.borderLight
-                              : (scanner.isCheckingQuality
-                                  ? AppColors.infoLight
-                                  : (scanner.isImageValid ? AppColors.healthyLight : AppColors.severeLight)),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          scanner.selectedImagePath == null
-                              ? (isUrdu ? 'پہلے تصویر لیں' : 'Select Photo First')
-                              : (scanner.isCheckingQuality
-                                  ? (isUrdu ? 'جانچ جاری ہے...' : 'Checking Quality...')
-                                  : (scanner.isImageValid
-                                      ? (isUrdu ? 'تشخیص کے لیے تیار' : 'Ready for AI')
-                                      : (isUrdu ? 'معیار نامکمل ہے' : 'Quality Check Failed'))),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: scanner.selectedImagePath == null
-                                ? AppColors.textMutedLight
-                                : (scanner.isCheckingQuality
-                                    ? AppColors.info
-                                    : (scanner.isImageValid ? AppColors.healthy : AppColors.severe)),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // CHECK 1: Lighting & Specimen Visibility
-                  _buildAutoCheckRow(
-                    title: isUrdu ? 'مناسب روشنی اور واضح منظر' : 'Lighting & Specimen Visibility',
-                    subtitle: scanner.qualityReport.getLightingMessage(isUrdu),
-                    status: scanner.qualityReport.lightingStatus,
-                    isUrdu: isUrdu,
-                    isDark: isDark,
-                  ),
-                  const Divider(height: 14),
-
-                  // CHECK 2: Focal Sharpness & Detail
-                  _buildAutoCheckRow(
-                    title: isUrdu ? 'فوکس اور تفصیلات کی صفائی' : 'Focal Sharpness & Detail',
-                    subtitle: scanner.qualityReport.getSharpnessMessage(isUrdu),
-                    status: scanner.qualityReport.sharpnessStatus,
-                    isUrdu: isUrdu,
-                    isDark: isDark,
-                  ),
-
-                  // Retake Photo Action if failed
-                  if (scanner.qualityReport.isFailed) ...[
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.severe.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: AppColors.severe.withValues(alpha: 0.3)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.warning_amber_rounded, color: AppColors.severe, size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  isUrdu
-                                      ? 'تصویر خودکار معیار پر پورا نہیں اتری'
-                                      : 'Photo does not meet quality standards',
-                                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.severe),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
+            // Quality Check Failure Alert & Retake Action (Only shown if quality check failed at scan time)
+            if (scanner.isQualityFailed) ...[
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.severe.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.severe.withValues(alpha: 0.35), width: 1.5),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.warning_amber_rounded, color: AppColors.severe, size: 22),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
                             isUrdu
-                                ? 'قابل اعتماد AI تشخیص کے لیے روشنی اور فوکس درست ہونا ضروری ہے۔ آپ فوراً دوبارہ تصویر لے سکتے ہیں۔'
-                                : 'Reliable AI diagnosis requires clear lighting and sharp focus. You can retake immediately.',
-                            style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondaryLight),
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 42,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.severe,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                              icon: const Icon(Icons.refresh_rounded, size: 18),
-                              label: Text(
-                                isUrdu ? 'دوبارہ تصویر لیں (Retake Photo)' : 'Retake Photo',
-                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-                              ),
-                              onPressed: () => scanner.pickImageFromCamera(),
+                                ? (scanner.qualityReport.getPrimaryFailureMessage(true) ??
+                                    'تصویر خودکار معیار پر پورا نہیں اتری')
+                                : (scanner.qualityReport.getPrimaryFailureMessage(false) ??
+                                    'Photo does not meet quality standards'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13.5,
+                              color: AppColors.severe,
                             ),
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      isUrdu
+                          ? 'قابل اعتماد AI تشخیص کے لیے روشنی اور فوکس درست ہونا ضروری ہے۔ آپ فوراً دوبارہ تصویر لے سکتے ہیں۔'
+                          : 'Reliable AI diagnosis requires clear lighting and sharp focus. Please retake the photo.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? const Color(0xFFCBD5E1) : AppColors.textSecondaryLight,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.severe,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: Text(
+                          isUrdu ? 'دوبارہ تصویر لیں (Retake Photo)' : 'Retake Photo',
+                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
+                        ),
+                        onPressed: () => scanner.pickImageFromCamera(),
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
+              const SizedBox(height: AppDimensions.space12),
+            ],
             const SizedBox(height: AppDimensions.space16),
 
             // Shed Selection
@@ -911,28 +847,24 @@ class _ScannerScreenState extends State<ScannerScreen> {
             ] else ...[
               () {
                 final bool hasPhoto = scanner.selectedImagePath != null;
-                final bool isChecking = scanner.isCheckingQuality;
-                final bool isValidImage = scanner.isImageValid;
                 final bool isTriageDone = scanner.isTriageComplete;
-                final bool canRunDiagnosis = hasPhoto && !isChecking && isValidImage && isTriageDone;
+                final bool isFailed = scanner.isQualityFailed;
+                final bool canRunDiagnosis =
+                    hasPhoto && isTriageDone && !scanner.isAnalyzing;
 
                 String buttonLabel;
                 if (!hasPhoto) {
                   buttonLabel = isUrdu
                       ? 'تشخیص کے لیے پہلے تصویر لیں یا منتخب کریں'
                       : 'Select or Capture Photo to Run AI Diagnosis';
-                } else if (isChecking) {
-                  buttonLabel = isUrdu
-                      ? 'تصویر کا معیار جانچا جا رہا ہے...'
-                      : 'Measuring Specimen Image Quality...';
-                } else if (!isValidImage) {
-                  buttonLabel = isUrdu
-                      ? 'معیار کی جانچ ناکام - اوپر دوبارہ تصویر لیں'
-                      : 'Quality Check Failed - Retake Photo Above';
                 } else if (!isTriageDone) {
                   buttonLabel = isUrdu
                       ? 'پرندوں کی 3 جسمانی علامات منتخب کریں'
                       : 'Select 3 Flock Triage Answers Above';
+                } else if (isFailed) {
+                  buttonLabel = isUrdu
+                      ? 'دوبارہ تصویر لیں (معیار ناکام)'
+                      : 'Retake Photo (Quality Check Failed)';
                 } else {
                   buttonLabel = isUrdu
                       ? 'اے آئی تشخیص اور شدت معلوم کریں'
@@ -945,7 +877,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: canRunDiagnosis
-                          ? AppColors.primary
+                          ? (isFailed ? AppColors.severe : AppColors.primary)
                           : Colors.grey.shade400,
                       foregroundColor: Colors.white,
                       elevation: canRunDiagnosis ? 3 : 0,
@@ -953,13 +885,21 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         borderRadius: AppDimensions.borderRadiusMedium,
                       ),
                     ),
-                    icon: const Icon(Icons.analytics_outlined, size: 22),
+                    icon: Icon(
+                      isFailed ? Icons.refresh_rounded : Icons.analytics_outlined,
+                      size: 22,
+                    ),
                     label: Text(
                       buttonLabel,
                       style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
                     ),
                     onPressed: canRunDiagnosis
                         ? () async {
+                            if (isFailed) {
+                              await scanner.pickImageFromCamera();
+                              return;
+                            }
+
                             final navigator = Navigator.of(context);
                             final messenger = ScaffoldMessenger.of(context);
                             final diagRepo = context.read<DiagnosticRepository>();
@@ -967,6 +907,30 @@ class _ScannerScreenState extends State<ScannerScreen> {
                             final res = await scanner.executeDiagnosis();
                             debugPrint('[ScannerScreen DEBUG] executeDiagnosis res: ${res != null ? "RECORD_OK id=${res.scan.id}" : "NULL"}, errorMessage: ${scanner.errorMessage}');
                             if (!mounted) return;
+
+                            if (scanner.isQualityFailed) {
+                              // Quality check failed: do NOT open result screen, stay on screen and show retake alert
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    isUrdu
+                                        ? (scanner.qualityReport.getPrimaryFailureMessage(true) ??
+                                            'تصویر خودکار معیار پر پورا نہیں اتری')
+                                        : (scanner.qualityReport.getPrimaryFailureMessage(false) ??
+                                            'Photo does not meet quality standards'),
+                                  ),
+                                  backgroundColor: AppColors.severe,
+                                  duration: const Duration(seconds: 4),
+                                  action: SnackBarAction(
+                                    label: isUrdu ? 'دوبارہ لیں' : 'Retake',
+                                    textColor: Colors.white,
+                                    onPressed: () => scanner.pickImageFromCamera(),
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
                             if (res != null) {
                               navigator.pushNamed(
                                 AppRoutes.diagnosticResult,
@@ -1009,102 +973,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
             const SizedBox(height: AppDimensions.space32),
           ],
         ),
-      ),
-    );
-  }
-
-  static Widget _buildAutoCheckRow({
-    required String title,
-    required String subtitle,
-    required QualityCheckStatus status,
-    required bool isUrdu,
-    required bool isDark,
-  }) {
-    Color statusBg;
-    Color statusFg;
-    String statusText;
-    Widget statusIcon;
-
-    switch (status) {
-      case QualityCheckStatus.notChecked:
-        statusBg = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-        statusFg = AppColors.textMutedLight;
-        statusText = isUrdu ? 'غیر جانچ شدہ' : 'Not checked';
-        statusIcon = const Icon(Icons.circle_outlined, size: 18, color: AppColors.textMutedLight);
-        break;
-      case QualityCheckStatus.checking:
-        statusBg = AppColors.infoLight;
-        statusFg = AppColors.info;
-        statusText = isUrdu ? 'جانچ جاری…' : 'Checking…';
-        statusIcon = const SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.info),
-        );
-        break;
-      case QualityCheckStatus.passed:
-        statusBg = AppColors.healthyLight;
-        statusFg = AppColors.healthy;
-        statusText = isUrdu ? '✓ منظور' : '✓ Pass';
-        statusIcon = const Icon(Icons.check_circle_rounded, size: 20, color: AppColors.healthy);
-        break;
-      case QualityCheckStatus.failed:
-        statusBg = AppColors.severeLight;
-        statusFg = AppColors.severe;
-        statusText = isUrdu ? '✗ مسترد' : '✗ Fail';
-        statusIcon = const Icon(Icons.cancel_rounded, size: 20, color: AppColors.severe);
-        break;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 2.0),
-            child: statusIcon,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: status == QualityCheckStatus.failed ? FontWeight.w600 : FontWeight.w400,
-                    color: status == QualityCheckStatus.failed
-                        ? AppColors.severe
-                        : (status == QualityCheckStatus.passed ? AppColors.healthy : AppColors.textSecondaryLight),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: statusBg,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              statusText,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: statusFg,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

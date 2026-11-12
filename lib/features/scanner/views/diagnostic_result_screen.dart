@@ -179,9 +179,13 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
 
     final pred = record.prediction;
     final scan = record.scan;
-    final diseaseCode = pred.predictedClass ?? 'healthy';
-    final severity = pred.severity ?? 'mild';
-    final urgency = pred.urgency ?? 'monitor';
+    final diseaseCode = (pred.predictedClass ?? 'healthy').toLowerCase();
+    final rawSeverity = (pred.severity ?? 'healthy').toLowerCase();
+    final severity = (diseaseCode == 'healthy') ? 'healthy' : rawSeverity;
+    final rawUrgency = (pred.urgency ?? 'monitor').toLowerCase();
+    final urgency = (diseaseCode == 'healthy' || severity == 'healthy')
+        ? 'monitor'
+        : rawUrgency;
     final isNotifiable = pred.isNotifiable;
 
     return Scaffold(
@@ -331,13 +335,15 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                           value: isUrdu
                               ? (severity == 'severe'
                                   ? 'شدید'
-                                  : (severity == 'moderate' ? 'درمیانی' : 'ہلکی'))
-                              : severity.toUpperCase(),
+                                  : (severity == 'moderate'
+                                      ? 'درمیانی'
+                                      : (severity == 'mild' ? 'ہلکی' : 'صحت مند')))
+                              : (severity == 'healthy' ? 'HEALTHY' : severity.toUpperCase()),
                           badgeColor: severity == 'severe'
                               ? AppColors.severe
-                              : severity == 'moderate'
+                              : (severity == 'moderate'
                                   ? AppColors.moderate
-                                  : AppColors.healthy,
+                                  : (severity == 'mild' ? AppColors.mild : AppColors.healthy)),
                         ),
                       ),
                       Container(width: 1, height: 36, color: AppColors.borderLight),
@@ -345,11 +351,23 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                         child: _buildMetricTile(
                           label: isUrdu ? 'ضروری اقدام' : 'Action Urgency',
                           value: isUrdu
-                              ? (urgency == 'vet_now' ? 'فوری ڈاکٹر' : 'آج ہی علاج')
-                              : urgency.replaceAll('_', ' ').toUpperCase(),
+                              ? (urgency == 'vet_now'
+                                  ? 'فوری ڈاکٹر'
+                                  : (urgency == 'monitor' ? 'نگرانی' : 'آج ہی علاج'))
+                              : (urgency == 'monitor'
+                                  ? 'MONITOR'
+                                  : (urgency == 'vet_now'
+                                      ? 'VET NOW'
+                                      : (urgency == 'vet_soon'
+                                          ? 'VET SOON'
+                                          : 'TREAT TODAY'))),
                           badgeColor: urgency == 'vet_now'
                               ? AppColors.urgencyVetNow
-                              : AppColors.urgencyTreatToday,
+                              : (urgency == 'monitor'
+                                  ? AppColors.urgencyMonitor
+                                  : (urgency == 'vet_soon'
+                                      ? AppColors.urgencyVetSoon
+                                      : AppColors.urgencyTreatToday)),
                         ),
                       ),
                     ],

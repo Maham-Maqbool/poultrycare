@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:poultrycare/services/image_quality_service.dart';
+import 'package:poultrycare/data/repositories/diagnostic_repository.dart';
+import 'package:poultrycare/data/repositories/disease_repository.dart';
+import 'package:poultrycare/features/scanner/controllers/scanner_controller.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -117,5 +120,36 @@ void main() {
         expect(report.isPassed, isTrue);
       }
     });
+
+    test('ScannerController executeDiagnosis halts silently and flags quality failure on blurry image', () async {
+      final smoothImg = img.Image(width: 400, height: 400);
+      for (int y = 0; y < 400; y++) {
+        for (int x = 0; x < 400; x++) {
+          final val = (100 + (x * 0.1)).round().clamp(0, 255);
+          smoothImg.setPixelRgb(x, y, val, val, val);
+        }
+      }
+      final blurred = img.gaussianBlur(smoothImg, radius: 10);
+      final file = File('${tempDir.path}/blurry_fecal.jpg');
+      await file.writeAsBytes(img.encodeJpg(blurred));
+
+      final diseaseRepo = DiseaseRepository();
+      final diagnosticRepo = DiagnosticRepository();
+      final controller = ScannerController(diagnosticRepo, diseaseRepo);
+
+      controller.setImagePath(file.path, isLocal: true);
+      controller.setFlockSignals(
+        lethargy: 'None',
+        intakeDrop: 'Normal',
+        suddenMortality: 'None in 24h',
+      );
+
+      final result = await controller.executeDiagnosis();
+      expect(result, isNull);
+      expect(controller.isQualityFailed, isTrue);
+      expect(controller.qualityReport.sharpnessStatus, QualityCheckStatus.failed);
+      expect(controller.errorMessage?.contains('blurry'), isTrue);
+    });
   });
 }
+

@@ -436,4 +436,19 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Executed `flutter test`: 38/38 tests passed (100% success rate across all suites).
     - Guardrails strictly preserved: TFLite model, disease encyclopedia, treatment protocols, FCR math, scan flow, and triage questions untouched.
     - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 31 Complete (Round 4 Addendum 2: Healthy Urgency Fix & Silent Scan-Time Quality Checks):
+  - Item 1 (Healthy Urgency Bug Fix):
+    - In `lib/data/repositories/diagnostic_repository.dart`: Fixed `_mapDbRecordToDiagnosticRecord` so Healthy records always map to urgency `monitor` and severity `healthy`. Fixed `runDiagnosis` so when `predictedClass == 'healthy'`, `derivedSeverity` is initialized to `healthy` and `derivedUrgency` to `monitor`, and triage rules never escalate a healthy bird dropping to `treat_today`.
+    - In `lib/features/scanner/views/diagnostic_result_screen.dart`: Fixed metric tiles so when `urgency == 'monitor'`, the label displays "MONITOR" (English) and "نگرانی" (Urdu) with teal green `AppColors.urgencyMonitor` badge color. Clinical Severity displays "HEALTHY" / "صحت مند" with green `AppColors.healthy`. Default fallback to Treat Today was completely eliminated.
+  - Item 2 (Hidden Quality-Check Card & Silent Scan-Time Validation):
+    - Removed the "Automated Quality Validation" card and "Ready for AI" badge from `ScannerScreen`. The hint line "Hint: Keep a single dropping within the frame" / "رہنمائی: ایک ہی بیٹھ فریم کے اندر رکھیں" is preserved below the camera viewfinder.
+    - Automated checks (lighting luminance and Laplacian focal blur) now run silently at scan time within `executeDiagnosis()`, after the user taps "Run AI Disease & Severity Diagnosis" and before model inference.
+    - If a check fails, diagnosis halts immediately without opening the result screen or SQLite fallback. An alert banner and SnackBar show the exact failure reason ("Photo is blurry - hold steady and retake" / "Photo buhat dark hai - roshni mein dobara lo") with a dedicated "Retake Photo" action button.
+    - If checks pass, model inference and triage rules execute seamlessly and navigate to the result screen.
+  - Comprehensive Verification & Code Quality:
+    - Executed `flutter analyze`: 0 issues found (clean static analysis).
+    - Executed `flutter test`: 40/40 tests passed across all suites (`image_quality_test.dart`, `widget_test.dart`, `overflow_test.dart`, `services_test.dart`, `settings_test.dart`) with 100% success rate.
+    - Guardrails strictly preserved: TFLite model, disease encyclopedia, treatment protocols, FCR math, scan flow, and triage questions untouched.
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
+
 

@@ -27,6 +27,7 @@ class ScannerController extends ChangeNotifier {
 
   // Automated image quality report (starts at initial / not checked)
   ImageQualityReport _qualityReport = ImageQualityReport.initial();
+  bool _qualityCheckFailed = false;
 
   // Processing state
   bool _isAnalyzing = false;
@@ -46,10 +47,11 @@ class ScannerController extends ChangeNotifier {
   String? get suddenMortality => _suddenMortality;
 
   ImageQualityReport get qualityReport => _qualityReport;
-  bool get isCheckingQuality => _qualityReport.isChecking;
+  bool get isCheckingQuality => _isAnalyzing;
   bool get lightingPassed => _qualityReport.lightingStatus == QualityCheckStatus.passed;
   bool get sharpnessPassed => _qualityReport.sharpnessStatus == QualityCheckStatus.passed;
-  bool get isImageValid => _selectedImagePath != null && _qualityReport.isPassed;
+  bool get isImageValid => _selectedImagePath != null && !_qualityCheckFailed;
+  bool get isQualityFailed => _qualityCheckFailed;
   bool get isTriageComplete => _lethargy != null && _intakeDrop != null && _suddenMortality != null;
 
   bool get isAnalyzing => _isAnalyzing;
@@ -64,6 +66,7 @@ class ScannerController extends ChangeNotifier {
     _isLocalFile = false;
     _forcedDisease = null;
     _errorMessage = null;
+    _qualityCheckFailed = false;
     _qualityReport = ImageQualityReport.initial();
     _lethargy = null;
     _intakeDrop = null;
@@ -71,21 +74,24 @@ class ScannerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Automatically measures lighting and focal sharpness on a newly selected photo.
-  Future<void> _triggerAutoQualityChecks(String path) async {
-    _qualityReport = ImageQualityReport.checking();
-    notifyListeners();
-
-    final report = await ImageQualityService.evaluateImage(path);
-    if (_selectedImagePath == path) {
-      _qualityReport = report;
-      notifyListeners();
+  /// Evaluates lighting and focal sharpness silently on the chosen photo.
+  Future<ImageQualityReport> evaluateQualitySilently() async {
+    if (_selectedImagePath == null) return ImageQualityReport.initial();
+    final report = await ImageQualityService.evaluateImage(_selectedImagePath!);
+    _qualityReport = report;
+    _qualityCheckFailed = !report.isPassed;
+    if (_qualityCheckFailed) {
+      _errorMessage = report.getPrimaryFailureMessage(false);
     }
+    notifyListeners();
+    return report;
   }
 
   /// Captures a live photograph using the device camera.
   Future<bool> pickImageFromCamera() async {
     _errorMessage = null;
+    _qualityCheckFailed = false;
+    _qualityReport = ImageQualityReport.initial();
     try {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
@@ -97,8 +103,10 @@ class ScannerController extends ChangeNotifier {
         _selectedImagePath = photo.path;
         _isLocalFile = true;
         _forcedDisease = null; // Unbiased AI inference on actual photo
+        _errorMessage = null;
+        _qualityCheckFailed = false;
+        _qualityReport = ImageQualityReport.initial();
         notifyListeners();
-        await _triggerAutoQualityChecks(photo.path);
         return true;
       }
       return false;
@@ -113,6 +121,8 @@ class ScannerController extends ChangeNotifier {
   /// Selects an authentic poultry photo from local device gallery.
   Future<bool> pickImageFromGallery() async {
     _errorMessage = null;
+    _qualityCheckFailed = false;
+    _qualityReport = ImageQualityReport.initial();
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
@@ -124,8 +134,10 @@ class ScannerController extends ChangeNotifier {
         _selectedImagePath = image.path;
         _isLocalFile = true;
         _forcedDisease = null; // Unbiased AI inference on actual photo
+        _errorMessage = null;
+        _qualityCheckFailed = false;
+        _qualityReport = ImageQualityReport.initial();
         notifyListeners();
-        await _triggerAutoQualityChecks(image.path);
         return true;
       }
       return false;
@@ -142,16 +154,20 @@ class ScannerController extends ChangeNotifier {
     _selectedImagePath = path;
     _isLocalFile = false;
     _forcedDisease = targetDisease;
+    _errorMessage = null;
+    _qualityCheckFailed = false;
+    _qualityReport = ImageQualityReport.initial();
     notifyListeners();
-    _triggerAutoQualityChecks(path);
   }
 
   void setImagePath(String path, {String? targetDisease, bool isLocal = false}) {
     _selectedImagePath = path;
     _isLocalFile = isLocal;
     _forcedDisease = targetDisease;
+    _errorMessage = null;
+    _qualityCheckFailed = false;
+    _qualityReport = ImageQualityReport.initial();
     notifyListeners();
-    _triggerAutoQualityChecks(path);
   }
 
   /// Sets the active diagnostic record and optional treatment for viewing.
@@ -180,19 +196,38 @@ class ScannerController extends ChangeNotifier {
   }
 
   Future<DiagnosticRecord?> executeDiagnosis() async {
-    if (_selectedImagePath == null || !isImageValid || !isTriageComplete) return null;
+    if (_selectedImagePath == null || !isTriageComplete) return null;
 
     _isAnalyzing = true;
     _errorMessage = null;
-    _analysisStep = 'Preprocessing image tensor (224x224 RGB)...';
+    _qualityCheckFailed = false;
+    _analysisStep = 'Validating specimen image quality...';
     notifyListeners();
 
     try {
-      await Future.delayed(const Duration(milliseconds: 150));
+      // 1. Silent automatic quality checks before inference
+      final qualityReport =
+          await ImageQualityService.evaluateImage(_selectedImagePath!);
+      _qualityReport = qualityReport;
+
+      if (!qualityReport.isPassed) {
+        _isAnalyzing = false;
+        _qualityCheckFailed = true;
+        _errorMessage = qualityReport.getPrimaryFailureMessage(false);
+        _analysisStep = 'Quality check failed';
+        notifyListeners();
+        return null;
+      }
+
+      // 2. Preprocessing & model inference
+      _analysisStep = 'Preprocessing image tensor (224x224 RGB)...';
+      notifyListeners();
+
+      await Future.delayed(const Duration(milliseconds: 100));
       _analysisStep = 'Executing on-device AI vision diagnosis...';
       notifyListeners();
 
-      await Future.delayed(const Duration(milliseconds: 150));
+      await Future.delayed(const Duration(milliseconds: 100));
       _analysisStep = 'Synthesizing clinical flock triage rules...';
       notifyListeners();
 
