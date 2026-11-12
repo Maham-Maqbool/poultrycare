@@ -450,5 +450,21 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Executed `flutter test`: 40/40 tests passed across all suites (`image_quality_test.dart`, `widget_test.dart`, `overflow_test.dart`, `services_test.dart`, `settings_test.dart`) with 100% success rate.
     - Guardrails strictly preserved: TFLite model, disease encyclopedia, treatment protocols, FCR math, scan flow, and triage questions untouched.
     - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 32 Complete (APK Size Optimization Part 2: Native Debug Symbol Stripping & R8 Shrinking):
+  - Diagnosed Native Symbol Bloat:
+    - `keepDebugSymbols += "**/*.so"` in `android/app/build.gradle.kts` forced all native `.so` files to retain unstripped debug symbols, ballooning `lib/` to 175 MB.
+    - The underlying stripping toolchain (`llvm-strip` and `llvm-objcopy`) was missing because the local NDK download had been interrupted previously.
+  - Resolved Toolchain & Build Configuration:
+    - Extracted official `llvm-strip.exe`, `llvm-objcopy.exe`, and supporting runtime DLLs (`libwinpthread-1.dll`, `libxml2.dll`) into the Android NDK 28.2.13676358 toolchain path.
+    - In `android/app/build.gradle.kts`, deleted `keepDebugSymbols += "**/*.so"` and preserved `excludes += "**/libVkLayer_khronos_validation.so"`.
+    - In release buildType, enabled `isMinifyEnabled = true` and `isShrinkResources = true`.
+  - Rebuilt & Verified Split Release APKs:
+    - `app-arm64-v8a-release.apk`: Reduced from 175 MB down to 30.91 MB (native symbols stripped: `libflutter.so` 11.2 MB, `libapp.so` 7.7 MB, `libtensorflowlite_jni.so` 4.1 MB, `libtensorflowlite_gpu_jni.so` 2.4 MB).
+    - `app-armeabi-v7a-release.apk`: 26.62 MB.
+    - `app-x86_64-release.apk`: 34.12 MB.
+    - Universal `app-release.apk`: Reduced from 193 MB down to 43.44 MB.
+    - Guardrails strictly preserved: TFLite model, disease encyclopedia, treatment protocols, FCR math, scan flow, and triage questions untouched.
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
+
 
 
