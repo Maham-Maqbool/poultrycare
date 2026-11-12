@@ -15,6 +15,10 @@ import 'package:poultrycare/features/home/views/home_dashboard_screen.dart';
 import 'package:poultrycare/features/home/views/main_shell_screen.dart';
 import 'package:poultrycare/features/history/controllers/history_controller.dart';
 import 'package:poultrycare/features/profile/controllers/settings_controller.dart';
+import 'package:poultrycare/data/models/diagnostic_record.dart';
+import 'package:poultrycare/data/models/scan_model.dart';
+import 'package:poultrycare/data/models/prediction_model.dart';
+import 'package:poultrycare/features/scanner/views/diagnostic_result_screen.dart';
 
 void main() {
   testWidgets('PoultryCare app launches and renders branding', (WidgetTester tester) async {
@@ -160,5 +164,137 @@ void main() {
     expect(record.prediction.predictedClass, 'healthy');
     expect(record.prediction.severity, 'mild');
     expect(record.prediction.urgency, 'monitor');
+  });
+
+  testWidgets('DiagnosticResultScreen displays MILD and MONITOR for Healthy specimen', (WidgetTester tester) async {
+    final authRepo = AuthRepository();
+    final flockRepo = FlockRepository();
+    final diseaseRepo = DiseaseRepository();
+    final diagRepo = DiagnosticRepository();
+    final settingsCtrl = SettingsController();
+    settingsCtrl.setLocale('en');
+
+    final now = DateTime.now();
+    final healthyRecord = DiagnosticRecord(
+      scan: ScanModel(
+        id: 'scn-test-healthy',
+        userId: 'usr-001',
+        deviceId: 'dev-001',
+        imagePath: 'assets/images/samples/healthy.png',
+        idempotencyKey: 'idem-test-healthy',
+        createdAt: now,
+      ),
+      prediction: PredictionModel(
+        id: 'prd-test-healthy',
+        scanId: 'scn-test-healthy',
+        modelVersionId: 'PC-VisionAI-v2.4',
+        predictedClass: 'healthy',
+        probabilities: {'healthy': 0.98},
+        calibratedConfidence: 0.98,
+        certainty: 'high',
+        conformalSet: ['healthy'],
+        abstained: false,
+        severity: 'mild',
+        urgency: 'monitor',
+        triageRules: const [],
+        flockSignals: const {},
+        decodeMs: 10,
+        preprocessMs: 10,
+        inferenceMs: 20,
+        totalMs: 40,
+        createdAt: now,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider<AuthRepository>.value(value: authRepo),
+          Provider<FlockRepository>.value(value: flockRepo),
+          Provider<DiseaseRepository>.value(value: diseaseRepo),
+          Provider<DiagnosticRepository>.value(value: diagRepo),
+          ChangeNotifierProvider(create: (_) => AuthController(authRepo)),
+          ChangeNotifierProvider(create: (_) => FlockController(flockRepo)),
+          ChangeNotifierProvider(create: (_) => ScannerController(diagRepo, diseaseRepo)),
+          ChangeNotifierProvider(create: (_) => DashboardController(diagRepo, flockRepo)),
+          ChangeNotifierProvider(create: (_) => HistoryController(diagRepo)),
+          ChangeNotifierProvider<SettingsController>.value(value: settingsCtrl),
+        ],
+        child: MaterialApp(
+          home: DiagnosticResultScreen(initialRecord: healthyRecord),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('MILD'), findsOneWidget);
+    expect(find.text('MONITOR'), findsOneWidget);
+    expect(find.text('TREAT TODAY'), findsNothing);
+  });
+
+  testWidgets('DiagnosticResultScreen displays SEVERE and VET NOW for Severe Coccidiosis', (WidgetTester tester) async {
+    final authRepo = AuthRepository();
+    final flockRepo = FlockRepository();
+    final diseaseRepo = DiseaseRepository();
+    final diagRepo = DiagnosticRepository();
+    final settingsCtrl = SettingsController();
+    settingsCtrl.setLocale('en');
+
+    final now = DateTime.now();
+    final cocciRecord = DiagnosticRecord(
+      scan: ScanModel(
+        id: 'scn-test-cocci',
+        userId: 'usr-001',
+        deviceId: 'dev-001',
+        imagePath: 'assets/images/samples/coccidiosis.jpg',
+        idempotencyKey: 'idem-test-cocci',
+        createdAt: now,
+      ),
+      prediction: PredictionModel(
+        id: 'prd-test-cocci',
+        scanId: 'scn-test-cocci',
+        modelVersionId: 'PC-VisionAI-v2.4',
+        predictedClass: 'coccidiosis',
+        probabilities: {'coccidiosis': 0.98},
+        calibratedConfidence: 0.98,
+        certainty: 'high',
+        conformalSet: ['coccidiosis'],
+        abstained: false,
+        severity: 'severe',
+        urgency: 'vet_now',
+        triageRules: const [],
+        flockSignals: const {},
+        decodeMs: 10,
+        preprocessMs: 10,
+        inferenceMs: 20,
+        totalMs: 40,
+        createdAt: now,
+      ),
+    );
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider<AuthRepository>.value(value: authRepo),
+          Provider<FlockRepository>.value(value: flockRepo),
+          Provider<DiseaseRepository>.value(value: diseaseRepo),
+          Provider<DiagnosticRepository>.value(value: diagRepo),
+          ChangeNotifierProvider(create: (_) => AuthController(authRepo)),
+          ChangeNotifierProvider(create: (_) => FlockController(flockRepo)),
+          ChangeNotifierProvider(create: (_) => ScannerController(diagRepo, diseaseRepo)),
+          ChangeNotifierProvider(create: (_) => DashboardController(diagRepo, flockRepo)),
+          ChangeNotifierProvider(create: (_) => HistoryController(diagRepo)),
+          ChangeNotifierProvider<SettingsController>.value(value: settingsCtrl),
+        ],
+        child: MaterialApp(
+          home: DiagnosticResultScreen(initialRecord: cocciRecord),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('SEVERE'), findsWidgets);
+    expect(find.text('VET NOW'), findsOneWidget);
+    expect(find.text('TREAT TODAY'), findsNothing);
   });
 }

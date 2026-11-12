@@ -179,14 +179,16 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
 
     final pred = record.prediction;
     final scan = record.scan;
-    final diseaseCode = (pred.predictedClass ?? 'healthy').toLowerCase();
-    final rawSeverity = (pred.severity ?? 'healthy').toLowerCase();
-    final severity = (diseaseCode == 'healthy') ? 'healthy' : rawSeverity;
-    final rawUrgency = (pred.urgency ?? 'monitor').toLowerCase();
-    final urgency = (diseaseCode == 'healthy' || severity == 'healthy')
+    final diseaseCode = (pred.predictedClass ?? 'healthy').toLowerCase().trim();
+    final rawSeverity = (pred.severity ?? 'mild').toLowerCase().trim();
+    final severity = (rawSeverity == 'healthy') ? 'mild' : rawSeverity;
+    final rawUrgency = (pred.urgency ?? '').toLowerCase().replaceAll(' ', '_').trim();
+    final urgency = (diseaseCode == 'healthy')
         ? 'monitor'
-        : rawUrgency;
-    final isNotifiable = pred.isNotifiable;
+        : ((diseaseCode == 'newcastle' || severity == 'severe' || rawUrgency == 'vet_now' || rawUrgency.contains('vet'))
+            ? 'vet_now'
+            : (rawUrgency == 'vet_soon' ? 'vet_soon' : 'treat_today'));
+    final isNotifiable = pred.isNotifiable || diseaseCode == 'newcastle';
 
     return Scaffold(
       appBar: AppBar(
@@ -337,13 +339,13 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                                   ? 'شدید'
                                   : (severity == 'moderate'
                                       ? 'درمیانی'
-                                      : (severity == 'mild' ? 'ہلکی' : 'صحت مند')))
-                              : (severity == 'healthy' ? 'HEALTHY' : severity.toUpperCase()),
+                                      : 'ہلکی'))
+                              : severity.toUpperCase(),
                           badgeColor: severity == 'severe'
                               ? AppColors.severe
                               : (severity == 'moderate'
                                   ? AppColors.moderate
-                                  : (severity == 'mild' ? AppColors.mild : AppColors.healthy)),
+                                  : AppColors.mild),
                         ),
                       ),
                       Container(width: 1, height: 36, color: AppColors.borderLight),

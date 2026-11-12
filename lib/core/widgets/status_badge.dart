@@ -103,7 +103,14 @@ class StatusBadge extends StatelessWidget {
 
   // Factory constructor for Urgency Levels
   factory StatusBadge.forUrgency(String? urgency, {bool isLarge = false}) {
-    final u = (urgency ?? 'monitor').toLowerCase();
+    final raw = (urgency ?? 'monitor').toLowerCase().replaceAll(' ', '_').trim();
+    final u = (raw == 'vet_now' || raw.contains('vet_now') || raw.contains('urgent'))
+        ? 'vet_now'
+        : (raw == 'vet_soon' || raw.contains('vet_soon')
+            ? 'vet_soon'
+            : (raw == 'treat_today' || raw.contains('treat')
+                ? 'treat_today'
+                : 'monitor'));
     switch (u) {
       case 'vet_now':
         return StatusBadge(

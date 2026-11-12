@@ -304,8 +304,8 @@ class TFLiteService {
 
     // Case 1: Confidence below uncertainty boundary
     if (confidence < uncertainBelow) {
-      severity = 'Uncertain';
-      urgency = 'Retake Photo';
+      severity = 'uncertain';
+      urgency = 'retake_photo';
       return {
         'severity': severity,
         'urgency': urgency,
@@ -314,40 +314,31 @@ class TFLiteService {
     }
 
     // Severity derived strictly from measured clinical ratio score
-    severity = clinicalRatios.severity;
+    severity = clinicalRatios.severity.toLowerCase().trim();
 
     // Apply minimum severity rule (e.g. Newcastle is at least Moderate)
     final requiredMinSeverity = minSeverityMap[predictedClass];
     if (requiredMinSeverity != null) {
-      final reqStr = requiredMinSeverity.toString();
-      if (reqStr.toLowerCase() == 'moderate' && severity == 'Mild') {
-        severity = 'Moderate';
-      } else if (reqStr.toLowerCase() == 'severe' &&
-          (severity == 'Mild' || severity == 'Moderate')) {
-        severity = 'Severe';
+      final reqStr = requiredMinSeverity.toString().toLowerCase().trim();
+      if (reqStr == 'moderate' && severity == 'mild') {
+        severity = 'moderate';
+      } else if (reqStr == 'severe' &&
+          (severity == 'mild' || severity == 'moderate')) {
+        severity = 'severe';
       }
     }
 
-    // Case 2: Healthy specimen urgency
+    // Urgency mapping (do not change):
+    // Healthy -> MONITOR (green);
+    // Mild/Moderate -> TREAT TODAY (orange);
+    // Severe -> VET NOW (red);
+    // Newcastle -> VET NOW.
     if (predictedClass.toLowerCase() == 'healthy') {
-      urgency = 'Monitor';
-      return {
-        'severity': severity,
-        'urgency': urgency,
-        'is_uncertain': 'false',
-      };
-    }
-
-    // Urgency rules based on clinical severity
-    if (severity == 'Severe') {
-      urgency = 'Vet Now';
+      urgency = 'monitor';
+    } else if (predictedClass.toLowerCase() == 'newcastle' || severity == 'severe') {
+      urgency = 'vet_now';
     } else {
-      urgency = 'Treat Today';
-    }
-
-    // Pathogen specific urgency escalation
-    if (predictedClass.toLowerCase() == 'newcastle') {
-      urgency = 'Vet Now'; // Notifiable contagious viral pathogen
+      urgency = 'treat_today';
     }
 
     return {

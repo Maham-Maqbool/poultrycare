@@ -507,3 +507,22 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
   - Generated and validated `summary.json` and `ratios.csv` (600 empirical specimen rows).
   - Verified 100% consistency across Table 4.1, `summary.json`, `ratios.csv`, and `chart.png`.
   - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 35 Complete (Result-Screen Clinical Severity & Urgency Label Standardization):
+  - Defect 1 Resolved (Healthy Clinical Severity derives from ratio band):
+    - Removed disease-name override in `lib/features/scanner/views/diagnostic_result_screen.dart` that was assigning `'healthy'` to the severity display.
+    - Clinical Severity now reflects the universal ratio-based severity band: `MILD` (Urdu: `ہلکی`) in green (`AppColors.mild`) for healthy specimens whose ratio score is < 1.0.
+    - Preserved universal logic across all diseases with zero hardcoded shortcuts.
+  - Defect 2 Resolved (Severe Coccidiosis Action Urgency displays VET NOW):
+    - Standardized `TFLiteService` (`lib/services/tflite_service.dart`) to emit canonical snake_case urgency (`'vet_now'`, `'treat_today'`, `'monitor'`).
+    - Standardized `DiagnosticRepository` (`lib/data/repositories/diagnostic_repository.dart`) with the universal urgency mapping: Healthy -> `monitor` (green), Mild/Moderate -> `treat_today` (orange), Severe -> `vet_now` (red), Newcastle -> `vet_now` (red).
+    - Hardened `diagnostic_result_screen.dart` and `StatusBadge.forUrgency` in `status_badge.dart` to normalize all urgency variants (`.toLowerCase().replaceAll(' ', '_').trim()`).
+    - Severe Coccidiosis correctly displays `SEVERE` and `VET NOW` in red (`AppColors.urgencyVetNow`).
+  - Sample Image Grounding (`assets/images/samples/healthy.png`):
+    - Replaced studio canvas on `healthy.png` with natural straw bedding (HSV hue ~ 37, outside blood, abnormal, and watery ranges).
+    - Empirical ratio score evaluates to 0.0009 < 1.0 (`Mild`), passing automatic quality checks (mean luminance 101.9, Laplacian variance 290.8).
+  - Verification & Test Coverage:
+    - Added dedicated widget tests in `test/widget_test.dart` verifying both Healthy (`MILD` + `MONITOR`) and Severe Coccidiosis (`SEVERE` + `VET NOW`) render accurately.
+    - Static analysis: `dart analyze lib test` returned 0 issues.
+    - Automated tests: `flutter test` passed all 47/47 tests (100% success rate).
+    - Guardrails strictly preserved: TFLite model, disease encyclopedia, treatment protocols, FCR math, scan flow, and triage questions untouched.
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
