@@ -1,0 +1,91 @@
+{
+  "healthy_p95_ceilings": {
+    "blood": 0.2239,
+    "abnormal": 0.0011,
+    "watery": 0.1676
+  },
+  "ceilings_used": {
+    "blood": 0.2239,
+    "abnormal": 0.05,
+    "watery": 0.1676
+  },
+  "bands": {
+    "Mild": "score < 1.0",
+    "Moderate": "1.0 <= score <= 2.0",
+    "Severe": "score > 2.0"
+  },
+  "per_class": {
+    "Coccidiosis": {
+      "blood": {
+        "mean": 0.275,
+        "std": 0.231
+      },
+      "abnormal": {
+        "mean": 0.002,
+        "std": 0.006
+      },
+      "watery": {
+        "mean": 0.265,
+        "std": 0.194
+      },
+      "severity_score": {
+        "mean": 2.85,
+        "std": 1.71
+      }
+    },
+    "Healthy": {
+      "blood": {
+        "mean": 0.052,
+        "std": 0.078
+      },
+      "abnormal": {
+        "mean": 0.001,
+        "std": 0.01
+      },
+      "watery": {
+        "mean": 0.034,
+        "std": 0.054
+      },
+      "severity_score": {
+        "mean": 0.46,
+        "std": 0.64
+      }
+    },
+    "Newcastle": {
+      "blood": {
+        "mean": 0.061,
+        "std": 0.093
+      },
+      "abnormal": {
+        "mean": 0.002,
+        "std": 0.006
+      },
+      "watery": {
+        "mean": 0.094,
+        "std": 0.111
+      },
+      "severity_score": {
+        "mean": 0.88,
+        "std": 0.9
+      }
+    },
+    "Salmonella": {
+      "blood": {
+        "mean": 0.105,
+        "std": 0.101
+      },
+      "abnormal": {
+        "mean": 0.098,
+        "std": 0.124
+      },
+      "watery": {
+        "mean": 0.094,
+        "std": 0.097
+      },
+      "severity_score": {
+        "mean": 2.99,
+        "std": 2.55
+      }
+    }
+  }
+}

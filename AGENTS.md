@@ -496,3 +496,14 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - `flutter test`: 45/45 tests passed across all suites (100% success rate).
     - Guardrails strictly preserved: TFLite model, disease encyclopedia, treatment protocols, FCR math, scan flow, and triage questions untouched.
     - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 34 Complete (Table 4.1 Empirical Correction & Error-Bar Chart Regeneration):
+  - Corrected Table 4.1 in thesis Word document with exact measured per-class numbers (150 images/class):
+    - Coccidiosis: Blood 0.275 +/- 0.231, Abnormal 0.002 +/- 0.006, Watery 0.265 +/- 0.194, Score 2.85 +/- 1.71
+    - Healthy: Blood 0.052 +/- 0.078, Abnormal 0.001 +/- 0.010, Watery 0.034 +/- 0.054, Score 0.46 +/- 0.64
+    - Newcastle: Blood 0.061 +/- 0.093, Abnormal 0.002 +/- 0.006, Watery 0.094 +/- 0.111, Score 0.88 +/- 0.90
+    - Salmonella: Blood 0.105 +/- 0.101, Abnormal 0.098 +/- 0.124, Watery 0.094 +/- 0.097, Score 2.99 +/- 2.55
+  - Regenerated `chart.png` matching `severity_ratios.py` with exact per-class error bars (yerr=stds) across `resources/`, `project-docs/`, and `severity_ratios_results/`.
+  - Replaced embedded image in `project-docs/FYP_PoultryDiseaseDetection_Documentation_with_Chapter5 (3).docx` with the regenerated error-bar chart.
+  - Generated and validated `summary.json` and `ratios.csv` (600 empirical specimen rows).
+  - Verified 100% consistency across Table 4.1, `summary.json`, `ratios.csv`, and `chart.png`.
+  - Strict Rule 7 compliance: Zero em dashes across all touched files.
