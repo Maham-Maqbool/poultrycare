@@ -71,21 +71,19 @@ class DiseaseAudioProfile {
           sevUrdu = 'ہلکی';
       }
 
-      // If confidence is present, format it dynamically to 1 decimal place (e.g. 96.0 فیصد)
       if (confidenceScore != null) {
-        final confPercent = '${(confidenceScore * 100).toStringAsFixed(1)} فیصد';
         switch (type) {
           case PoultryDiseaseType.newcastle:
-            return 'محترم کسان: آپ کے نمونے میں رانی کھیت کی خطرناک علامات پائی گئی ہیں، اس کی شدت $sevUrdu اور یقین $confPercent ہے۔ علامات میں سبز پتلی بیٹھیں، گردن مڑنا، لرزنا اور سانس کی تنگی شامل ہیں۔ بیمار پرندوں کو فوراً صحت مند پرندوں سے الگ کر دیں، شیڈ میں باہر کے لوگوں کو نہ آنے دیں، پانی میں الیکٹرولائٹس شامل کریں اور فوراً ویٹرنری ڈاکٹر سے رابطہ کریں۔';
+            return 'محترم کسان: آپ کے نمونے میں رانی کھیت کی خطرناک علامات پائی گئی ہیں، جس کی شدت $sevUrdu ہے۔ علامات میں سبز پتلی بیٹھیں، گردن مڑنا، لرزنا اور سانس کی تنگی شامل ہیں۔ بیمار پرندوں کو فوراً صحت مند پرندوں سے الگ کر دیں، شیڈ میں باہر کے لوگوں کو نہ آنے دیں، پانی میں الیکٹرولائٹس شامل کریں اور فوراً ویٹرنری ڈاکٹر سے رابطہ کریں۔';
 
           case PoultryDiseaseType.coccidiosis:
-            return 'محترم کسان: آپ کے فلاک میں کوکسیڈیوسس یعنی خونی پیچش کی تشخیص ہوئی ہے، اس کی شدت $sevUrdu اور یقین $confPercent ہے۔ علامات میں بیٹھوں میں خون آنا، پرندوں کا سست بیٹھنا اور خوراک کی کمی شامل ہے۔ علاج کے لیے پینے کے پانی میں ایمپرولیم یا ٹولٹرازوریل دو دن شامل کریں، خون روکنے کے لیے وٹامن کے دیں اور شیڈ کا تمام گیلا برادہ فوراً تبدیل کر دیں۔';
+            return 'محترم کسان: آپ کے فلاک میں کوکسیڈیوسس یعنی خونی پیچش کی تشخیص ہوئی ہے، جس کی شدت $sevUrdu ہے۔ علامات میں بیٹھوں میں خون آنا، پرندوں کا سست بیٹھنا اور خوراک کی کمی شامل ہے۔ علاج کے لیے پینے کے پانی میں ایمپرولیم یا ٹولٹرازوریل دو دن شامل کریں، خون روکنے کے لیے وٹامن کے دیں اور شیڈ کا تمام گیلا برادہ فوراً تبدیل کر دیں۔';
 
           case PoultryDiseaseType.salmonella:
-            return 'محترم کسان: آپ کے نمونے میں سالمونیلا یعنی سفید پیچش کی تصدیق ہوئی ہے، اس کی شدت $sevUrdu اور یقین $confPercent ہے۔ علامات میں سفید چاک جیسا فضلہ اور پرندوں کا سردی سے اکٹھا ہو کر سست بیٹھنا شامل ہے۔ علاج کے لیے پینے کے پانی میں اینروفلوکساسین یا نیومائسن تین سے پانچ دن دیں اور پانی کے برتنوں کو روزانہ جراثیم کش محلول سے صاف کریں۔';
+            return 'محترم کسان: آپ کے نمونے میں سالمونیلا یعنی سفید پیچش کی تصدیق ہوئی ہے، جس کی شدت $sevUrdu ہے۔ علامات میں سفید چاک جیسا فضلہ اور پرندوں کا سردی سے اکٹھا ہو کر سست بیٹھنا شامل ہے۔ علاج کے لیے پینے کے پانی میں اینروفلوکساسین یا نیومائسن تین سے پانچ دن دیں اور پانی کے برتنوں کو روزانہ جراثیم کش محلول سے صاف کریں۔';
 
           case PoultryDiseaseType.healthy:
-            return 'محترم کسان: مبارک ہو، آپ کا پرندہ اور اس کا نظام انہضام بالکل تندرست اور نارمل ہے، جس میں $confPercent یقین ہے۔ فضلہ بہترین بناوٹ میں ہے۔ اس حالت کو برقرار رکھنے کے لیے پرندوں کو متوازن خوراک اور صاف پانی دیں اور حفاظتی ٹیکوں کا شیڈول وقت پر مکمل رکھیں۔';
+            return 'محترم کسان: مبارک ہو، آپ کا پرندہ اور اس کا نظام انہضام بالکل تندرست اور نارمل ہے۔ فضلہ بہترین بناوٹ میں ہے۔ اس حالت کو برقرار رکھنے کے لیے پرندوں کو متوازن خوراک اور صاف پانی دیں اور حفاظتی ٹیکوں کا شیڈول وقت پر مکمل رکھیں۔';
         }
       } else {
         // Library overview: State NO certainty claims at all
@@ -109,19 +107,18 @@ class DiseaseAudioProfile {
           : 'Mild';
 
       if (confidenceScore != null) {
-        final confPercent = '${(confidenceScore * 100).toStringAsFixed(1)}%';
         switch (type) {
           case PoultryDiseaseType.newcastle:
-            return 'Attention Farmer: High-risk Newcastle Disease indicators detected with $sevCapitalized severity and $confPercent model confidence. Clinical signs include watery greenish droppings, neck twisting, and respiratory distress. Immediately isolate symptomatic birds in quarantine, enforce strict biosecurity, provide electrolytes, and dial the emergency veterinary helpline immediately.';
+            return 'Attention Farmer: High-risk Newcastle Disease indicators detected with $sevCapitalized severity. Clinical signs include watery greenish droppings, neck twisting, and respiratory distress. Immediately isolate symptomatic birds in quarantine, enforce strict biosecurity, provide electrolytes, and dial the emergency veterinary helpline immediately.';
 
           case PoultryDiseaseType.coccidiosis:
-            return 'Farmer Notice: Coccidiosis protozoal infection diagnosed with $sevCapitalized severity and $confPercent confidence. Primary symptoms include bloody mucoid droppings, ruffled feathers, and loss of appetite. Treat immediately by administering Toltrazuril or Amprolium in drinking water for 48 hours, give Vitamin K to stop bleeding, and replace wet litter immediately.';
+            return 'Farmer Notice: Coccidiosis protozoal infection diagnosed with $sevCapitalized severity. Primary symptoms include bloody mucoid droppings, ruffled feathers, and loss of appetite. Treat immediately by administering Toltrazuril or Amprolium in drinking water for 48 hours, give Vitamin K to stop bleeding, and replace wet litter immediately.';
 
           case PoultryDiseaseType.salmonella:
-            return 'Farmer Notice: Salmonella bacterial infection identified with $sevCapitalized severity and $confPercent confidence. Symptoms feature chalky white diarrhea pasting the vent and persistent huddling. Administer prescribed Enrofloxacin or Neomycin in drinking water for 3 to 5 days and thoroughly sanitize water drinker lines.';
+            return 'Farmer Notice: Salmonella bacterial infection identified with $sevCapitalized severity. Symptoms feature chalky white diarrhea pasting the vent and persistent huddling. Administer prescribed Enrofloxacin or Neomycin in drinking water for 3 to 5 days and thoroughly sanitize water drinker lines.';
 
           case PoultryDiseaseType.healthy:
-            return 'Farmer Notice: Specimen analysis confirms normal healthy digestion with $confPercent confidence. Droppings exhibit proper consistency with white uric acid cap. No medication required. Maintain standard biosecurity protocols and balanced hydration.';
+            return 'Farmer Notice: Specimen analysis confirms normal healthy digestion. Droppings exhibit proper consistency with white uric acid cap. No medication required. Maintain standard biosecurity protocols and balanced hydration.';
         }
       } else {
         // Library overview: State NO certainty claims at all

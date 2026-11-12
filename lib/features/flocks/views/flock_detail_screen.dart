@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_dimensions.dart';
+import '../../../core/utils/flock_status_helper.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_image_view.dart';
@@ -45,14 +46,10 @@ class _FlockDetailScreenState extends State<FlockDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final flock = widget.flock;
-    final now = DateTime.now();
-    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
-    final recentScans = _flockScans.where((s) => s.scan.createdAt.isAfter(thirtyDaysAgo));
-    final hasActiveRisk = recentScans.any((s) {
-      final disease = s.prediction.predictedClass?.toLowerCase() ?? 'healthy';
-      final severity = s.prediction.severity?.toLowerCase() ?? 'mild';
-      return disease != 'healthy' || severity == 'severe';
-    });
+    final hasActiveRisk = FlockStatusHelper.isAtRisk(
+      flock: flock,
+      records: _flockScans,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -241,10 +238,6 @@ class _FlockDetailScreenState extends State<FlockDetailScreen> {
                                 ],
                               ),
                               const SizedBox(height: 4),
-                              Text(
-                                '${AppFormatters.formatConfidence(item.prediction.calibratedConfidence)} confidence',
-                                style: const TextStyle(fontSize: 12, color: AppColors.textSecondaryLight),
-                              ),
                               Text(
                                 AppFormatters.formatDate(item.scan.createdAt),
                                 style: const TextStyle(fontSize: 11, color: AppColors.textMutedLight),

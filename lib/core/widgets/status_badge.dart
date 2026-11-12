@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_dimensions.dart';
-import '../utils/formatters.dart';
 
 /// StatusBadge renders colored pill badges for disease classes,
 /// clinical severity rankings, and urgency flags.
@@ -142,7 +141,7 @@ class StatusBadge extends StatelessWidget {
     }
   }
 
-  // Factory constructor for Certainty Levels
+  // Factory constructor for Certainty Levels (plain qualitative words, no percentage numbers)
   factory StatusBadge.forCertainty(
     String? certainty, {
     double? confidenceScore,
@@ -162,28 +161,11 @@ class StatusBadge extends StatelessWidget {
       c = 'high';
     }
 
-    final scoreSuffix = confidenceScore != null
-        ? ': ${AppFormatters.formatConfidence(confidenceScore)}'
-        : '';
-
     switch (c) {
       case 'cannot_tell':
-        return StatusBadge(
-          label: isUrdu ? 'تعین نا ممکن$scoreSuffix' : 'Cannot Determine$scoreSuffix',
-          backgroundColor: const Color(0xFFF1F5F9),
-          textColor: const Color(0xFF475569),
-          icon: Icons.help_outline,
-          isLarge: isLarge,
-        );
       case 'uncertain':
         return StatusBadge(
-          label: isUrdu
-              ? (confidenceScore != null
-                  ? 'اے آئی یقین: غیر یقینی ($scoreSuffix)'
-                  : 'غیر یقینی پیش گوئی')
-              : (confidenceScore != null
-                  ? 'AI Confidence$scoreSuffix (Uncertain)'
-                  : 'Uncertain Prediction'),
+          label: isUrdu ? 'غیر یقینی (دوبارہ ٹیسٹ کریں)' : 'Uncertain (Retest)',
           backgroundColor: const Color(0xFFFEF9C3),
           textColor: const Color(0xFF854D0E),
           icon: Icons.question_mark_outlined,
@@ -191,9 +173,7 @@ class StatusBadge extends StatelessWidget {
         );
       case 'moderate':
         return StatusBadge(
-          label: isUrdu
-              ? 'درمیانی یقین$scoreSuffix'
-              : 'AI Confidence$scoreSuffix (Moderate)',
+          label: isUrdu ? 'ممکنہ مماثلت' : 'Possible Match',
           backgroundColor: const Color(0xFFE0F2FE),
           textColor: const Color(0xFF0369A1),
           icon: Icons.info_outline,
@@ -202,9 +182,7 @@ class StatusBadge extends StatelessWidget {
       case 'high':
       default:
         return StatusBadge(
-          label: isUrdu
-              ? 'اعلیٰ یقین$scoreSuffix'
-              : 'AI Confidence$scoreSuffix (High)',
+          label: isUrdu ? 'مضبوط مماثلت' : 'Strong Match',
           backgroundColor: const Color(0xFFDCFCE7),
           textColor: const Color(0xFF15803D),
           icon: Icons.verified_outlined,

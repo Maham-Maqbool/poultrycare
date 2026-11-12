@@ -379,3 +379,34 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Executed flutter test test/overflow_test.dart: 13/13 passed.
     - Built split debug APK: build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk assembled successfully.
     - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 29 Complete (Round 4 Remediation Pass: FCR General Button, Library Chips, Confidence Removal, Plain Farmer Language, and Dynamic Flock Status Sync):
+  - Item 1 (FCR Calculator Scan Button Generalization):
+    - In `lib/features/calculator/views/fcr_calculator_screen.dart:826`, replaced disease-specific CTA with general label: EN 'Scan Fecal Specimen' / UR 'بیٹھ کا AI اسکین کریں'.
+    - Preserved the Clinical Coccidiosis Impact on FCR card and all FCR economic formulas without modification.
+  - Item 2 (Encyclopedia Disease Detail Chips Cleanup):
+    - In `lib/features/encyclopedia/views/disease_detail_screen.dart`, removed uncalibrated general chips ("Typically MODERATE" and "Treat Today") from the library overview, retaining only the disease-name chip `StatusBadge.forDisease`.
+    - Preserved case-specific severity chips on DiagnosticResultScreen.
+  - Item 3 (Purged Percentage Confidence Numbers from Farmer Screens):
+    - In `DiagnosticResultScreen` (`diagnostic_result_screen.dart`), deleted the 'AI Confidence' metric tile from the top results row, keeping Severity and Urgency.
+    - In `FlockDetailScreen` (`flock_detail_screen.dart`), removed the confidence percentage line from historical scan cards.
+    - In `ScanHistoryScreen` (`scan_history_screen.dart`), removed confidence percentage text from scan list items and removed `StatusBadge.forCertainty` from the detail bottom sheet.
+    - In `HomeDashboardScreen` (`home_dashboard_screen.dart`), removed confidence percentage text from recent detection cards.
+    - In `AudioPlayerWidget` (`audio_player_widget.dart`), removed the confidence score badge pill.
+    - In `StatusBadge.forCertainty` (`status_badge.dart`), updated badge labels to plain qualitative terms ('Strong Match', 'Possible Match', 'Uncertain (Retest)') without displaying raw `%` numbers.
+    - In `DiseaseAudioService` (`disease_audio_service.dart`), purged percentage figures from all 4 Urdu and English spoken audio narration scripts, conveying disease diagnosis and clinical severity directly.
+    - Kept numeric confidence score saved in `prediction_model.calibratedConfidence` and SQLite for testing/audit purposes.
+  - Item 4 (Removed Developer Jargon from Result Screen):
+    - In `DiagnosticResultScreen` (`diagnostic_result_screen.dart`), deleted the developer chip row ('Neural Vision Edge AI', 'Clinical Triage Protocol', 'Offline Relational Storage') and removed unused `_buildTriageChip` helper.
+    - Reworded vitals header subtitle to plain farmer language: EN 'Based on the specimen photo and 3 flock signs' / UR 'بیٹھ کی تصویر اور پرندوں کی 3 اہم علامات کی بنیاد پر'.
+    - Reworded sudden mortality triage explanation: EN 'Sudden mortality detected within 24 hours. Severity is Severe. Please consult a veterinarian immediately.' / UR 'گزشتہ 24 گھنٹوں میں اموات کی نشاندہی ہوئی۔ شدت شدید (Severe) ہے۔ براہ کرم فوراً ویٹرنری ڈاکٹر سے رابطہ کریں۔'.
+  - Item 5 (Flock List & Detail Status Synchronization):
+    - Created single shared source of truth helper `lib/core/utils/flock_status_helper.dart` with `FlockStatusHelper.isAtRisk` evaluating scans within the last 30 days (Severe or Moderate disease scan = "Active Risk", otherwise "Healthy") and checking `activeDiseaseCount > 0`.
+    - In `DatabaseService` (`lib/services/database_service.dart`), added `recalculateFlockRisk(flockId)` and `syncAllFlocksRisk()`. On scan insert (`insertRecord`) and scan delete (`deleteRecord`, `deleteAllRecords`), automatically recalculates and updates `active_disease_count` in the SQLite `flocks` table.
+    - In `FlocksListScreen` (`flocks_list_screen.dart`), converted to `StatefulWidget` to trigger `loadFlocks()` and `loadRecords()` on mount, and bound status badge to `FlockStatusHelper.isAtRisk(flock: flock, records: history.allRecords)`.
+    - In `FlockDetailScreen` (`flock_detail_screen.dart`), bound header status to `FlockStatusHelper.isAtRisk(flock: flock, records: _flockScans)`.
+    - In `HistoryController` (`history_controller.dart`), delegated `isFlockAtRisk` to `FlockStatusHelper.isAtRiskFromRecords`.
+  - Verification & Code Quality:
+    - Executed `flutter analyze`: 0 issues found (clean static analysis).
+    - Executed `flutter test`: 32/32 tests passed across all test suites (`overflow_test.dart`, `services_test.dart`, `settings_test.dart`, `widget_test.dart`) with 100% success rate.
+    - Guardrails strictly preserved: FCR math, scan flow, disease content, treatments, and withdrawal periods remain untouched.
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.

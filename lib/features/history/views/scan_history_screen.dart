@@ -188,12 +188,6 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
                 children: [
                   StatusBadge.forSeverity(pred.severity, isLarge: true),
                   StatusBadge.forUrgency(pred.urgency, isLarge: true),
-                  StatusBadge.forCertainty(
-                    pred.certainty,
-                    confidenceScore: pred.calibratedConfidence,
-                    isUrdu: isUrdu,
-                    isLarge: true,
-                  ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -470,7 +464,7 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
                                     ),
                                     const SizedBox(height: 5),
                                     Text(
-                                      '${AppFormatters.formatConfidence(pred.calibratedConfidence)} ${isUrdu ? 'یقینی' : 'confidence'} \u2022 ${AppFormatters.formatDate(scan.createdAt)}',
+                                      AppFormatters.formatDate(scan.createdAt),
                                       style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondaryLight),
                                       overflow: TextOverflow.ellipsis,
                                     ),
