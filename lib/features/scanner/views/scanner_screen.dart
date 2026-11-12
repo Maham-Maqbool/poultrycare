@@ -7,6 +7,7 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_image_view.dart';
 import '../../../routes/app_routes.dart';
 import '../../../data/repositories/diagnostic_repository.dart';
+import '../../../services/image_quality_service.dart';
 import '../controllers/scanner_controller.dart';
 import '../../flocks/controllers/flock_controller.dart';
 import '../../profile/controllers/settings_controller.dart';
@@ -149,6 +150,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     final flockController = context.watch<FlockController>();
     final settings = context.watch<SettingsController>();
     final isUrdu = settings.isUrdu;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -332,7 +334,38 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: AppDimensions.space16),
+            const SizedBox(height: 8),
+
+            // CHECK 3: Isolated Dropping Plain Hint Line
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      isUrdu
+                          ? 'رہنمائی: ایک ہی بیٹ فریم کے اندر رکھیں (Aik hi dropping frame mein rakhein)'
+                          : 'Hint: Keep a single dropping within the frame.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppDimensions.space12),
 
             // LARGE FARMER-CENTRIC ACTION BUTTONS
             Row(
@@ -497,7 +530,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          isUrdu ? 'تصویر کے معیار کی جانچ' : 'Pre-Inference Quality Checks',
+                          isUrdu ? 'تصویر کے معیار کی خودکار جانچ' : 'Automated Quality Validation',
                           style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5),
                         ),
                       ),
@@ -506,87 +539,109 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         decoration: BoxDecoration(
                           color: scanner.selectedImagePath == null
                               ? AppColors.borderLight
-                              : (scanner.isImageValid ? AppColors.healthyLight : AppColors.severeLight),
+                              : (scanner.isCheckingQuality
+                                  ? AppColors.infoLight
+                                  : (scanner.isImageValid ? AppColors.healthyLight : AppColors.severeLight)),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           scanner.selectedImagePath == null
                               ? (isUrdu ? 'پہلے تصویر لیں' : 'Select Photo First')
-                              : (scanner.isImageValid
-                                  ? (isUrdu ? 'تشخیص کے لیے تیار' : 'Ready for AI')
-                                  : (isUrdu ? '3 معیارات تصدیق کریں' : 'Confirm 3 Checks')),
+                              : (scanner.isCheckingQuality
+                                  ? (isUrdu ? 'جانچ جاری ہے...' : 'Checking Quality...')
+                                  : (scanner.isImageValid
+                                      ? (isUrdu ? 'تشخیص کے لیے تیار' : 'Ready for AI')
+                                      : (isUrdu ? 'معیار نامکمل ہے' : 'Quality Check Failed'))),
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: scanner.selectedImagePath == null
                                 ? AppColors.textMutedLight
-                                : (scanner.isImageValid ? AppColors.healthy : AppColors.severe),
+                                : (scanner.isCheckingQuality
+                                    ? AppColors.info
+                                    : (scanner.isImageValid ? AppColors.healthy : AppColors.severe)),
                           ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  _buildCheckRow(
-                    title: isUrdu ? 'مناسب روشنی اور واضح تصویر' : 'Lighting & Specimen Visibility',
-                    passed: scanner.lightingPassed,
-                    onToggle: (val) {
-                      if (scanner.selectedImagePath == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              isUrdu
-                                  ? 'براہ کرم پہلے کیمرے یا گیلری سے تصویر لیں'
-                                  : 'Please capture or select a dropping photo first.',
-                            ),
-                            backgroundColor: AppColors.moderate,
-                          ),
-                        );
-                        return;
-                      }
-                      scanner.toggleLighting(val);
-                    },
+
+                  // CHECK 1: Lighting & Specimen Visibility
+                  _buildAutoCheckRow(
+                    title: isUrdu ? 'مناسب روشنی اور واضح منظر' : 'Lighting & Specimen Visibility',
+                    subtitle: scanner.qualityReport.getLightingMessage(isUrdu),
+                    status: scanner.qualityReport.lightingStatus,
+                    isUrdu: isUrdu,
+                    isDark: isDark,
                   ),
-                  _buildCheckRow(
+                  const Divider(height: 14),
+
+                  // CHECK 2: Focal Sharpness & Detail
+                  _buildAutoCheckRow(
                     title: isUrdu ? 'فوکس اور تفصیلات کی صفائی' : 'Focal Sharpness & Detail',
-                    passed: scanner.sharpnessPassed,
-                    onToggle: (val) {
-                      if (scanner.selectedImagePath == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              isUrdu
-                                  ? 'براہ کرم پہلے کیمرے یا گیلری سے تصویر لیں'
-                                  : 'Please capture or select a dropping photo first.',
-                            ),
-                            backgroundColor: AppColors.moderate,
-                          ),
-                        );
-                        return;
-                      }
-                      scanner.toggleSharpness(val);
-                    },
+                    subtitle: scanner.qualityReport.getSharpnessMessage(isUrdu),
+                    status: scanner.qualityReport.sharpnessStatus,
+                    isUrdu: isUrdu,
+                    isDark: isDark,
                   ),
-                  _buildCheckRow(
-                    title: isUrdu ? 'ایک ہی بیٹ پر واضح فوکس' : 'Isolated Dropping in Target',
-                    passed: scanner.singleDroppingPassed,
-                    onToggle: (val) {
-                      if (scanner.selectedImagePath == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              isUrdu
-                                  ? 'براہ کرم پہلے کیمرے یا گیلری سے تصویر لیں'
-                                  : 'Please capture or select a dropping photo first.',
-                            ),
-                            backgroundColor: AppColors.moderate,
+
+                  // Retake Photo Action if failed
+                  if (scanner.qualityReport.isFailed) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.severe.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.severe.withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.warning_amber_rounded, color: AppColors.severe, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  isUrdu
+                                      ? 'تصویر خودکار معیار پر پورا نہیں اتری'
+                                      : 'Photo does not meet quality standards',
+                                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.severe),
+                                ),
+                              ),
+                            ],
                           ),
-                        );
-                        return;
-                      }
-                      scanner.toggleSingleDropping(val);
-                    },
-                  ),
+                          const SizedBox(height: 6),
+                          Text(
+                            isUrdu
+                                ? 'قابل اعتماد AI تشخیص کے لیے روشنی اور فوکس درست ہونا ضروری ہے۔ آپ فوراً دوبارہ تصویر لے سکتے ہیں۔'
+                                : 'Reliable AI diagnosis requires clear lighting and sharp focus. You can retake immediately.',
+                            style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondaryLight),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 42,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.severe,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              icon: const Icon(Icons.refresh_rounded, size: 18),
+                              label: Text(
+                                isUrdu ? 'دوبارہ تصویر لیں (Retake Photo)' : 'Retake Photo',
+                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                              ),
+                              onPressed: () => scanner.pickImageFromCamera(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -856,19 +911,24 @@ class _ScannerScreenState extends State<ScannerScreen> {
             ] else ...[
               () {
                 final bool hasPhoto = scanner.selectedImagePath != null;
+                final bool isChecking = scanner.isCheckingQuality;
                 final bool isValidImage = scanner.isImageValid;
                 final bool isTriageDone = scanner.isTriageComplete;
-                final bool canRunDiagnosis = hasPhoto && isValidImage && isTriageDone;
+                final bool canRunDiagnosis = hasPhoto && !isChecking && isValidImage && isTriageDone;
 
                 String buttonLabel;
                 if (!hasPhoto) {
                   buttonLabel = isUrdu
                       ? 'تشخیص کے لیے پہلے تصویر لیں یا منتخب کریں'
                       : 'Select or Capture Photo to Run AI Diagnosis';
+                } else if (isChecking) {
+                  buttonLabel = isUrdu
+                      ? 'تصویر کا معیار جانچا جا رہا ہے...'
+                      : 'Measuring Specimen Image Quality...';
                 } else if (!isValidImage) {
                   buttonLabel = isUrdu
-                      ? 'تصویر کے 3 معیارات کی تصدیق کریں'
-                      : 'Confirm 3 Image Quality Checks Above';
+                      ? 'معیار کی جانچ ناکام - اوپر دوبارہ تصویر لیں'
+                      : 'Quality Check Failed - Retake Photo Above';
                 } else if (!isTriageDone) {
                   buttonLabel = isUrdu
                       ? 'پرندوں کی 3 جسمانی علامات منتخب کریں'
@@ -953,27 +1013,96 @@ class _ScannerScreenState extends State<ScannerScreen> {
     );
   }
 
-  static Widget _buildCheckRow({
+  static Widget _buildAutoCheckRow({
     required String title,
-    required bool passed,
-    required void Function(bool) onToggle,
+    required String subtitle,
+    required QualityCheckStatus status,
+    required bool isUrdu,
+    required bool isDark,
   }) {
+    Color statusBg;
+    Color statusFg;
+    String statusText;
+    Widget statusIcon;
+
+    switch (status) {
+      case QualityCheckStatus.notChecked:
+        statusBg = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+        statusFg = AppColors.textMutedLight;
+        statusText = isUrdu ? 'غیر جانچ شدہ' : 'Not checked';
+        statusIcon = const Icon(Icons.circle_outlined, size: 18, color: AppColors.textMutedLight);
+        break;
+      case QualityCheckStatus.checking:
+        statusBg = AppColors.infoLight;
+        statusFg = AppColors.info;
+        statusText = isUrdu ? 'جانچ جاری…' : 'Checking…';
+        statusIcon = const SizedBox(
+          width: 16,
+          height: 16,
+          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.info),
+        );
+        break;
+      case QualityCheckStatus.passed:
+        statusBg = AppColors.healthyLight;
+        statusFg = AppColors.healthy;
+        statusText = isUrdu ? '✓ منظور' : '✓ Pass';
+        statusIcon = const Icon(Icons.check_circle_rounded, size: 20, color: AppColors.healthy);
+        break;
+      case QualityCheckStatus.failed:
+        statusBg = AppColors.severeLight;
+        statusFg = AppColors.severe;
+        statusText = isUrdu ? '✗ مسترد' : '✗ Fail';
+        statusIcon = const Icon(Icons.cancel_rounded, size: 20, color: AppColors.severe);
+        break;
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 2.0),
+            child: statusIcon,
+          ),
+          const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: status == QualityCheckStatus.failed ? FontWeight.w600 : FontWeight.w400,
+                    color: status == QualityCheckStatus.failed
+                        ? AppColors.severe
+                        : (status == QualityCheckStatus.passed ? AppColors.healthy : AppColors.textSecondaryLight),
+                  ),
+                ),
+              ],
             ),
           ),
-          Switch.adaptive(
-            value: passed,
-            activeThumbColor: AppColors.primary,
-            activeTrackColor: AppColors.primaryContainerLight,
-            onChanged: onToggle,
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: statusBg,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              statusText,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: statusFg,
+              ),
+            ),
           ),
         ],
       ),

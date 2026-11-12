@@ -4,22 +4,18 @@
 class AppAssets {
   static const String logoIcon = 'assets/images/logo.png';
 
-  // Authentic Poultry Fecal Dropping Diagnostic Test Images
+  // Authentic Poultry Fecal Dropping Diagnostic Test Images (Bundled offline assets)
   // 1. Coccidiosis: Reddish mucoid dropping in broiler flock
-  static const String sampleCoccidiosis =
-      'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=800&q=80';
+  static const String sampleCoccidiosis = 'assets/images/samples/coccidiosis.jpg';
 
   // 2. Newcastle Disease (NCD): Green watery diarrhea in layer flock
-  static const String sampleNewcastle =
-      'https://images.unsplash.com/photo-1589923188900-85dae523342b?auto=format&fit=crop&w=800&q=80';
+  static const String sampleNewcastle = 'assets/images/samples/newcastle.jpg';
 
   // 3. Salmonella (Pullorum): White chalky pasting vent sample
-  static const String sampleSalmonella =
-      'https://images.unsplash.com/photo-1569395579383-8848bc75c371?auto=format&fit=crop&w=800&q=80';
+  static const String sampleSalmonella = 'assets/images/samples/salmonella.jpg';
 
   // 4. Healthy Digestion: Firm cylindrical dropping with white urate cap
-  static const String sampleHealthy =
-      'https://images.unsplash.com/photo-1612170153139-6f881ff067e0?auto=format&fit=crop&w=800&q=80';
+  static const String sampleHealthy = 'assets/images/samples/healthy.png';
 
   // Poultry farm house & flock scenery
   static const String farmBanner =

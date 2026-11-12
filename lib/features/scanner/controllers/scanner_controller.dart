@@ -4,9 +4,11 @@ import '../../../data/mock/mock_scans_data.dart';
 import '../../../data/models/treatment_model.dart';
 import '../../../data/repositories/diagnostic_repository.dart';
 import '../../../data/repositories/disease_repository.dart';
+import '../../../services/image_quality_service.dart';
 
 /// ScannerController manages camera capture, local gallery selection,
-/// image quality validation, 3-question flock triage input, and diagnostic execution.
+/// automated real-time image quality validation, 3-question flock triage input,
+/// and diagnostic execution.
 class ScannerController extends ChangeNotifier {
   final DiagnosticRepository _diagRepo;
   final DiseaseRepository _diseaseRepo;
@@ -23,10 +25,8 @@ class ScannerController extends ChangeNotifier {
   String? _intakeDrop;
   String? _suddenMortality;
 
-  // Validation checks (default to false until confirmed by farmer)
-  bool _lightingPassed = false;
-  bool _sharpnessPassed = false;
-  bool _singleDroppingPassed = false;
+  // Automated image quality report (starts at initial / not checked)
+  ImageQualityReport _qualityReport = ImageQualityReport.initial();
 
   // Processing state
   bool _isAnalyzing = false;
@@ -45,10 +45,11 @@ class ScannerController extends ChangeNotifier {
   String? get intakeDrop => _intakeDrop;
   String? get suddenMortality => _suddenMortality;
 
-  bool get lightingPassed => _lightingPassed;
-  bool get sharpnessPassed => _sharpnessPassed;
-  bool get singleDroppingPassed => _singleDroppingPassed;
-  bool get isImageValid => _lightingPassed && _sharpnessPassed && _singleDroppingPassed;
+  ImageQualityReport get qualityReport => _qualityReport;
+  bool get isCheckingQuality => _qualityReport.isChecking;
+  bool get lightingPassed => _qualityReport.lightingStatus == QualityCheckStatus.passed;
+  bool get sharpnessPassed => _qualityReport.sharpnessStatus == QualityCheckStatus.passed;
+  bool get isImageValid => _selectedImagePath != null && _qualityReport.isPassed;
   bool get isTriageComplete => _lethargy != null && _intakeDrop != null && _suddenMortality != null;
 
   bool get isAnalyzing => _isAnalyzing;
@@ -63,13 +64,23 @@ class ScannerController extends ChangeNotifier {
     _isLocalFile = false;
     _forcedDisease = null;
     _errorMessage = null;
-    _lightingPassed = false;
-    _sharpnessPassed = false;
-    _singleDroppingPassed = false;
+    _qualityReport = ImageQualityReport.initial();
     _lethargy = null;
     _intakeDrop = null;
     _suddenMortality = null;
     notifyListeners();
+  }
+
+  /// Automatically measures lighting and focal sharpness on a newly selected photo.
+  Future<void> _triggerAutoQualityChecks(String path) async {
+    _qualityReport = ImageQualityReport.checking();
+    notifyListeners();
+
+    final report = await ImageQualityService.evaluateImage(path);
+    if (_selectedImagePath == path) {
+      _qualityReport = report;
+      notifyListeners();
+    }
   }
 
   /// Captures a live photograph using the device camera.
@@ -86,10 +97,8 @@ class ScannerController extends ChangeNotifier {
         _selectedImagePath = photo.path;
         _isLocalFile = true;
         _forcedDisease = null; // Unbiased AI inference on actual photo
-        _lightingPassed = false;
-        _sharpnessPassed = false;
-        _singleDroppingPassed = false;
         notifyListeners();
+        await _triggerAutoQualityChecks(photo.path);
         return true;
       }
       return false;
@@ -115,10 +124,8 @@ class ScannerController extends ChangeNotifier {
         _selectedImagePath = image.path;
         _isLocalFile = true;
         _forcedDisease = null; // Unbiased AI inference on actual photo
-        _lightingPassed = false;
-        _sharpnessPassed = false;
-        _singleDroppingPassed = false;
         notifyListeners();
+        await _triggerAutoQualityChecks(image.path);
         return true;
       }
       return false;
@@ -135,20 +142,16 @@ class ScannerController extends ChangeNotifier {
     _selectedImagePath = path;
     _isLocalFile = false;
     _forcedDisease = targetDisease;
-    _lightingPassed = false;
-    _sharpnessPassed = false;
-    _singleDroppingPassed = false;
     notifyListeners();
+    _triggerAutoQualityChecks(path);
   }
 
   void setImagePath(String path, {String? targetDisease, bool isLocal = false}) {
     _selectedImagePath = path;
     _isLocalFile = isLocal;
     _forcedDisease = targetDisease;
-    _lightingPassed = false;
-    _sharpnessPassed = false;
-    _singleDroppingPassed = false;
     notifyListeners();
+    _triggerAutoQualityChecks(path);
   }
 
   /// Sets the active diagnostic record and optional treatment for viewing.
@@ -173,21 +176,6 @@ class ScannerController extends ChangeNotifier {
     if (lethargy != null) _lethargy = lethargy;
     if (intakeDrop != null) _intakeDrop = intakeDrop;
     if (suddenMortality != null) _suddenMortality = suddenMortality;
-    notifyListeners();
-  }
-
-  void toggleLighting(bool value) {
-    _lightingPassed = value;
-    notifyListeners();
-  }
-
-  void toggleSharpness(bool value) {
-    _sharpnessPassed = value;
-    notifyListeners();
-  }
-
-  void toggleSingleDropping(bool value) {
-    _singleDroppingPassed = value;
     notifyListeners();
   }
 

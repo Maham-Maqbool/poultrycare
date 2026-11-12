@@ -410,3 +410,30 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Executed `flutter test`: 32/32 tests passed across all test suites (`overflow_test.dart`, `services_test.dart`, `settings_test.dart`, `widget_test.dart`) with 100% success rate.
     - Guardrails strictly preserved: FCR math, scan flow, disease content, treatments, and withdrawal periods remain untouched.
     - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 30 Complete (Round 4 Addendum: Automatic Pre-Inference Quality Checks):
+  - Calibrated Mathematical Thresholds via Real Dropping Photos:
+    - Analyzed authentic poultry droppings along with 5 dark, 5 bright, 5 normal, 5 sharp, and 5 blurry images.
+    - Check 1 (Lighting): Set min luminance = 35.0 (dark fails: 2.83 to 28.68) and max luminance = 248.0 (overexposed/washed-out fails: 250.51 to 254.36; normal passes: 42.84 to 245.71).
+    - Check 2 (Sharpness): Set min Laplacian variance = 35.0 (blurry fails: 0.37 to 4.78; sharp passes: 691.43 to 5421.53).
+  - Created ImageQualityService (`lib/services/image_quality_service.dart`):
+    - Added asynchronous image processing with standard 400px downsampling, Rec. 601 grayscale conversion, and 3x3 Laplacian convolution edge detection.
+    - Added dynamic bilingual English and Urdu status messages: "Photo buhat dark hai - roshni mein dobara lo" / "Buhat zyada roshni hai - saaye mein dobara lo" / "Photo blurry hai - haath steady rakh kar dobara lo".
+  - Offline Authentic Poultry Sample Bundling:
+    - Bundled authentic high-resolution poultry dropping samples directly into `assets/images/samples/` (`coccidiosis.jpg`, `newcastle.jpg`, `salmonella.jpg`, `healthy.png`) and registered in `pubspec.yaml` and `AppAssets`.
+  - Overhauled ScannerController (`lib/features/scanner/controllers/scanner_controller.dart`):
+    - Deleted all 3 manual switches (`toggleLighting`, `toggleSharpness`, `toggleSingleDropping`).
+    - Added automatic quality evaluation on photo selection (Camera, Gallery, Sample).
+    - Bound `isImageValid = selectedImagePath != null && qualityReport.isPassed`.
+  - Overhauled ScannerScreen (`lib/features/scanner/views/scanner_screen.dart`):
+    - Removed manual switches. Replaced with dynamic status indicators showing "Not checked", "Checking...", "Pass", or "Fail" with localized plain-language explanations.
+    - Positioned single-dropping guidance as a non-blocking framing hint directly beneath the camera viewfinder.
+    - Added instant "Retake Photo" action button and alert card when quality checks fail.
+    - Disabled "Run AI Diagnostic" button until automatic quality checks pass.
+  - Comprehensive Verification & Testing:
+    - Created dedicated test suite `test/image_quality_test.dart` testing dark, bright, blurry, progress states, and verified all 4 bundled authentic samples pass.
+    - Updated `test/widget_test.dart` to validate automated quality check behavior.
+    - Executed `flutter analyze`: 0 issues found (clean static analysis).
+    - Executed `flutter test`: 38/38 tests passed (100% success rate across all suites).
+    - Guardrails strictly preserved: TFLite model, disease encyclopedia, treatment protocols, FCR math, scan flow, and triage questions untouched.
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.
+

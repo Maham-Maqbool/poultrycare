@@ -79,7 +79,7 @@ Quick start:
 - `lib/data/`: Domain models, mock repositories, and clinical triage rules engine.
 - `lib/features/`: Feature modules (Auth, Dashboard, Scanner Studio, Flocks, History, Encyclopedia, Profile/Settings, FCR Calculator).
 - `lib/routes/`: Declarative AppRouter with named routes.
-- `lib/services/`: On-device inference service, SQLite database service, session persistence service, and disease audio voice narration service.
+- `lib/services/`: On-device inference service, automated image quality validation service (lighting and focal blur detection), SQLite database service, session persistence service, and disease audio voice narration service.
 - `resources/`: Model metadata, labels, severity config, and exported model artifacts.
 - `backend/`: Inference server, database engine (`db.py`), 10-table ORM models (`models_db.py`), seeder (`seed_db.py`), and test suites.
 - `DATABASE_SETUP_GUIDE.md`: Step-by-step guide to connecting PostgreSQL on cloud or local Docker.
