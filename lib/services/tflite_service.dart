@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
+import 'clinical_ratio_service.dart';
 
 /// Structured result container returned by TFLite model inference.
 class TFLiteDiagnosisResult {
@@ -19,6 +20,7 @@ class TFLiteDiagnosisResult {
   final bool isUncertain;
   final int rawImageWidth;
   final int rawImageHeight;
+  final ClinicalSignRatios? clinicalRatios;
 
   const TFLiteDiagnosisResult({
     required this.predictedClass,
@@ -33,13 +35,19 @@ class TFLiteDiagnosisResult {
     required this.isUncertain,
     required this.rawImageWidth,
     required this.rawImageHeight,
+    this.clinicalRatios,
   });
+
+  double get bloodRatio => clinicalRatios?.bloodRatio ?? 0.0;
+  double get abnormalRatio => clinicalRatios?.abnormalRatio ?? 0.0;
+  double get wateryRatio => clinicalRatios?.wateryRatio ?? 0.0;
+  double get severityScore => clinicalRatios?.severityScore ?? 0.0;
 
   @override
   String toString() {
     return 'TFLiteDiagnosisResult(class: $predictedClass, confidence: '
         '${(confidence * 100).toStringAsFixed(1)}%, severity: $severity, '
-        'urgency: $urgency, latency: ${totalMs.toStringAsFixed(1)}ms)';
+        'urgency: $urgency, score: ${severityScore.toStringAsFixed(3)}, latency: ${totalMs.toStringAsFixed(1)}ms)';
   }
 }
 
@@ -57,8 +65,11 @@ class TFLiteService {
   List<String> _labels = ['Coccidiosis', 'Healthy', 'Newcastle', 'Salmonella'];
   Map<String, dynamic> _severityConfig = {
     'uncertain_below': 0.5,
-    'mild_max': 0.67,
-    'moderate_max': 0.83,
+    'blood_ceiling': 0.2239,
+    'abnormal_ceiling': 0.05,
+    'watery_ceiling': 0.1676,
+    'mild_band_max': 1.0,
+    'moderate_band_max': 2.0,
     'min_severity_by_class': {'Newcastle': 'Moderate'},
   };
   String _activeModelName = 'PoultryCare Neural Vision Engine';
@@ -169,6 +180,26 @@ class TFLiteService {
       interpolation: img.Interpolation.average,
     );
 
+    final double bloodCeiling =
+        (_severityConfig['blood_ceiling'] as num?)?.toDouble() ?? 0.2239;
+    final double abnormalCeiling =
+        (_severityConfig['abnormal_ceiling'] as num?)?.toDouble() ?? 0.05;
+    final double wateryCeiling =
+        (_severityConfig['watery_ceiling'] as num?)?.toDouble() ?? 0.1676;
+    final double mildBandMax =
+        (_severityConfig['mild_band_max'] as num?)?.toDouble() ?? 1.0;
+    final double moderateBandMax =
+        (_severityConfig['moderate_band_max'] as num?)?.toDouble() ?? 2.0;
+
+    final clinicalRatios = ClinicalRatioService.computeFromImage(
+      resized,
+      bloodCeiling: bloodCeiling,
+      abnormalCeiling: abnormalCeiling,
+      wateryCeiling: wateryCeiling,
+      mildMax: mildBandMax,
+      moderateMax: moderateBandMax,
+    );
+
     // 4. Convert to RGB in 0..255 float32 format (no extra normalization)
     // Shape: [1, 224, 224, 3]
     final input = List.generate(
@@ -228,10 +259,11 @@ class TFLiteService {
       probMap[label] = double.parse(val.toStringAsFixed(4));
     }
 
-    // 7. Derive Severity & Urgency per severity_config.json
+    // 7. Derive Severity & Urgency per clinical ratio score & safety rules
     final severityData = _calculateSeverityAndUrgency(
       predictedClass: predictedClass,
       confidence: confidence,
+      clinicalRatios: clinicalRatios,
     );
 
     totalWatch.stop();
@@ -250,21 +282,19 @@ class TFLiteService {
       isUncertain: severityData['is_uncertain'] == 'true',
       rawImageWidth: rawWidth,
       rawImageHeight: rawHeight,
+      clinicalRatios: clinicalRatios,
     );
   }
 
-  /// Calculates disease severity and clinical urgency from confidence thresholds
+  /// Calculates disease severity and clinical urgency from measured ratio score
   /// and minimum severity rules in severity_config.json.
   Map<String, String> _calculateSeverityAndUrgency({
     required String predictedClass,
     required double confidence,
+    required ClinicalSignRatios clinicalRatios,
   }) {
     final double uncertainBelow =
         (_severityConfig['uncertain_below'] as num?)?.toDouble() ?? 0.50;
-    final double mildMax =
-        (_severityConfig['mild_max'] as num?)?.toDouble() ?? 0.67;
-    final double moderateMax =
-        (_severityConfig['moderate_max'] as num?)?.toDouble() ?? 0.83;
 
     final Map minSeverityMap =
         (_severityConfig['min_severity_by_class'] as Map?) ?? {};
@@ -283,28 +313,8 @@ class TFLiteService {
       };
     }
 
-    // Case 2: Healthy specimen
-    if (predictedClass.toLowerCase() == 'healthy') {
-      severity = 'Healthy';
-      urgency = 'Monitor';
-      return {
-        'severity': severity,
-        'urgency': urgency,
-        'is_uncertain': 'false',
-      };
-    }
-
-    // Case 3: Disease pathogen grading
-    if (confidence <= mildMax) {
-      severity = 'Mild';
-      urgency = 'Treat Today';
-    } else if (confidence <= moderateMax) {
-      severity = 'Moderate';
-      urgency = 'Treat Today';
-    } else {
-      severity = 'Severe';
-      urgency = 'Vet Now';
-    }
+    // Severity derived strictly from measured clinical ratio score
+    severity = clinicalRatios.severity;
 
     // Apply minimum severity rule (e.g. Newcastle is at least Moderate)
     final requiredMinSeverity = minSeverityMap[predictedClass];
@@ -315,12 +325,28 @@ class TFLiteService {
       } else if (reqStr.toLowerCase() == 'severe' &&
           (severity == 'Mild' || severity == 'Moderate')) {
         severity = 'Severe';
-        urgency = 'Vet Now';
       }
     }
 
+    // Case 2: Healthy specimen urgency
+    if (predictedClass.toLowerCase() == 'healthy') {
+      urgency = 'Monitor';
+      return {
+        'severity': severity,
+        'urgency': urgency,
+        'is_uncertain': 'false',
+      };
+    }
+
+    // Urgency rules based on clinical severity
+    if (severity == 'Severe') {
+      urgency = 'Vet Now';
+    } else {
+      urgency = 'Treat Today';
+    }
+
     // Pathogen specific urgency escalation
-    if (predictedClass.toLowerCase() == 'newcastle' && severity == 'Moderate') {
+    if (predictedClass.toLowerCase() == 'newcastle') {
       urgency = 'Vet Now'; // Notifiable contagious viral pathogen
     }
 

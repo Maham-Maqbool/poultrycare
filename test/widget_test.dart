@@ -145,7 +145,7 @@ void main() {
     expect(record.prediction.probabilities.isNotEmpty, isTrue);
   });
 
-  test('DiagnosticRepository preserves Healthy specimen severity as healthy and urgency as monitor', () async {
+  test('DiagnosticRepository preserves Healthy specimen severity as mild and urgency as monitor', () async {
     final diagnosticRepo = DiagnosticRepository();
     final record = await diagnosticRepo.runDiagnosis(
       imagePath: 'assets/images/samples/healthy.png',
@@ -158,7 +158,7 @@ void main() {
     );
 
     expect(record.prediction.predictedClass, 'healthy');
-    expect(record.prediction.severity, 'healthy');
+    expect(record.prediction.severity, 'mild');
     expect(record.prediction.urgency, 'monitor');
   });
 }

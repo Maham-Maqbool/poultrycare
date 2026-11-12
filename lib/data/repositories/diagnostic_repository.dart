@@ -198,7 +198,7 @@ class DiagnosticRepository {
       inferenceMs = tfliteResult.inferenceMs;
       modelVersionId = tfliteResult.modelName;
       rulesFired.add('tflite_ondevice_inference');
-      rulesFired.add('calibrated_severity_${derivedSeverity.toLowerCase()}');
+      rulesFired.add('ratio_severity_${derivedSeverity.toLowerCase()}');
     } else {
       predictedClass = (forcedDisease ??
               _detectClassFromImage(imagePath, flockSignals))
@@ -207,7 +207,7 @@ class DiagnosticRepository {
       probabilities = {predictedClass: 0.94};
       derivedSeverity = (predictedClass == 'newcastle')
           ? 'severe'
-          : (predictedClass == 'healthy' ? 'healthy' : 'moderate');
+          : (predictedClass == 'healthy' ? 'mild' : 'moderate');
       derivedUrgency = (predictedClass == 'newcastle')
           ? 'vet_now'
           : (predictedClass == 'healthy' ? 'monitor' : 'treat_today');
@@ -222,8 +222,8 @@ class DiagnosticRepository {
         (flockSignals['suddenMortality'] ?? 'None in 24h').toString();
 
     if (predictedClass == 'healthy') {
-      // A Healthy fecal specimen indicates no active pathogen; maintain healthy severity and routine monitoring
-      derivedSeverity = 'healthy';
+      // A Healthy fecal specimen indicates no active pathogen; ratio-based severity is mild and urgency is monitor
+      derivedSeverity = 'mild';
       derivedUrgency = 'monitor';
       rulesFired.add('healthy_specimen_routine_monitoring');
     } else {

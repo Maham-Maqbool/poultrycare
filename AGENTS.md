@@ -468,3 +468,31 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
 
 
 
+- Phase 33 Complete (Empirical Ratio-Based Severity Derivation & Thesis Alignment):
+  - Step 1 (On-Device Clinical Sign Ratio Computation):
+    - Implemented `lib/services/clinical_ratio_service.dart` providing `ClinicalRatioService` and `ClinicalSignRatios`.
+    - Operates directly on 224x224 RGB image buffer (50,176 pixels) converted to PIL-standard HSV (0 to 255 integer scale).
+    - Measures 3 empirical clinical ratios:
+      1. Blood Content: hue <= 24 or hue >= 243, saturation >= 50, value >= 25.
+      2. Abnormal Colour: saturation >= 70, hue between 75 and 242.
+      3. Watery Consistency: value >= 205, saturation <= 90.
+    - Integrated with `ScannerController` upon photo capture/selection and `TFLiteService.diagnoseImage()`.
+  - Step 2 (Ratio Score Replaces Confidence-Based Severity):
+    - Formula: Severity Score = (blood / 0.2239) + (abnormal / 0.05) + (watery / 0.1676).
+    - Bands: score < 1.0 -> Mild; 1.0 <= score <= 2.0 -> Moderate; score > 2.0 -> Severe.
+    - Updated `assets/model/severity_config.json` and `resources/severity_config.json`: Removed `mild_max: 0.67` and `moderate_max: 0.83`. Added `blood_ceiling: 0.2239`, `abnormal_ceiling: 0.05`, `watery_ceiling: 0.1676`, `mild_band_max: 1.0`, `moderate_band_max: 2.0`.
+    - Updated `TFLiteService`: Severity is derived strictly from ratio score. Uncertainty rule (confidence < 0.50 -> Uncertain / Retake Photo) and minimum severity rule (Newcastle -> Moderate minimum) are preserved.
+    - Urgency rules updated: Healthy -> Monitor; Severe -> Vet Now; Moderate/Mild -> Treat Today; Newcastle -> Vet Now.
+    - Result screen: Healthy specimen displays "HEALTHY" with "MILD" severity and "MONITOR" urgency. Bloody Coccidiosis displays "COCCIDIOSIS" with "SEVERE" severity and "VET NOW" urgency.
+  - Step 3 (Documentation Updated Across 4 Required Places + Empirical Chapter Section):
+    - Abstract: Replaced confidence severity with clinical sign ratio formulation.
+    - 1.2 Introduction: Updated severity definition to clinical-sign ratios (blood, abnormal colour, watery consistency).
+    - Scope: Replaced confidence-based severity estimation with ratio-based clinical estimation.
+    - FR-05: Set exact required specification: "The system shall assign severity (Mild/Moderate/Severe) from the measured clinical-sign ratios in the specimen image. Severity shall NOT be derived from the model's confidence score."
+    - Added Empirical Section to thesis: Per-class ratio table (150 images/class), band fraction distribution table, embedded `chart.png`, and documented Newcastle optical limitation complemented by 3-question flock triage.
+    - Synchronized `project-docs/extracted_doc_text.txt`.
+  - Verification & Code Quality:
+    - `dart analyze lib test`: 0 issues found (clean static analysis).
+    - `flutter test`: 45/45 tests passed across all suites (100% success rate).
+    - Guardrails strictly preserved: TFLite model, disease encyclopedia, treatment protocols, FCR math, scan flow, and triage questions untouched.
+    - Strict Rule 7 compliance: Zero em dashes across all touched files.

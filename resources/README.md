@@ -7,7 +7,7 @@ This directory holds the exported machine learning artifacts, configuration sche
 | File | Description | Source |
 |---|---|---|
 | `labels.txt` | Class indices in exact output order: 0: Coccidiosis, 1: Healthy, 2: Newcastle, 3: Salmonella | Generated during Colab export |
-| `severity_config.json` | Calibrated certainty thresholds and class minimum floors for severity classification | Tuned on validation split in Colab |
+| `severity_config.json` | Clinical sign ratio ceilings and score cut-offs for ratio-based severity classification | Measured on 150 images/class empirical dataset |
 | `model_meta.json` | Input tensor contract (`[1, 224, 224, 3]`, RGB, `float32`, range `0..255`) and accuracy metrics | Exported metadata |
 | `poultry_mobilenetv2_fp16.tflite` | Exported FP16 TensorFlow Lite model | Downloaded from Colab `deploy/` |
 

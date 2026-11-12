@@ -5,6 +5,7 @@ import '../../../data/models/treatment_model.dart';
 import '../../../data/repositories/diagnostic_repository.dart';
 import '../../../data/repositories/disease_repository.dart';
 import '../../../services/image_quality_service.dart';
+import '../../../services/clinical_ratio_service.dart';
 
 /// ScannerController manages camera capture, local gallery selection,
 /// automated real-time image quality validation, 3-question flock triage input,
@@ -19,6 +20,9 @@ class ScannerController extends ChangeNotifier {
   String? _forcedDisease; // For demo testing specific classes
   bool _isLocalFile = false;
   String? _errorMessage;
+
+  // Clinical sign pixel ratios and derived severity
+  ClinicalSignRatios? _clinicalRatios;
 
   // 3 Clinical Flock Triage Questions (start unselected / null)
   String? _lethargy;
@@ -41,6 +45,7 @@ class ScannerController extends ChangeNotifier {
   String? get selectedFlockId => _selectedFlockId;
   String? get forcedDisease => _forcedDisease;
   bool get isLocalFile => _isLocalFile;
+  ClinicalSignRatios? get clinicalRatios => _clinicalRatios;
 
   String? get lethargy => _lethargy;
   String? get intakeDrop => _intakeDrop;
@@ -68,10 +73,21 @@ class ScannerController extends ChangeNotifier {
     _errorMessage = null;
     _qualityCheckFailed = false;
     _qualityReport = ImageQualityReport.initial();
+    _clinicalRatios = null;
     _lethargy = null;
     _intakeDrop = null;
     _suddenMortality = null;
     notifyListeners();
+  }
+
+  /// Computes clinical sign pixel ratios and derived severity score on-device.
+  Future<void> _computeClinicalRatios(String path) async {
+    try {
+      _clinicalRatios = await ClinicalRatioService.computeFromPath(path);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[ScannerController] Notice computing clinical ratios: $e');
+    }
   }
 
   /// Evaluates lighting and focal sharpness silently on the chosen photo.
@@ -106,6 +122,7 @@ class ScannerController extends ChangeNotifier {
         _errorMessage = null;
         _qualityCheckFailed = false;
         _qualityReport = ImageQualityReport.initial();
+        _computeClinicalRatios(photo.path);
         notifyListeners();
         return true;
       }
@@ -137,6 +154,7 @@ class ScannerController extends ChangeNotifier {
         _errorMessage = null;
         _qualityCheckFailed = false;
         _qualityReport = ImageQualityReport.initial();
+        _computeClinicalRatios(image.path);
         notifyListeners();
         return true;
       }
@@ -157,6 +175,7 @@ class ScannerController extends ChangeNotifier {
     _errorMessage = null;
     _qualityCheckFailed = false;
     _qualityReport = ImageQualityReport.initial();
+    _computeClinicalRatios(path);
     notifyListeners();
   }
 
@@ -167,6 +186,7 @@ class ScannerController extends ChangeNotifier {
     _errorMessage = null;
     _qualityCheckFailed = false;
     _qualityReport = ImageQualityReport.initial();
+    _computeClinicalRatios(path);
     notifyListeners();
   }
 
