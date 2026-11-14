@@ -259,6 +259,12 @@ class ScannerController extends ChangeNotifier {
           'lethargy': _lethargy ?? 'None',
           'intakeDrop': _intakeDrop ?? 'Normal',
           'suddenMortality': _suddenMortality ?? 'None in 24h',
+          if (_clinicalRatios != null) ...{
+            'wateryRatio': _clinicalRatios!.wateryRatio,
+            'bloodRatio': _clinicalRatios!.bloodRatio,
+            'abnormalRatio': _clinicalRatios!.abnormalRatio,
+            'ratioScore': _clinicalRatios!.severityScore,
+          },
         },
       );
 

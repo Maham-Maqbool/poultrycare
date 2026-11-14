@@ -1,3 +1,5 @@
+import '../../services/clinical_ratio_service.dart';
+
 /// PredictionModel captures AI classification outputs, certainty metrics,
 /// and clinical rules-based triage decisions reflecting the enterprise predictions schema.
 class PredictionModel {
@@ -16,6 +18,7 @@ class PredictionModel {
   final String? urgency; // 'monitor' | 'treat_today' | 'vet_soon' | 'vet_now'
   final List<String> triageRules;
   final Map<String, dynamic>? flockSignals; // lethargy, intakeDrop, suddenMortality
+  final ClinicalSignRatios? clinicalRatios;
   final double? decodeMs;
   final double? preprocessMs;
   final double? inferenceMs;
@@ -38,6 +41,7 @@ class PredictionModel {
     this.urgency,
     this.triageRules = const [],
     this.flockSignals,
+    this.clinicalRatios,
     this.decodeMs,
     this.preprocessMs,
     this.inferenceMs,
@@ -64,6 +68,7 @@ class PredictionModel {
     String? urgency,
     List<String>? triageRules,
     Map<String, dynamic>? flockSignals,
+    ClinicalSignRatios? clinicalRatios,
     double? decodeMs,
     double? preprocessMs,
     double? inferenceMs,
@@ -86,6 +91,7 @@ class PredictionModel {
       urgency: urgency ?? this.urgency,
       triageRules: triageRules ?? this.triageRules,
       flockSignals: flockSignals ?? this.flockSignals,
+      clinicalRatios: clinicalRatios ?? this.clinicalRatios,
       decodeMs: decodeMs ?? this.decodeMs,
       preprocessMs: preprocessMs ?? this.preprocessMs,
       inferenceMs: inferenceMs ?? this.inferenceMs,

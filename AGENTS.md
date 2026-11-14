@@ -536,3 +536,26 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Executed `flutter analyze`: No issues found (0 issues).
     - Executed `flutter test`: 47/47 tests passed (100% success rate).
     - Strict Rule 7 compliance: Zero em dashes across all touched files.
+- Phase 37 Complete (Addendum 8: Newcastle Supportive Care & Kyun Hua Hoga Checklist Section):
+  - Part A (Newcastle Treatment Cards Grounding & Supportive Care):
+    - In `lib/data/mock/mock_treatments_data.dart` (`trt-ncd-01`, `trt-ncd-02`, `trt-ncd-03`, all 3 tiers):
+      - Lead sentence in both languages: EN "There is no specific treatment for Newcastle disease - no medicine kills this virus." / UR "رانی کھیت کا کوئی خاص علاج نہیں ہے - کوئی دوا اس وائرس کو ختم نہیں کرتی۔"
+      - Completely purged `Doxycycline + Colistin` and any antibiotics from Newcastle cards.
+      - Reclassified all Newcastle medications strictly as SUPPORTIVE CARE ONLY (oral rehydration, electrolytes, vitamins C/E, antipyretics).
+      - Emergency vaccination (LaSota / Clone 30) restricted strictly to vet authorization for healthy birds only (never for sick birds).
+      - Retained notifiable alert, quarantine, isolation, `vetRequired = true`, and `urgency: 'vet_now'`.
+      - Coccidiosis, Salmonella, and Healthy treatment protocols preserved 100% untouched.
+  - Part B (Kyun Hua Hoga Result-Screen Section):
+    - Placed directly under the disease and severity/urgency card, before the treatment card in `lib/features/scanner/views/diagnostic_result_screen.dart`.
+    - Heading in both languages: EN "Why it may have happened - signs and checklist" / UR "کیوں ہوا ہوگا - اشارے اور چیک لسٹ".
+    - Visible ONLY for Coccidiosis, Newcastle, and Salmonella; completely hidden for Healthy specimens.
+    - Implemented shared domain evaluation service `lib/services/disease_cause_service.dart` evaluating strictly on-device inputs (no internet, no weather API):
+      1. Photo Ratios: Watery ratio > 0.1676 triggers watery line; blood ratio > 0.2239 triggers blood line (marked urgent).
+      2. Date/Season: Phone date month 7 to 9 (July to September monsoon) triggers rain/litter moisture warning for Coccidiosis only; Newcastle and Salmonella get no season line.
+      3. Shed History (SQLite 30-day window): Repeat occurrence in same shed displays recurrence sign; rising severity across recent scans triggers immediate vet escalation wording.
+      4. Per-Disease Checklist: Coccidiosis 6 items from veterinary literature (MSD Manual, Lawal et al. 2025, Lagos study); Newcastle missing vaccination + biosecurity checks; Salmonella hygiene, rodent, and feed checks. Every line framed as a check ("check karo"), never stated as certain cause.
+  - Verification & Test Coverage:
+    - Added dedicated test suite `test/disease_cause_test.dart` covering Part A lead disclaimers, antibiotic purge, and Part B ratio/season/shed-history logic and widget visibility.
+    - Executed `flutter analyze`: 0 issues found (clean static analysis).
+    - Executed full `flutter test`: 55/55 tests passed across all suites (100% success rate).
+    - Strict Rule 7 compliance: Zero em dashes or en dashes across all touched files.

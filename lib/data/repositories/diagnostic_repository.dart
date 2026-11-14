@@ -259,6 +259,15 @@ class DiagnosticRepository {
 
     final now = DateTime.now();
 
+    final Map<String, dynamic> enrichedSignals = Map<String, dynamic>.from(flockSignals);
+    final ratios = tfliteResult?.clinicalRatios;
+    if (ratios != null) {
+      enrichedSignals['wateryRatio'] = ratios.wateryRatio;
+      enrichedSignals['bloodRatio'] = ratios.bloodRatio;
+      enrichedSignals['abnormalRatio'] = ratios.abnormalRatio;
+      enrichedSignals['ratioScore'] = ratios.severityScore;
+    }
+
     // 3. Persist diagnosis session directly to local SQLite database
     int? insertedDbId;
     try {
@@ -270,7 +279,7 @@ class DiagnosticRepository {
           confidenceScore: confidence,
           timestamp: now,
           flockId: flockId,
-          notes: jsonEncode(flockSignals),
+          notes: jsonEncode(enrichedSignals),
           probabilities: probabilities,
         ),
       );
@@ -310,7 +319,7 @@ class DiagnosticRepository {
       severity: derivedSeverity,
       urgency: derivedUrgency,
       triageRules: rulesFired,
-      flockSignals: flockSignals,
+      flockSignals: enrichedSignals,
       decodeMs: decodeMs,
       preprocessMs: preprocessMs,
       inferenceMs: inferenceMs,
