@@ -14,8 +14,8 @@ import '../../../data/models/diagnostic_record.dart';
 import '../../../data/models/treatment_model.dart';
 import '../../../data/repositories/disease_repository.dart';
 import '../../../data/repositories/diagnostic_repository.dart';
-import '../../../services/cause_checklist_service.dart';
 import '../../../routes/app_routes.dart';
+import '../../../services/disease_cause_service.dart';
 import '../controllers/scanner_controller.dart';
 import '../../profile/controllers/settings_controller.dart';
 
@@ -37,7 +37,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
 
   DiagnosticRecord? _resolvedRecord;
   TreatmentModel? _resolvedTreatment;
-  List<DiagnosticRecord> _historicalRecords = [];
+  List<DiagnosticRecord> _allShedScans = [];
   bool _isLoading = true;
 
   @override
@@ -70,15 +70,15 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
 
     record ??= scanner.lastResult;
 
-    List<DiagnosticRecord> all = [];
+    List<DiagnosticRecord> allScans = [];
     try {
-      all = await diagRepo.getAllRecords();
+      allScans = await diagRepo.getAllRecords();
     } catch (e) {
-      debugPrint('[DiagnosticResultScreen] Historical records fetch safely caught: $e');
+      debugPrint('[DiagnosticResultScreen] Scans history lookup note: $e');
     }
 
-    if (record == null && all.isNotEmpty) {
-      record = all.first;
+    if (record == null && allScans.isNotEmpty) {
+      record = allScans.first;
     }
 
     TreatmentModel? treatment;
@@ -99,7 +99,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
       setState(() {
         _resolvedRecord = record;
         _resolvedTreatment = treatment;
-        _historicalRecords = all;
+        _allShedScans = allScans;
         _isLoading = false;
       });
     }
@@ -196,18 +196,6 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
             ? 'vet_now'
             : (rawUrgency == 'vet_soon' ? 'vet_soon' : 'treat_today'));
     final isNotifiable = pred.isNotifiable || diseaseCode == 'newcastle';
-
-    final causeResult = (diseaseCode == 'healthy')
-        ? CauseChecklistResult.empty()
-        : CauseChecklistService.evaluate(
-            diseaseCode: diseaseCode,
-            severity: severity,
-            clinicalRatios: pred.clinicalRatios ?? scanner.clinicalRatios,
-            scanDate: scan.createdAt,
-            historicalRecords: _historicalRecords,
-            flockId: scan.flockId,
-            currentScanId: scan.id,
-          );
 
     return Scaffold(
       appBar: AppBar(
@@ -398,16 +386,16 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
             ),
             const SizedBox(height: AppDimensions.space16),
 
-            // 2.2 Probable Causes & Priority Checklist Section ("Kyun hua hoga")
-            // Show ONLY for Coccidiosis, Newcastle, Salmonella. NEVER for Healthy.
-            if (diseaseCode != 'healthy' && causeResult.shouldDisplay) ...[
-              _buildCauseChecklistSection(
-                causeResult: causeResult,
-                isUrdu: isUrdu,
-                isDark: isDark,
-              ),
-              const SizedBox(height: AppDimensions.space16),
-            ],
+            // 2.3 New Result-Screen Section: "Kyun hua hoga - ishare aur check list"
+            _buildCauseSection(
+              context: context,
+              record: record,
+              scanner: scanner,
+              isUrdu: isUrdu,
+              isDark: isDark,
+              diseaseCode: diseaseCode,
+              severity: severity,
+            ),
 
             // 2.5 Quick Link to FCR & Economics Calculator
             InkWell(
@@ -584,48 +572,11 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                         const Icon(Icons.medication_liquid_outlined, color: AppColors.primary, size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          (diseaseCode == 'newcastle' || diseaseCode == 'ncd')
-                              ? (isUrdu
-                                  ? 'صرف علامتی و امدادی نگہداشت (علاج نہیں)'
-                                  : 'Supportive Care Only (No Cure for Virus)')
-                              : (isUrdu
-                                  ? 'تجویز کردہ ادویات اور مقدار (Medications)'
-                                  : 'Prescribed Medications & Dosages'),
+                          isUrdu ? 'تجویز کردہ ادویات اور مقدار (Medications)' : 'Prescribed Medications & Dosages',
                           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
                         ),
                       ],
                     ),
-                    if (diseaseCode == 'newcastle' || diseaseCode == 'ncd') ...[
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF3B1212) : const Color(0xFFFEF2F2),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.severe, width: 1.5),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(Icons.error_outline_rounded, color: AppColors.severe, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                isUrdu
-                                    ? 'رانی کھیت کا کوئی خاص علاج نہیں ہے: کوئی دوا اس وائرس کو ختم نہیں کرتی۔ تمام اقدامات صرف علامتی نگہداشت کے لیے ہیں۔'
-                                    : 'There is no specific treatment for Newcastle disease: no medicine kills this virus. All steps are supportive care only.',
-                                style: const TextStyle(
-                                  color: AppColors.severe,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12.5,
-                                  height: 1.35,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
                     const SizedBox(height: 12),
                     ...treatment.getMedicines(isUrdu).asMap().entries.map((entry) {
                       return _buildPrescriptionCard(
@@ -1464,6 +1415,224 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
     );
   }
 
+  Widget _buildCauseSection({
+    required BuildContext context,
+    required DiagnosticRecord record,
+    required ScannerController scanner,
+    required bool isUrdu,
+    required bool isDark,
+    required String diseaseCode,
+    required String severity,
+  }) {
+    final pred = record.prediction;
+    final scan = record.scan;
+
+    final wateryRatio = (pred.flockSignals?['wateryRatio'] as num?)?.toDouble() ??
+        scanner.clinicalRatios?.wateryRatio;
+    final bloodRatio = (pred.flockSignals?['bloodRatio'] as num?)?.toDouble() ??
+        scanner.clinicalRatios?.bloodRatio;
+
+    final causeEval = DiseaseCauseService.evaluate(
+      diseaseCode: diseaseCode,
+      currentSeverity: severity,
+      wateryRatio: wateryRatio,
+      bloodRatio: bloodRatio,
+      scanDate: scan.createdAt,
+      flockId: scan.flockId,
+      currentScanId: scan.id,
+      shedScans: _allShedScans,
+    );
+
+    if (!causeEval.shouldShow) {
+      return const SizedBox.shrink();
+    }
+
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppCard(
+          padding: const EdgeInsets.all(16),
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+          border: BorderSide(
+            color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+            width: 1.2,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.help_outline_rounded,
+                      color: Color(0xFFD97706),
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isUrdu
+                              ? 'کیوں ہوا ہوگا - اشارے اور چیک لسٹ'
+                              : 'Why it may have happened - signs and checklist',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                            color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          isUrdu
+                              ? 'ممکنہ اشارے اور احتیاطی چیک لسٹ (پہلے یہ چیک کریں):'
+                              : 'Observable signs and checklist (what to check first):',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: isDark ? const Color(0xFF94A3B8) : AppColors.textSecondaryLight,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              // Dynamic Observations (Photo ratios, season, shed history)
+              if (causeEval.hasObservations) ...[
+                const SizedBox(height: 14),
+                ...causeEval.dynamicObservations.map((obs) {
+                  final isUrgent = obs.isUrgent;
+                  final bgColor = isUrgent
+                      ? (isDark
+                          ? const Color(0xFF7F1D1D).withValues(alpha: 0.25)
+                          : const Color(0xFFFEF2F2))
+                      : (isDark
+                          ? const Color(0xFF1E3A8A).withValues(alpha: 0.2)
+                          : const Color(0xFFEFF6FF));
+                  final borderColor = isUrgent
+                      ? AppColors.severe.withValues(alpha: 0.3)
+                      : const Color(0xFF3B82F6).withValues(alpha: 0.3);
+                  final iconColor = isUrgent ? AppColors.severe : const Color(0xFF2563EB);
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: borderColor),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          isUrgent ? Icons.warning_amber_rounded : Icons.info_outline_rounded,
+                          size: 18,
+                          color: iconColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            obs.getText(isUrdu),
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: isUrgent ? FontWeight.w700 : FontWeight.w500,
+                              color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+
+              // Static Checklist ("pehle ye check karo")
+              if (causeEval.hasChecklist) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.playlist_add_check_rounded, size: 16, color: AppColors.primary),
+                      const SizedBox(width: 6),
+                      Text(
+                        isUrdu ? 'پہلے یہ اہم نکات چیک کریں:' : 'Check these points first:',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ...causeEval.checklistItems.asMap().entries.map((entry) {
+                  final idx = entry.key + 1;
+                  final item = entry.value;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(top: 2),
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '$idx',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            item.getText(isUrdu),
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: isDark ? const Color(0xFFCBD5E1) : AppColors.textPrimaryLight,
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: AppDimensions.space16),
+      ],
+    );
+  }
+
   static String _getTriageExplanation(
     String diseaseCode,
     String severity,
@@ -1495,187 +1664,5 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
     return isUrdu
         ? 'فلاک کے وائٹلز تسلی بخش ہیں۔ کوئی غیر معمولی اموات یا شدید سستی نہیں پائی گئی۔'
         : 'Flock vital signals are stable with normal feed intake and zero unexplained mortality.';
-  }
-
-  static Widget _buildCauseChecklistSection({
-    required CauseChecklistResult causeResult,
-    required bool isUrdu,
-    required bool isDark,
-  }) {
-    return AppCard(
-      padding: const EdgeInsets.all(18),
-      color: isDark ? const Color(0xFF1E293B) : Colors.white,
-      border: BorderSide(color: AppColors.secondary.withValues(alpha: 0.35)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.secondary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.troubleshoot_rounded,
-                  color: AppColors.secondary,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isUrdu
-                          ? 'کیوں ہوا ہوگا: اشارے اور چیک لسٹ'
-                          : 'Why it may have happened: signs and checklist',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      isUrdu
-                          ? 'ممکنہ اشارے اور سب سے پہلے چیک کرنے والی چیزیں (حتمی وجہ نہیں)'
-                          : 'Possible signs and priority checklist (not a confirmed diagnosis)',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textMutedLight,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 24),
-
-          // 1. Observed Diagnostic Signs
-          if (causeResult.hasSigns) ...[
-            Row(
-              children: [
-                const Icon(Icons.radar_rounded, size: 18, color: AppColors.severe),
-                const SizedBox(width: 8),
-                Text(
-                  isUrdu ? 'تشخیصی اشارے (فوری نوٹس)' : 'Observed Field Signs',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13.5,
-                    color: AppColors.severe,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            ...causeResult.observedSigns.map((sign) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFFEF2F2),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.severe.withValues(alpha: 0.25),
-                  ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(sign.icon, size: 18, color: AppColors.severe),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        sign.getText(isUrdu),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                          height: 1.35,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-            const SizedBox(height: 10),
-          ],
-
-          // 2. Static Priority Checklist ("Pehle ye check karo")
-          if (causeResult.hasChecklist) ...[
-            Row(
-              children: [
-                const Icon(Icons.playlist_add_check_circle_outlined, size: 18, color: AppColors.primary),
-                const SizedBox(width: 8),
-                Text(
-                  isUrdu ? 'پہلے یہ چیک کرو (فیلڈ چیک لسٹ)' : 'Check These First (Field Checklist)',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13.5,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            ...causeResult.checklistItems.asMap().entries.map((entry) {
-              final idx = entry.key + 1;
-              final item = entry.value;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                    ),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 22,
-                        height: 22,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          '$idx',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          item.getText(isUrdu),
-                          style: const TextStyle(
-                            fontSize: 13,
-                            height: 1.35,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ],
-        ],
-      ),
-    );
   }
 }
