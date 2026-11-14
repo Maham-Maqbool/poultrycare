@@ -120,14 +120,16 @@ final List<TreatmentModel> mockTreatmentsData = [
     diseaseCode: 'ncd',
     severity: 'mild',
     medicinesEn: [
-      'No cure exists for viral ND; initiate supportive immunity booster (Immuno-Plus / Levamisole immunomodulator)',
-      'High-potency Vitamin C + Vitamin E + Selenium in drinking water',
-      'Emergency LaSota / Clone 30 vaccination ONLY if approved by attending vet',
+      'There is no specific treatment for Newcastle disease: no medicine kills this virus.',
+      'Supportive Care Only: High-potency Vitamin C + Vitamin E + Selenium and electrolytes in drinking water',
+      'Supportive Care Only: Poultry immune booster (supports natural resilience, not a viral cure)',
+      'Emergency LaSota / Clone 30 vaccination: only with vet permission, for healthy birds only (never for sick birds)',
     ],
     medicinesUr: [
-      'وائرل بیماری کا علاج نہیں ہوتا؛ قوت مدافعت بڑھانے والا سیرپ استعمال کریں',
-      'وٹامن C، وٹامن E اور سیلینیم پاؤڈر پانی میں دیں',
-      'ڈاکٹر کے مشورے پر ہنگامی لیسوٹا ویکسین کی تصدیق کریں',
+      'رانی کھیت کا کوئی خاص علاج نہیں ہے: کوئی دوا اس وائرس کو ختم نہیں کرتی۔',
+      'صرف علامتی نگہداشت: وٹامن C، وٹامن E، سیلینیم اور الیکٹرولائٹس پانی میں دیں',
+      'صرف علامتی نگہداشت: قوت مدافعت بڑھانے والا سیرپ (وائرس کا علاج نہیں)',
+      'ہنگامی لیسوٹا / کلون 30 ویکسین: صرف vet کی اجازت سے، صحت مند پرندوں کے لیے (بیمار پرندوں کے لیے ہرگز نہیں)',
     ],
     careStepsEn: [
       'Shut off shed exhaust toward adjacent farm houses to mitigate aerosol spread.',
@@ -148,7 +150,7 @@ final List<TreatmentModel> mockTreatmentsData = [
       'ویرکون ایس جراثیم کش محلول سے بوٹ اور ہاتھ دھوئیں',
     ],
     vetRequired: true,
-    urgency: 'vet_soon',
+    urgency: 'vet_now',
   ),
 
   // 5. Newcastle Disease: Moderate
@@ -157,14 +159,16 @@ final List<TreatmentModel> mockTreatmentsData = [
     diseaseCode: 'ncd',
     severity: 'moderate',
     medicinesEn: [
-      'Broad-spectrum secondary bacterial control (Doxycycline + Colistin in water)',
-      'Electrolyte & hydration balance formula',
-      'Paracetamol / Analgesic poultry oral solution to reduce fever stress',
+      'There is no specific treatment for Newcastle disease: no medicine kills this virus.',
+      'Supportive Care Only: Electrolyte & hydration balance formula in warm drinking water',
+      'Supportive Care Only: Poultry analgesic / paracetamol oral solution to reduce fever stress (symptom relief only)',
+      'Supportive Care Only: Vitamin C and B-Complex multivitamin to support body strength',
     ],
     medicinesUr: [
-      'ڈوکسی سائیکلین + کولسٹین اینٹی بائیوٹک ملا پانی',
-      'بخار کم کرنے کے لیے پیراسیٹامول پولٹری محلول',
-      'الیکٹرولائٹس اور وٹامن تھراپی',
+      'رانی کھیت کا کوئی خاص علاج نہیں ہے: کوئی دوا اس وائرس کو ختم نہیں کرتی۔',
+      'صرف علامتی نگہداشت: نمکیات اور الیکٹرولائٹس ملا نیم گرم پانی',
+      'صرف علامتی نگہداشت: بخار اور درد میں کمی کے لیے پولٹری پیراسیٹامول (صرف علامات کے لیے)',
+      'صرف علامتی نگہداشت: وٹامن سی اور بی کمپلیکس ملٹی وٹامن تاکہ جسمانی کمزوری دور ہو',
     ],
     careStepsEn: [
       'Immediate total isolation of coughing and nervous symptom birds.',
@@ -194,14 +198,16 @@ final List<TreatmentModel> mockTreatmentsData = [
     diseaseCode: 'ncd',
     severity: 'severe',
     medicinesEn: [
-      'CRITICAL: Newcastle Disease is an official NOTIFIABLE disease.',
-      'Follow government veterinary officer containment protocol.',
-      'Supportive liver tonic and antipyretics only for birds not showing nervous signs.',
+      'There is no specific treatment for Newcastle disease: no medicine kills this virus.',
+      'Supportive Care Only: Intensive oral hydration and glucose-electrolyte resuscitation for birds able to drink',
+      'Supportive Care Only: Supportive liver tonic and antipyretics only for surviving birds without nervous signs',
+      'CRITICAL: Official NOTIFIABLE disease. Follow government veterinary officer containment protocol immediately.',
     ],
     medicinesUr: [
-      'اہم: یہ ایک ہنگامی اور قانوناً رپورٹ ہونے والی بیماری ہے',
-      'سرکاری پولٹری ویٹرنری ڈاکٹر کی ہدایات پر مکمل عمل کریں',
-      'زندہ پرندوں کے لیے جگر کا ٹانک اور درد کش ادویات',
+      'رانی کھیت کا کوئی خاص علاج نہیں ہے: کوئی دوا اس وائرس کو ختم نہیں کرتی۔',
+      'صرف علامتی نگہداشت: زندہ پرندوں کے لیے گلوکوز اور الیکٹرولائٹ ملا پانی',
+      'صرف علامتی نگہداشت: زندہ پرندوں کے لیے جگر کا ٹانک اور درد کش ادویات',
+      'اہم: یہ ایک قانوناً رپورٹ ہونے والی متعدی بیماری ہے۔ سرکاری ویٹرنری ڈاکٹر کی ہدایات پر فوری عمل کریں۔',
     ],
     careStepsEn: [
       'Do not sell, move, or process birds from this flock under any circumstance.',

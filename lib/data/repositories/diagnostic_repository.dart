@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../../services/database_service.dart';
 import '../../services/tflite_service.dart';
+import '../../services/clinical_ratio_service.dart';
 import '../models/detection_history_record.dart';
 import '../models/diagnostic_record.dart';
 import '../models/scan_model.dart';
@@ -48,6 +49,7 @@ class DiagnosticRepository {
       'intakeDrop': 'Normal',
       'suddenMortality': 'None in 24h'
     };
+    ClinicalSignRatios? ratios;
     if (dbRec.notes != null && dbRec.notes!.startsWith('{')) {
       try {
         final decoded = jsonDecode(dbRec.notes!);
@@ -55,6 +57,16 @@ class DiagnosticRepository {
           signals = decoded;
         } else if (decoded is Map) {
           signals = decoded.map((k, v) => MapEntry(k.toString(), v));
+        }
+        if (signals.containsKey('clinical_ratios') && signals['clinical_ratios'] is Map) {
+          final crMap = signals['clinical_ratios'] as Map;
+          ratios = ClinicalSignRatios(
+            bloodRatio: (crMap['blood_ratio'] as num?)?.toDouble() ?? 0.0,
+            abnormalRatio: (crMap['abnormal_ratio'] as num?)?.toDouble() ?? 0.0,
+            wateryRatio: (crMap['watery_ratio'] as num?)?.toDouble() ?? 0.0,
+            severityScore: (crMap['severity_score'] as num?)?.toDouble() ?? 0.0,
+            severity: crMap['severity'] as String? ?? 'Mild',
+          );
         }
       } catch (_) {}
     }
@@ -74,6 +86,7 @@ class DiagnosticRepository {
       urgency: urgency,
       triageRules: const [],
       flockSignals: signals,
+      clinicalRatios: ratios,
       decodeMs: 12.0,
       preprocessMs: 18.0,
       inferenceMs: 35.0,
@@ -270,7 +283,11 @@ class DiagnosticRepository {
           confidenceScore: confidence,
           timestamp: now,
           flockId: flockId,
-          notes: jsonEncode(flockSignals),
+          notes: jsonEncode({
+            ...flockSignals,
+            if (tfliteResult?.clinicalRatios != null)
+              'clinical_ratios': tfliteResult!.clinicalRatios!.toJson(),
+          }),
           probabilities: probabilities,
         ),
       );
@@ -311,6 +328,7 @@ class DiagnosticRepository {
       urgency: derivedUrgency,
       triageRules: rulesFired,
       flockSignals: flockSignals,
+      clinicalRatios: tfliteResult?.clinicalRatios,
       decodeMs: decodeMs,
       preprocessMs: preprocessMs,
       inferenceMs: inferenceMs,
