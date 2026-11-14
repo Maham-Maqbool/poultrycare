@@ -19,6 +19,7 @@ import 'package:poultrycare/data/models/diagnostic_record.dart';
 import 'package:poultrycare/data/models/scan_model.dart';
 import 'package:poultrycare/data/models/prediction_model.dart';
 import 'package:poultrycare/features/scanner/views/diagnostic_result_screen.dart';
+import 'fake_tflite_service.dart';
 
 void main() {
   testWidgets('PoultryCare app launches and renders branding', (WidgetTester tester) async {
@@ -119,9 +120,8 @@ void main() {
     expect(controller.isImageValid, isFalse);
     expect(controller.lightingPassed, isFalse);
     expect(controller.sharpnessPassed, isFalse);
-    controller.selectSampleImage('assets/images/samples/coccidiosis.jpg', targetDisease: 'coccidiosis');
+    controller.selectSampleImage('assets/images/samples/coccidiosis.jpg');
     expect(controller.selectedImagePath, 'assets/images/samples/coccidiosis.jpg');
-    expect(controller.forcedDisease, isNull); // Major 2: Model classifies demo samples organically
 
     controller.setFlockSignals(
       lethargy: 'Over 10% of birds',
@@ -132,15 +132,16 @@ void main() {
   });
 
   test('DiagnosticRepository executes diagnosis with triage escalation', () async {
-    final diagnosticRepo = DiagnosticRepository();
+    final diagnosticRepo = DiagnosticRepository(
+      tfliteService: FakeTFLiteService(predictedClass: 'coccidiosis', severity: 'moderate'),
+    );
     final record = await diagnosticRepo.runDiagnosis(
-      imagePath: 'assets/images/sample.jpg',
+      imagePath: 'assets/images/samples/coccidiosis.jpg',
       flockSignals: {
         'lethargy': 'Over 10% of birds',
         'intakeDrop': 'Normal',
         'suddenMortality': 'Multiple birds died',
       },
-      forcedDisease: 'coccidiosis',
     );
 
     expect(record.prediction.predictedClass, 'coccidiosis');
@@ -150,7 +151,9 @@ void main() {
   });
 
   test('DiagnosticRepository preserves Healthy specimen severity as mild and urgency as monitor', () async {
-    final diagnosticRepo = DiagnosticRepository();
+    final diagnosticRepo = DiagnosticRepository(
+      tfliteService: FakeTFLiteService(predictedClass: 'healthy', severity: 'mild'),
+    );
     final record = await diagnosticRepo.runDiagnosis(
       imagePath: 'assets/images/samples/healthy.png',
       flockSignals: {
@@ -158,7 +161,6 @@ void main() {
         'intakeDrop': 'Reduced slightly',
         'suddenMortality': '1 to 2 birds died',
       },
-      forcedDisease: 'healthy',
     );
 
     expect(record.prediction.predictedClass, 'healthy');

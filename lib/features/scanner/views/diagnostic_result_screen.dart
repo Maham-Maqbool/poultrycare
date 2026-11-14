@@ -195,7 +195,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
         ? 'monitor'
         : ((diseaseCode == 'newcastle' || severity == 'severe' || rawUrgency == 'vet_now' || rawUrgency.contains('vet'))
             ? 'vet_now'
-            : (rawUrgency == 'vet_soon' ? 'vet_soon' : (rawUrgency == 'retake_photo' ? 'retake_photo' : 'treat_today')));
+            : (rawUrgency == 'retake_photo' ? 'retake_photo' : 'treat_today'));
     final bool isUncertain = rawSeverity == 'uncertain' ||
         rawUrgency == 'retake_photo' ||
         (pred.calibratedConfidence != null && pred.calibratedConfidence! < 0.50);
@@ -382,18 +382,14 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                                       ? 'MONITOR'
                                       : (urgency == 'vet_now'
                                           ? 'VET NOW'
-                                          : (urgency == 'vet_soon'
-                                              ? 'VET SOON'
-                                              : 'TREAT TODAY')))),
+                                          : 'TREAT TODAY'))),
                           badgeColor: isUncertain
                               ? const Color(0xFFF59E0B)
                               : (urgency == 'vet_now'
                                   ? AppColors.urgencyVetNow
                                   : (urgency == 'monitor'
                                       ? AppColors.urgencyMonitor
-                                      : (urgency == 'vet_soon'
-                                          ? AppColors.urgencyVetSoon
-                                          : AppColors.urgencyTreatToday))),
+                                      : AppColors.urgencyTreatToday)),
                         ),
                       ),
                     ],

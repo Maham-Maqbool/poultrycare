@@ -103,11 +103,11 @@ final List<TreatmentModel> mockTreatmentsData = [
       'بغیر کسی تاخیر کے فوری پولٹری ڈاکٹر سے رابطہ کریں۔',
     ],
     biosecurityEn: [
-      'Strict quarantine of affected shed; complete visitor ban.',
+      'Only the farmer\'s own people should enter the shed, wearing separate shed footwear - no outside visitors or vehicles inside.',
       'Daily removal and deep burial or burning of dead carcasses.',
     ],
     biosecurityUr: [
-      'متاثرہ شیڈ میں ہر قسم کا داخلہ بند کر دیں۔',
+      'شیڈ میں صرف اپنے بندے جائیں، الگ جوتے پہن کے - باہر کے لوگ اور گاڑیاں اندر نہ آئیں۔',
       'ہلاک ہونے والے پرندوں کو گہرے گڑھے میں دبا کر چونے کا سپرے کریں۔',
     ],
     vetRequired: true,
@@ -177,11 +177,11 @@ final List<TreatmentModel> mockTreatmentsData = [
       'محکمہ لائیو اسٹاک کے مقامی نمائندے کو اطلاع دیں۔',
     ],
     biosecurityEn: [
-      'Total farm perimeter lockdown. Disinfect tires of any authorized vehicle.',
+      'Only the farmer\'s own people should enter the shed, wearing separate shed footwear - no outside visitors or vehicles inside.',
       'Cremate or deep-bury all mortal remains with agricultural slaked lime.',
     ],
     biosecurityUr: [
-      'فارم کی مکمل ناکہ بندی کریں، گاڑیوں کے ٹائروں پر سپرے کریں۔',
+      'شیڈ میں صرف اپنے بندے جائیں، الگ جوتے پہن کے - باہر کے لوگ اور گاڑیاں اندر نہ آئیں۔',
       'مردہ پرندوں کو چونے کے ساتھ گہرا دفنائیں۔',
     ],
     vetRequired: true,

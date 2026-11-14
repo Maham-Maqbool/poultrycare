@@ -116,11 +116,9 @@ class StatusBadge extends StatelessWidget {
         ? 'retake_photo'
         : ((raw == 'vet_now' || raw.contains('vet_now') || raw.contains('urgent'))
             ? 'vet_now'
-            : (raw == 'vet_soon' || raw.contains('vet_soon')
-                ? 'vet_soon'
-                : (raw == 'treat_today' || raw.contains('treat')
-                    ? 'treat_today'
-                    : 'monitor')));
+            : (raw == 'treat_today' || raw.contains('treat')
+                ? 'treat_today'
+                : 'monitor'));
     switch (u) {
       case 'retake_photo':
         return StatusBadge(
@@ -138,14 +136,6 @@ class StatusBadge extends StatelessWidget {
           icon: Icons.emergency_outlined,
           isLarge: isLarge,
         );
-      case 'vet_soon':
-        return StatusBadge(
-          label: 'Consult Vet Soon',
-          backgroundColor: const Color(0xFFFFEDD5),
-          textColor: AppColors.urgencyVetSoon,
-          icon: Icons.local_hospital_outlined,
-          isLarge: isLarge,
-        );
       case 'treat_today':
         return StatusBadge(
           label: 'Treat Today',
@@ -161,56 +151,6 @@ class StatusBadge extends StatelessWidget {
           backgroundColor: const Color(0xFFCCFBF1),
           textColor: AppColors.urgencyMonitor,
           icon: Icons.visibility_outlined,
-          isLarge: isLarge,
-        );
-    }
-  }
-
-  // Factory constructor for Certainty Levels (plain qualitative words, no percentage numbers)
-  factory StatusBadge.forCertainty(
-    String? certainty, {
-    double? confidenceScore,
-    bool isUrdu = false,
-    bool isLarge = false,
-  }) {
-    String c = (certainty ?? 'high').toLowerCase();
-    if (confidenceScore != null) {
-      if (confidenceScore >= 0.95) {
-        c = 'high';
-      } else if (confidenceScore >= 0.80) {
-        c = 'moderate';
-      } else {
-        c = 'uncertain';
-      }
-    } else if (c == 'confident') {
-      c = 'high';
-    }
-
-    switch (c) {
-      case 'cannot_tell':
-      case 'uncertain':
-        return StatusBadge(
-          label: isUrdu ? 'غیر یقینی (دوبارہ ٹیسٹ کریں)' : 'Uncertain (Retest)',
-          backgroundColor: const Color(0xFFFEF9C3),
-          textColor: const Color(0xFF854D0E),
-          icon: Icons.question_mark_outlined,
-          isLarge: isLarge,
-        );
-      case 'moderate':
-        return StatusBadge(
-          label: isUrdu ? 'ممکنہ مماثلت' : 'Possible Match',
-          backgroundColor: const Color(0xFFE0F2FE),
-          textColor: const Color(0xFF0369A1),
-          icon: Icons.info_outline,
-          isLarge: isLarge,
-        );
-      case 'high':
-      default:
-        return StatusBadge(
-          label: isUrdu ? 'مضبوط مماثلت' : 'Strong Match',
-          backgroundColor: const Color(0xFFDCFCE7),
-          textColor: const Color(0xFF15803D),
-          icon: Icons.verified_outlined,
           isLarge: isLarge,
         );
     }

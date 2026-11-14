@@ -17,7 +17,6 @@ class ScannerController extends ChangeNotifier {
 
   String? _selectedImagePath;
   String? _selectedFlockId;
-  String? _forcedDisease; // For demo testing specific classes
   bool _isLocalFile = false;
   String? _errorMessage;
 
@@ -43,7 +42,6 @@ class ScannerController extends ChangeNotifier {
 
   String? get selectedImagePath => _selectedImagePath;
   String? get selectedFlockId => _selectedFlockId;
-  String? get forcedDisease => _forcedDisease;
   bool get isLocalFile => _isLocalFile;
   ClinicalSignRatios? get clinicalRatios => _clinicalRatios;
 
@@ -69,7 +67,6 @@ class ScannerController extends ChangeNotifier {
   void clearSelectedImage() {
     _selectedImagePath = null;
     _isLocalFile = false;
-    _forcedDisease = null;
     _errorMessage = null;
     _qualityCheckFailed = false;
     _qualityReport = ImageQualityReport.initial();
@@ -118,7 +115,6 @@ class ScannerController extends ChangeNotifier {
       if (photo != null) {
         _selectedImagePath = photo.path;
         _isLocalFile = true;
-        _forcedDisease = null; // Unbiased AI inference on actual photo
         _errorMessage = null;
         _qualityCheckFailed = false;
         _qualityReport = ImageQualityReport.initial();
@@ -150,7 +146,6 @@ class ScannerController extends ChangeNotifier {
       if (image != null) {
         _selectedImagePath = image.path;
         _isLocalFile = true;
-        _forcedDisease = null; // Unbiased AI inference on actual photo
         _errorMessage = null;
         _qualityCheckFailed = false;
         _qualityReport = ImageQualityReport.initial();
@@ -169,10 +164,9 @@ class ScannerController extends ChangeNotifier {
 
   /// Selects one of the curated standard poultry test samples.
   /// Does NOT force the disease: the on-device AI model classifies the photo organically.
-  void selectSampleImage(String path, {String? targetDisease}) {
+  void selectSampleImage(String path) {
     _selectedImagePath = path;
     _isLocalFile = false;
-    _forcedDisease = null;
     _errorMessage = null;
     _qualityCheckFailed = false;
     _qualityReport = ImageQualityReport.initial();
@@ -180,10 +174,9 @@ class ScannerController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setImagePath(String path, {String? targetDisease, bool isLocal = false}) {
+  void setImagePath(String path, {bool isLocal = false}) {
     _selectedImagePath = path;
     _isLocalFile = isLocal;
-    _forcedDisease = targetDisease;
     _errorMessage = null;
     _qualityCheckFailed = false;
     _qualityReport = ImageQualityReport.initial();
@@ -195,8 +188,6 @@ class ScannerController extends ChangeNotifier {
   void setLastResult(DiagnosticRecord record, [TreatmentModel? treatment]) {
     _lastResult = record;
     _lastTreatment = treatment;
-    _selectedImagePath = record.scan.imagePath;
-    _forcedDisease = record.prediction.predictedClass;
     notifyListeners();
   }
 
@@ -255,7 +246,6 @@ class ScannerController extends ChangeNotifier {
       final record = await _diagRepo.runDiagnosis(
         imagePath: _selectedImagePath!,
         flockId: _selectedFlockId,
-        forcedDisease: _forcedDisease,
         flockSignals: {
           'lethargy': _lethargy ?? 'None',
           'intakeDrop': _intakeDrop ?? 'Normal',

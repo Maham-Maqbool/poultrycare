@@ -64,7 +64,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   imagePath: AppAssets.sampleCoccidiosis,
                   disease: 'coccidiosis',
                   onSelect: () {
-                    scanner.selectSampleImage(AppAssets.sampleCoccidiosis, targetDisease: 'coccidiosis');
+                    scanner.selectSampleImage(AppAssets.sampleCoccidiosis);
                     Navigator.pop(ctx);
                   },
                 ),
@@ -75,7 +75,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   imagePath: AppAssets.sampleNewcastle,
                   disease: 'newcastle',
                   onSelect: () {
-                    scanner.selectSampleImage(AppAssets.sampleNewcastle, targetDisease: 'newcastle');
+                    scanner.selectSampleImage(AppAssets.sampleNewcastle);
                     Navigator.pop(ctx);
                   },
                 ),
@@ -86,7 +86,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   imagePath: AppAssets.sampleSalmonella,
                   disease: 'salmonella',
                   onSelect: () {
-                    scanner.selectSampleImage(AppAssets.sampleSalmonella, targetDisease: 'salmonella');
+                    scanner.selectSampleImage(AppAssets.sampleSalmonella);
                     Navigator.pop(ctx);
                   },
                 ),
@@ -97,7 +97,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   imagePath: AppAssets.sampleHealthy,
                   disease: 'healthy',
                   onSelect: () {
-                    scanner.selectSampleImage(AppAssets.sampleHealthy, targetDisease: 'healthy');
+                    scanner.selectSampleImage(AppAssets.sampleHealthy);
                     Navigator.pop(ctx);
                   },
                 ),

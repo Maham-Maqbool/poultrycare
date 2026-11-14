@@ -580,3 +580,17 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Added comprehensive unit test suite `test/addendum9_test.dart`.
     - Executed `flutter analyze`: 0 issues found (clean static analysis).
     - Executed `flutter test`: 61/61 tests passed across all 6 test suites (100% success rate).
+- Phase 39 Complete (Addendum 9 Follow-up Pass):
+  - Item 1 (Triage escalation never overwrites uncertain): In `diagnostic_repository.dart`, added `derivedSeverity != 'uncertain'` guard before executing triage escalation; uncertain scans map to `retake_photo` urgency and stay uncertain across result, history, flock detail, and dashboard.
+  - Item 2 (Dead code deletion): Deleted unused `StatusBadge.forCertainty` factory constructor in `status_badge.dart`.
+  - Item 3 (Removed forcedDisease entirely): Removed `_forcedDisease` field, `targetDisease` parameters, and `setLastResult` assignments in `scanner_controller.dart` and `scanner_screen.dart`. In `diagnostic_repository.dart`, deleted the `else if (forcedDisease != null)` fabrication branch; fails strictly with `StateError` if model fails. Decoupled unit tests using `FakeTFLiteService`.
+  - Item 4 (Updated biosecurity lines): In `mock_treatments_data.dart` (lines 106 and 180), replaced visitor ban and perimeter lockdown with separate shed footwear wording in English and Urdu script.
+  - Item 5 (Removed fabricated metadata): In `diagnostic_repository.dart`, removed hardcoded `userId: 'usr-001'`, `deviceId: 'dev-pk-9921'`, and `imageWidth / imageHeight: 1024`. Real dimensions passed from `TFLiteDiagnosisResult` when known, otherwise null/blank.
+  - Item 6 (Removed vet_soon and qualified PostgreSQL): Removed `vet_soon` display branches from `status_badge.dart` and `diagnostic_result_screen.dart`. In `README.md`, qualified PostgreSQL 17 persistence as the Python backend / thesis Chapter 5 implementation.
+  - Item 7 (Restored clinical_ratio_test strong assertions): Restored `expect(ratios.severityScore, greaterThan(2.0))` and `expect(ratios.severity, 'Severe')` with `bloodRatio > 0.002` for authentic sample coccidiosis dropping in `test/clinical_ratio_test.dart`.
+  - Item 8 (Removed demo credentials print): Removed on-screen demo credentials container from `login_screen.dart` while retaining secure credential verification in `auth_repository.dart`.
+  - Strict Rule 7 compliance: Zero em dashes or en dashes across all touched files.
+  - Verification & Test Coverage:
+    - Added unit tests for Items 1 and 3 in `test/addendum9_test.dart`.
+    - Executed `flutter analyze`: 0 issues found (clean static analysis).
+    - Executed `flutter test`: 63/63 tests passed across all test suites (100% success rate).

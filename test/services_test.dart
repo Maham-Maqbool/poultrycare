@@ -6,6 +6,7 @@ import 'package:poultrycare/services/tflite_service.dart';
 import 'package:poultrycare/services/disease_audio_service.dart';
 import 'package:poultrycare/data/repositories/diagnostic_repository.dart';
 import 'package:poultrycare/features/history/controllers/history_controller.dart';
+import 'fake_tflite_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -146,7 +147,9 @@ void main() {
     });
 
     test('HistoryController loads, filters, and deletes records dynamically', () async {
-      final repo = DiagnosticRepository();
+      final repo = DiagnosticRepository(
+        tfliteService: FakeTFLiteService(predictedClass: 'coccidiosis', severity: 'moderate'),
+      );
       await repo.clearAllHistory();
 
       // Run a diagnosis to persist into local SQLite
@@ -157,7 +160,6 @@ void main() {
           'intakeDrop': 'Normal',
           'suddenMortality': 'None in 24h',
         },
-        forcedDisease: 'coccidiosis',
       );
 
       final controller = HistoryController(repo);

@@ -97,14 +97,16 @@ void main() {
       expect(severeRatios.severity, 'Severe');
     });
 
-    test('Authentic sample coccidiosis.jpg produces valid clinical ratios', () async {
+    test('Authentic sample coccidiosis.jpg measures significant blood mucus and classifies Severe', () async {
       const samplePath = 'assets/images/samples/coccidiosis.jpg';
       final file = File(samplePath);
       if (await file.exists()) {
         final ratios = await ClinicalRatioService.computeFromPath(samplePath);
-        expect(ratios.bloodRatio, greaterThanOrEqualTo(0.0));
-        expect(ratios.severityScore, greaterThanOrEqualTo(0.0));
-        expect(ratios.severity, isNotEmpty);
+        // Authentic sample droppings exhibit dark blood mucus and abnormal color:
+        // bloodRatio ~ 0.0027, severityScore = 2.301 > 2.0 (Severe risk band)
+        expect(ratios.bloodRatio, greaterThan(0.002));
+        expect(ratios.severityScore, greaterThan(2.0));
+        expect(ratios.severity, 'Severe');
       }
     });
   });

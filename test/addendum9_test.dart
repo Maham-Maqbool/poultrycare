@@ -7,9 +7,12 @@ import 'package:poultrycare/data/models/prediction_model.dart';
 import 'package:poultrycare/data/models/diagnostic_record.dart';
 import 'package:poultrycare/data/repositories/auth_repository.dart';
 import 'package:poultrycare/data/repositories/diagnostic_repository.dart';
+import 'package:poultrycare/data/repositories/disease_repository.dart';
 import 'package:poultrycare/core/utils/flock_status_helper.dart';
 import 'package:poultrycare/features/profile/controllers/settings_controller.dart';
+import 'package:poultrycare/features/scanner/controllers/scanner_controller.dart';
 import 'package:poultrycare/services/disease_audio_service.dart';
+import 'fake_tflite_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -21,27 +24,80 @@ void main() {
 
   group('Addendum 9 Verification Tests', () {
     test('C1: Newcastle alias (ncd / newcastle) maps to VET NOW urgency', () async {
-      final repo = DiagnosticRepository();
-
-      // Test with forcedDisease = 'ncd'
-      final recordNcd = await repo.runDiagnosis(
+      final repoNcd = DiagnosticRepository(
+        tfliteService: FakeTFLiteService(predictedClass: 'ncd', severity: 'moderate'),
+      );
+      final recordNcd = await repoNcd.runDiagnosis(
         imagePath: 'assets/images/samples/newcastle.jpg',
         flockSignals: {'lethargy': 'None', 'intakeDrop': 'Normal', 'suddenMortality': 'None in 24h'},
-        forcedDisease: 'ncd',
       );
 
       expect(recordNcd.prediction.predictedClass, 'newcastle');
       expect(recordNcd.prediction.urgency, 'vet_now');
 
-      // Test with forcedDisease = 'newcastle'
-      final recordNewcastle = await repo.runDiagnosis(
+      final repoNewcastle = DiagnosticRepository(
+        tfliteService: FakeTFLiteService(predictedClass: 'newcastle', severity: 'moderate'),
+      );
+      final recordNewcastle = await repoNewcastle.runDiagnosis(
         imagePath: 'assets/images/samples/newcastle.jpg',
         flockSignals: {'lethargy': 'None', 'intakeDrop': 'Normal', 'suddenMortality': 'None in 24h'},
-        forcedDisease: 'newcastle',
       );
 
       expect(recordNewcastle.prediction.predictedClass, 'newcastle');
       expect(recordNewcastle.prediction.urgency, 'vet_now');
+    });
+
+    test('Item 1: Triage escalation NEVER overwrites uncertain severity', () async {
+      final repo = DiagnosticRepository(
+        tfliteService: FakeTFLiteService(
+          predictedClass: 'coccidiosis',
+          severity: 'uncertain',
+          confidence: 0.45,
+        ),
+      );
+
+      final record = await repo.runDiagnosis(
+        imagePath: 'assets/images/samples/coccidiosis.jpg',
+        flockSignals: {
+          'lethargy': 'Over 10% of birds',
+          'intakeDrop': 'Severely dropped',
+          'suddenMortality': 'Multiple birds died',
+        },
+      );
+
+      expect(record.prediction.severity, 'uncertain');
+      expect(record.prediction.urgency, 'retake_photo');
+    });
+
+    test('Item 3: setLastResult does NOT set _forcedDisease or arm _selectedImagePath', () {
+      final diagRepo = DiagnosticRepository();
+      final diseaseRepo = DiseaseRepository();
+      final controller = ScannerController(diagRepo, diseaseRepo);
+
+      final dummyRecord = DiagnosticRecord(
+        scan: ScanModel(
+          id: 'scn-test',
+          deviceId: 'dev-1',
+          idempotencyKey: 'idemp-1',
+          imagePath: 'assets/images/samples/newcastle.jpg',
+          createdAt: DateTime.now(),
+        ),
+        prediction: PredictionModel(
+          id: 'prd-test',
+          scanId: 'scn-test',
+          modelVersionId: 'v1',
+          predictedClass: 'newcastle',
+          probabilities: {'newcastle': 0.95},
+          severity: 'moderate',
+          urgency: 'vet_now',
+          triageRules: [],
+          flockSignals: {},
+          createdAt: DateTime.now(),
+        ),
+      );
+
+      controller.setLastResult(dummyRecord);
+      expect(controller.selectedImagePath, isNull);
     });
 
     test('C2 & Minor 5: Newcastle audio profile has no antibiotics, supportive care only, and Urdu greeting', () {

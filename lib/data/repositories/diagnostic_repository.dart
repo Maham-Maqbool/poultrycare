@@ -13,14 +13,17 @@ import '../models/feedback_model.dart';
 class DiagnosticRepository {
   final List<DiagnosticRecord> _records = [];
   final DatabaseService _dbService = DatabaseService.instance;
-  final TFLiteService _tfliteService = TFLiteService();
+  final TFLiteService _tfliteService;
+
+  DiagnosticRepository({TFLiteService? tfliteService})
+      : _tfliteService = tfliteService ?? TFLiteService();
 
   /// Converts a database row to a high-level domain DiagnosticRecord.
   DiagnosticRecord _mapDbRecordToDiagnosticRecord(DetectionHistoryRecord dbRec) {
     final scan = ScanModel(
       id: 'scn-db-${dbRec.id ?? dbRec.timestamp.millisecondsSinceEpoch}',
-      userId: 'usr-001',
-      deviceId: 'dev-pk-9921',
+      userId: null,
+      deviceId: '',
       flockId: dbRec.flockId,
       idempotencyKey: 'idemp-db-${dbRec.id}',
       imagePath: dbRec.imagePath,
@@ -160,7 +163,6 @@ class DiagnosticRepository {
     required String imagePath,
     String? flockId,
     required Map<String, dynamic> flockSignals,
-    String? forcedDisease,
   }) async {
     // 1. Run real on-device TFLite model inference
     TFLiteDiagnosisResult? tfliteResult;
@@ -182,7 +184,7 @@ class DiagnosticRepository {
     String modelVersionId = 'PC-VisionAI-v2.4';
 
     if (tfliteResult != null) {
-      final rawClass = (forcedDisease ?? tfliteResult.predictedClass).toLowerCase().trim();
+      final rawClass = tfliteResult.predictedClass.toLowerCase().trim();
       predictedClass = (rawClass == 'ncd') ? 'newcastle' : rawClass;
       confidence = tfliteResult.confidence;
       probabilities = tfliteResult.probabilities
@@ -194,15 +196,6 @@ class DiagnosticRepository {
       modelVersionId = tfliteResult.modelName;
       rulesFired.add('tflite_ondevice_inference');
       rulesFired.add('ratio_severity_$derivedSeverity');
-    } else if (forcedDisease != null) {
-      final rawClass = forcedDisease.toLowerCase().trim();
-      predictedClass = (rawClass == 'ncd') ? 'newcastle' : rawClass;
-      confidence = 0.94;
-      probabilities = {predictedClass: 0.94};
-      derivedSeverity = (predictedClass == 'newcastle')
-          ? 'severe'
-          : (predictedClass == 'healthy' ? 'mild' : 'moderate');
-      rulesFired.add('test_forced_${predictedClass}_protocol');
     } else {
       throw StateError('AI engine unavailable. Please restart the app.');
     }
@@ -214,7 +207,7 @@ class DiagnosticRepository {
     final String suddenMortality =
         (flockSignals['suddenMortality'] ?? 'None in 24h').toString();
 
-    if (predictedClass != 'healthy') {
+    if (predictedClass != 'healthy' && derivedSeverity != 'uncertain') {
       if (suddenMortality.contains('Multiple') ||
           suddenMortality.contains('died')) {
         derivedSeverity = 'severe';
@@ -238,11 +231,15 @@ class DiagnosticRepository {
     }
 
     // 3. Urgency mapping rule (do not change):
+    // Uncertain -> RETAKE PHOTO;
     // Healthy -> MONITOR (green);
     // Mild/Moderate -> TREAT TODAY (orange);
     // Severe -> VET NOW (red);
     // Newcastle -> VET NOW.
-    if (predictedClass == 'healthy') {
+    if (derivedSeverity == 'uncertain') {
+      derivedUrgency = 'retake_photo';
+      rulesFired.add('uncertain_low_confidence_retake');
+    } else if (predictedClass == 'healthy') {
       derivedUrgency = 'monitor';
       rulesFired.add('healthy_specimen_routine_monitoring');
     } else if (predictedClass == 'newcastle' || derivedSeverity == 'severe') {
@@ -256,7 +253,7 @@ class DiagnosticRepository {
     final now = DateTime.now();
 
     final Map<String, dynamic> enrichedSignals = Map<String, dynamic>.from(flockSignals);
-    final ratios = tfliteResult?.clinicalRatios;
+    final ratios = tfliteResult.clinicalRatios;
     if (ratios != null) {
       enrichedSignals['wateryRatio'] = ratios.wateryRatio;
       enrichedSignals['bloodRatio'] = ratios.bloodRatio;
@@ -291,13 +288,13 @@ class DiagnosticRepository {
 
     final scan = ScanModel(
       id: scanId,
-      userId: 'usr-001',
-      deviceId: 'dev-pk-9921',
+      userId: null,
+      deviceId: '',
       flockId: flockId,
       idempotencyKey: 'idemp-${now.millisecondsSinceEpoch}',
       imagePath: imagePath,
-      imageWidth: 1024,
-      imageHeight: 1024,
+      imageWidth: tfliteResult.rawImageWidth,
+      imageHeight: tfliteResult.rawImageHeight,
       locale: 'en',
       createdAt: now,
     );
@@ -319,9 +316,7 @@ class DiagnosticRepository {
       decodeMs: decodeMs,
       preprocessMs: preprocessMs,
       inferenceMs: inferenceMs,
-      totalMs: (preprocessMs != null || inferenceMs != null)
-          ? ((decodeMs ?? 0.0) + (preprocessMs ?? 0.0) + (inferenceMs ?? 0.0))
-          : null,
+      totalMs: tfliteResult.totalMs,
       createdAt: now,
     );
 
