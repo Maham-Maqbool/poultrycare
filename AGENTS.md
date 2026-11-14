@@ -559,3 +559,24 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Executed `flutter analyze`: 0 issues found (clean static analysis).
     - Executed full `flutter test`: 55/55 tests passed across all suites (100% success rate).
     - Strict Rule 7 compliance: Zero em dashes or en dashes across all touched files.
+- Phase 38 Complete (Addendum 9: Full Code-Review Fixes):
+  - C1 (Newcastle Alias Routing): Resolved disease routing (`ncd` -> `newcastle`) in `scanner_screen.dart:79`, `diagnostic_repository.dart:33,186`, and `diagnostic_result_screen.dart:189`. Newcastle renders MODERATE/SEVERE + VET NOW, never TREAT TODAY.
+  - C2 & Minor 5 (Newcastle Audio & Urdu Farmer Greeting): Rewrote Newcastle profile in `disease_audio_service.dart:198-236` to lead with no-cure disclaimer, zero antibiotics, supportive care only (electrolytes, vitamin E/C, paracetamol), and vet-permission-only vaccination. Replaced all occurrences of "محترم فارمر" with "محترم کسان" in `baseTtsUrdu` across all 4 profiles.
+  - M1 (Uncertain Severity & Inconclusive Screen): Added `'uncertain'` to `StatusBadge.forSeverity` and `'retake_photo'` to `StatusBadge.forUrgency`. In `diagnostic_result_screen.dart`, gated uncertain/retake scans so they display an Inconclusive Retake Guidance card without Rx pad, treatments, FCR link, or "Kyun hua hoga" section.
+  - M2 (Organic Sample Classification): In `scanner_controller.dart:selectSampleImage`, removed `_forcedDisease = targetDisease` and set `_forcedDisease = null;` so demo sample images are classified organically by the on-device AI model.
+  - M3 (Removed Fallback Classification Heuristics): Deleted `_heuristicFallbackProbabilities` from `tflite_service.dart` and `_detectClassFromImage` from `diagnostic_repository.dart`. `initialize()` does not set initialized on error; throws visible `StateError` if model fails.
+  - M4 (Credential Verification): In `login_screen.dart`, cleared pre-filled email and password controllers; added demo credential helper chip. In `auth_repository.dart`, added credential verification (`farmer@poultrycare.farm: password123`, `vet.support@poultrycare.farm: vet123`), rejecting invalid accounts with "Account not found" and wrong passwords with "Incorrect password".
+  - Minor 1: In `flock_status_helper.dart:isAtRiskFromRecords`, unified logic to single rule matching `database_service.dart:396`: `disease != 'healthy' && (severity == 'severe' || severity == 'moderate')`.
+  - Minor 2 & 3: Converted `assets/images/samples/healthy.png` from JPEG/JFIF into genuine PNG; verified mean luminance 137.11 and Laplacian variance 40.17 >= 35.0 (passes quality check).
+  - Minor 4: Deleted zero-byte dummy `.mp3` files in `assets/audio/`; removed dead `audioEn`/`audioUr` fields from `DiseaseModel` and `mock_diseases_data.dart`; updated `assets/audio/README.md`.
+  - Minor 6: In `disease_cause_service.dart`, updated repeat shed line (6a) and Newcastle checklist item 2 footwear rule (6b). In `scanner_screen.dart`, added biosecurity footwear photo hint (6c).
+  - Minor 7: In `diagnostic_result_screen.dart`, updated `_parseMedicationDetails` and `_buildPrescriptionCard` to detect no-cure/supportive care statements and omit fake Rx `#`, dosage, and duration rows.
+  - Minor 8: Replaced null `birdCount` fallback from "0 birds" to "Unspecified" in `scanner_screen.dart:666` and `flocks_list_screen.dart:128`.
+  - Minor 9 & 12: In `scanner_screen.dart:940`, eliminated fallback navigation to stale `allScans.first` on scan failure; removed `debugPrint('[ScannerScreen DEBUG]...')`. Removed dead `mock_scans_data.dart` imports from `flock_detail_screen.dart`, `history_controller.dart`, `dashboard_controller.dart`, `scanner_controller.dart`. Deleted unused `mock_flocks_data.dart` and `mock_scans_data.dart`. Removed unused `durationText` in `AudioPlayerWidget`.
+  - Minor 11: In `settings_controller.dart:saveVetPhone`, added 10-11 digit validation and boolean return; updated `settings_screen.dart` with error SnackBar on invalid format.
+  - Minor 13: In `settings_screen.dart` and `README.md`, updated commercial marketing claims to academic FYP poultry assistant branding (`support@poultrycare.app`).
+  - Strict Rule 7 compliance: Zero em dashes or en dashes across all touched files.
+  - Verification & Test Coverage:
+    - Added comprehensive unit test suite `test/addendum9_test.dart`.
+    - Executed `flutter analyze`: 0 issues found (clean static analysis).
+    - Executed `flutter test`: 61/61 tests passed across all 6 test suites (100% success rate).

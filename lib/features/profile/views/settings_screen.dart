@@ -162,22 +162,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         onPressed: () async {
                           final newNumber = _vetPhoneController.text.trim();
-                          await settings.saveVetPhone(newNumber);
+                          final success = await settings.saveVetPhone(newNumber);
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  isUrdu
-                                      ? (newNumber.isNotEmpty
-                                          ? 'ڈاکٹر کا نمبر محفوظ ہو گیا ہے'
-                                          : 'ڈاکٹر کا نمبر ہٹا دیا گیا ہے')
-                                      : (newNumber.isNotEmpty
-                                          ? 'Vet phone number saved successfully.'
-                                          : 'Vet phone number removed.'),
+                            if (!success) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    isUrdu
+                                        ? 'غلط نمبر: براہ کرم 10 سے 11 ہندسوں کا درست فون نمبر درج کریں'
+                                        : 'Invalid number: Please enter a valid 10 to 11 digit phone number.',
+                                  ),
+                                  backgroundColor: AppColors.severe,
                                 ),
-                                backgroundColor: AppColors.primary,
-                              ),
-                            );
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    isUrdu
+                                        ? (newNumber.isNotEmpty
+                                            ? 'ڈاکٹر کا نمبر محفوظ ہو گیا ہے'
+                                            : 'ڈاکٹر کا نمبر ہٹا دیا گیا ہے')
+                                        : (newNumber.isNotEmpty
+                                            ? 'Vet phone number saved successfully.'
+                                            : 'Vet phone number removed.'),
+                                  ),
+                                  backgroundColor: AppColors.primary,
+                                ),
+                              );
+                            }
                           }
                         },
                         child: Text(
@@ -265,9 +278,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: AppDimensions.space20),
 
-            // Commercial Customer Support & Veterinary Hotline
+            // Customer Support & Veterinary Contact
             Text(
-              isUrdu ? 'کسٹمر سپورٹ اور ویٹرنری فیلڈ سروس' : 'PoultryCare Support & Field Service',
+              isUrdu ? 'پولٹری کیئر معاونت اور رابطہ' : 'PoultryCare Support & Contacts',
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
             const SizedBox(height: 10),
@@ -277,20 +290,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'PoultryCare Commercial Field Edition',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5),
+                  Text(
+                    isUrdu ? 'پولٹری کیئر - سمارٹ تشخیصی معاون' : 'PoultryCare - Smart Diagnostic Assistant',
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15.5),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Version: 2.4.0 Commercial Pro (Offline AI Enabled)',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.primary, fontWeight: FontWeight.w700),
+                  Text(
+                    isUrdu ? 'ورژن: 2.4.0 (آف لائن آن ڈیوائس AI)' : 'Version: 2.4.0 (Offline On-Device AI)',
+                    style: const TextStyle(fontSize: 12.5, color: AppColors.primary, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 10),
                   Text(
                     isUrdu
-                        ? 'پولٹری فارمرز کے لیے 24 گھنٹے دستیاب تشخیصی سروس اور ویٹرنری ہیلپ لائن:'
-                        : '24/7 dedicated support and veterinary advisory for commercial poultry farms:',
+                        ? 'پولٹری فارمرز کے لیے آف لائن تشخیصی نظام اور ویٹرنری گائیڈنس:'
+                        : 'On-device diagnostic assistant and veterinary guidance for poultry farms:',
                     style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondaryLight),
                   ),
                   const SizedBox(height: 12),
@@ -320,7 +333,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Email: support@poultrycare.farm',
+                          'Email: support@poultrycare.app',
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                           overflow: TextOverflow.ellipsis,
                         ),

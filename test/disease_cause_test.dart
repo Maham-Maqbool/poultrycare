@@ -141,8 +141,8 @@ void main() {
       );
 
       expect(result.dynamicObservations.length, 1);
-      expect(result.dynamicObservations[0].textEn, contains('This disease keeps coming back in this shed'));
-      expect(result.dynamicObservations[0].textUr, contains('اس شیڈ میں یہ بیماری بار بار آ رہی ہے'));
+      expect(result.dynamicObservations[0].textEn, contains('This disease was found again in this shed'));
+      expect(result.dynamicObservations[0].textUr, contains('اس شیڈ میں یہ بیماری دوبارہ ملی ہے'));
     });
 
     test('Shed history: rising severity triggers urgent vet line', () {
@@ -179,7 +179,7 @@ void main() {
       );
 
       expect(result.dynamicObservations.length, 2);
-      expect(result.dynamicObservations[0].textEn, contains('This disease keeps coming back in this shed'));
+      expect(result.dynamicObservations[0].textEn, contains('This disease was found again in this shed'));
       expect(result.dynamicObservations[1].textEn, contains('Severity is rising - see the vet immediately.'));
       expect(result.dynamicObservations[1].textUr, contains('شدت بڑھ رہی ہے - فوراً ڈاکٹر کو دکھائیں۔'));
       expect(result.dynamicObservations[1].isUrgent, isTrue);

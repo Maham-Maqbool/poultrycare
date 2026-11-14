@@ -89,6 +89,14 @@ class StatusBadge extends StatelessWidget {
           icon: Icons.error_outline,
           isLarge: isLarge,
         );
+      case 'uncertain':
+        return StatusBadge(
+          label: 'Uncertain (Retest)',
+          backgroundColor: const Color(0xFFFEF3C7),
+          textColor: const Color(0xFFB45309),
+          icon: Icons.help_outline_rounded,
+          isLarge: isLarge,
+        );
       case 'healthy':
       default:
         return StatusBadge(
@@ -104,14 +112,24 @@ class StatusBadge extends StatelessWidget {
   // Factory constructor for Urgency Levels
   factory StatusBadge.forUrgency(String? urgency, {bool isLarge = false}) {
     final raw = (urgency ?? 'monitor').toLowerCase().replaceAll(' ', '_').trim();
-    final u = (raw == 'vet_now' || raw.contains('vet_now') || raw.contains('urgent'))
-        ? 'vet_now'
-        : (raw == 'vet_soon' || raw.contains('vet_soon')
-            ? 'vet_soon'
-            : (raw == 'treat_today' || raw.contains('treat')
-                ? 'treat_today'
-                : 'monitor'));
+    final u = (raw == 'retake_photo' || raw.contains('retake'))
+        ? 'retake_photo'
+        : ((raw == 'vet_now' || raw.contains('vet_now') || raw.contains('urgent'))
+            ? 'vet_now'
+            : (raw == 'vet_soon' || raw.contains('vet_soon')
+                ? 'vet_soon'
+                : (raw == 'treat_today' || raw.contains('treat')
+                    ? 'treat_today'
+                    : 'monitor')));
     switch (u) {
+      case 'retake_photo':
+        return StatusBadge(
+          label: 'Retake Photo',
+          backgroundColor: const Color(0xFFFEF3C7),
+          textColor: const Color(0xFFB45309),
+          icon: Icons.camera_alt_outlined,
+          isLarge: isLarge,
+        );
       case 'vet_now':
         return StatusBadge(
           label: 'Urgent Vet Required',

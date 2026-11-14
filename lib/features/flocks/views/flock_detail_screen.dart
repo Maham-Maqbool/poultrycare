@@ -9,7 +9,7 @@ import '../../../core/widgets/app_image_view.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../data/models/flock_model.dart';
-import '../../../data/mock/mock_scans_data.dart';
+import '../../../data/models/diagnostic_record.dart';
 import '../../../data/repositories/diagnostic_repository.dart';
 import '../../scanner/controllers/scanner_controller.dart';
 import '../../../routes/app_routes.dart';

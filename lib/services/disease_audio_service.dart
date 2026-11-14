@@ -206,18 +206,18 @@ class DiseaseAudioService {
           symptomsEn:
               'Watery greenish diarrhea, twisted neck (torticollis), tremors, neurological spasms, gasping, and sudden high flock mortality.',
           treatmentUrdu:
-              'تمام بیمار پرندوں کو فوری قرنطینہ کریں۔ وائرل بیماری کے ثانوی جراثیمی حملے روکنے کے لیے اینٹی بائیوٹک اور پانی میں الیکٹرولائٹس اور وٹامن ای دیں۔ فوری ویٹرنری ہیلپ لائن پر رابطہ کریں۔',
+              'رانی کھیت کا کوئی خاص علاج نہیں ہے - کوئی دوا اس وائرس کو ختم نہیں کرتی۔ تمام بیمار پرندوں کو فوراً الگ کریں (قرنطینہ)۔ صرف علامتی اور نگہداشت کا علاج دیا جا سکتا ہے جیسے وٹامنز اور الیکٹرولائٹس۔ فوری ویٹرنری ڈاکٹر سے رابطہ کریں۔',
           treatmentEn:
-              'Immediately isolate symptomatic birds in quarantine. Provide broad-spectrum coverage for secondary bacterial infections, add electrolytes and Vitamin E/C in drinking water, and contact a veterinarian immediately.',
+              'There is no specific treatment for Newcastle disease - no medicine kills this virus. Immediately isolate sick birds in quarantine. Only supportive care such as vitamins and electrolytes can be given. Contact a veterinarian immediately.',
           medicationsUrdu: [
-            'الیکٹرولائٹس + وٹامن ای اور سی (مدافعتی نظام کی بہتری)',
-            'ایموکسیسلین یا ٹائلوسین (ثانوی انفیکشن سے بچاؤ)',
-            'لا سوٹا / این ڈی ویکسین (صحت مند پرندوں کی ہنگامی ویکسینیشن)',
+            'صرف نگہداشت: الیکٹرولائٹس + وٹامن ای اور سی (مدافعتی نظام کی بہتری)',
+            'پیراسیٹامول محلول (بخار اور درد میں راحت کے لیے - ڈاکٹر کے مشورے سے)',
+            'لا سوٹا / این ڈی کلون 30 ویکسین (صرف ویٹ کی اجازت سے، صحت مند پرندوں کے لیے)',
           ],
           medicationsEn: [
-            'Electrolytes + Vitamin E & C (Immune booster)',
-            'Amoxicillin or Tylosin (Secondary bacterial coverage)',
-            'LaSota / ND Clone 30 Vaccine (Emergency flock ring vaccination)',
+            'Supportive care only: Electrolytes + Vitamin E & C (Immune support)',
+            'Paracetamol solution (Fever and discomfort relief - with vet guidance)',
+            'LaSota / ND Clone 30 Vaccine (ONLY with vet permission, for healthy birds only)',
           ],
           biosecurityUrdu: [
             'متاثرہ شیڈ میں بیرونی گاڑیوں اور افراد کا داخلہ مکمل بند کریں',
@@ -230,9 +230,9 @@ class DiseaseAudioService {
             'Use antiviral footbaths and sanitizer sprays at all shed entries',
           ],
           baseTtsUrdu:
-              'محترم فارمر: آپ کے نمونے میں رانی کھیت کی علامات پائی گئی ہیں۔ سبز پتلی بیٹھیں اور گردن مڑنا اس کی خاص نشانیاں ہیں۔ بیمار پرندوں کو فوراً الگ کریں اور ویٹرنری ڈاکٹر سے رابطہ کریں۔',
+              'محترم کسان: آپ کے نمونے میں رانی کھیت کی علامات پائی گئی ہیں۔ رانی کھیت کا کوئی خاص علاج نہیں ہے۔ بیمار پرندوں کو فوراً الگ کریں اور ویٹرنری ڈاکٹر سے فوراً رابطہ کریں۔',
           baseTtsEn:
-              'Attention Farmer: Newcastle Disease indicators detected. Key signs include greenish diarrhea and neurological neck twisting. Isolate infected birds immediately and call veterinary support.',
+              'Attention Farmer: Newcastle Disease indicators detected. There is no specific treatment for this virus. Isolate infected birds immediately and call veterinary support urgently.',
         );
 
       case PoultryDiseaseType.coccidiosis:
@@ -270,7 +270,7 @@ class DiseaseAudioService {
             'Sanitize drinking founts daily prior to medicated water delivery',
           ],
           baseTtsUrdu:
-              'محترم فارمر: آپ کے فلاک میں کوکسیڈیوسس یعنی خونی پیچش کی علامات ہیں۔ بیٹھوں میں خون آنا اس کی علامت ہے۔ فوری طور پر ایمپرولیم یا ٹولٹرازوریل کا علاج شروع کریں۔',
+              'محترم کسان: آپ کے فلاک میں کوکسیڈیوسس یعنی خونی پیچش کی علامات ہیں۔ بیٹھوں میں خون آنا اس کی علامت ہے۔ فوری طور پر ایمپرولیم یا ٹولٹرازوریل کا علاج شروع کریں۔',
           baseTtsEn:
               'Farmer Notice: Coccidiosis detected with bloody mucoid droppings. Start Toltrazuril or Amprolium treatment in clean drinking water immediately.',
         );
@@ -310,7 +310,7 @@ class DiseaseAudioService {
             'Keep feeding troughs elevated above contaminated bedding litter',
           ],
           baseTtsUrdu:
-              'محترم فارمر: آپ کے نمونے میں سالمونیلا یعنی سفید پیچش کے جراثیم ہیں۔ سفید چونا فضلہ اس کی نشانی ہے۔ اینروفلوکساسین دوا پانی میں شامل کریں اور پانی کے برتن صاف رکھیں۔',
+              'محترم کسان: آپ کے نمونے میں سالمونیلا یعنی سفید پیچش کے جراثیم ہیں۔ سفید چونا فضلہ اس کی نشانی ہے۔ اینروفلوکساسین دوا پانی میں شامل کریں اور پانی کے برتن صاف رکھیں۔',
           baseTtsEn:
               'Farmer Notice: Salmonella bacterial infection identified with chalky white diarrhea. Administer prescribed Enrofloxacin in water and sanitize drinking lines.',
         );
@@ -350,7 +350,7 @@ class DiseaseAudioService {
             'Ensure adequate air exchange to evacuate ammonia vapors',
           ],
           baseTtsUrdu:
-              'محترم فارمر: مبارک ہو، آپ کا فلاک بالکل تندرست اور صحت مند ہے۔ متوازن خوراک، صاف پانی اور بائیو سیکیورٹی ایس او پیز پر عمل جاری رکھیں۔',
+              'محترم کسان: مبارک ہو، آپ کا فلاک بالکل تندرست اور صحت مند ہے۔ متوازن خوراک، صاف پانی اور بائیو سیکیورٹی ایس او پیز پر عمل جاری رکھیں۔',
           baseTtsEn:
               'Farmer Notice: Digestive specimen confirms healthy normal conditions. Continue standard flock management and biosecurity protocols.',
         );

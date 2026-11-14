@@ -26,7 +26,7 @@ void main() {
     expect(find.text('ظاہری شکل اور زبان'), findsOneWidget);
     expect(find.text('اپنے ویٹ کا نمبر (My Vet Number)'), findsOneWidget);
     expect(find.text('پرائیویسی اور اسٹوریج صفائی'), findsOneWidget);
-    expect(find.text('کسٹمر سپورٹ اور ویٹرنری فیلڈ سروس'), findsOneWidget);
+    expect(find.text('پولٹری کیئر معاونت اور رابطہ'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -48,7 +48,7 @@ void main() {
     expect(find.text('Appearance & Language'), findsOneWidget);
     expect(find.text('My Veterinarian Contact'), findsOneWidget);
     expect(find.text('Privacy & Storage Hygiene'), findsOneWidget);
-    expect(find.text('PoultryCare Support & Field Service'), findsOneWidget);
+    expect(find.text('PoultryCare Support & Contacts'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

@@ -186,7 +186,8 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
 
     final pred = record.prediction;
     final scan = record.scan;
-    final diseaseCode = (pred.predictedClass ?? 'healthy').toLowerCase().trim();
+    final rawDiseaseCode = (pred.predictedClass ?? 'healthy').toLowerCase().trim();
+    final diseaseCode = (rawDiseaseCode == 'ncd') ? 'newcastle' : rawDiseaseCode;
     final rawSeverity = (pred.severity ?? 'mild').toLowerCase().trim();
     final severity = (rawSeverity == 'healthy') ? 'mild' : rawSeverity;
     final rawUrgency = (pred.urgency ?? '').toLowerCase().replaceAll(' ', '_').trim();
@@ -194,8 +195,11 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
         ? 'monitor'
         : ((diseaseCode == 'newcastle' || severity == 'severe' || rawUrgency == 'vet_now' || rawUrgency.contains('vet'))
             ? 'vet_now'
-            : (rawUrgency == 'vet_soon' ? 'vet_soon' : 'treat_today'));
-    final isNotifiable = pred.isNotifiable || diseaseCode == 'newcastle';
+            : (rawUrgency == 'vet_soon' ? 'vet_soon' : (rawUrgency == 'retake_photo' ? 'retake_photo' : 'treat_today')));
+    final bool isUncertain = rawSeverity == 'uncertain' ||
+        rawUrgency == 'retake_photo' ||
+        (pred.calibratedConfidence != null && pred.calibratedConfidence! < 0.50);
+    final isNotifiable = !isUncertain && (pred.isNotifiable || diseaseCode == 'newcastle');
 
     return Scaffold(
       appBar: AppBar(
@@ -311,10 +315,15 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            StatusBadge.forDisease(diseaseCode, isLarge: true),
+                            if (isUncertain)
+                              StatusBadge.forSeverity('uncertain', isLarge: true)
+                            else
+                              StatusBadge.forDisease(diseaseCode, isLarge: true),
                             const SizedBox(height: 8),
                             Text(
-                              _getDiseaseTitle(diseaseCode, isUrdu),
+                              isUncertain
+                                  ? (isUrdu ? 'غیر حتمی نتیجہ' : 'Inconclusive Result')
+                                  : _getDiseaseTitle(diseaseCode, isUrdu),
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w800,
                               ),
@@ -341,42 +350,50 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                       Expanded(
                         child: _buildMetricTile(
                           label: isUrdu ? 'مرض کی شدت' : 'Clinical Severity',
-                          value: isUrdu
-                              ? (severity == 'severe'
-                                  ? 'شدید'
+                          value: isUncertain
+                              ? (isUrdu ? 'غیر یقینی' : 'UNCERTAIN')
+                              : (isUrdu
+                                  ? (severity == 'severe'
+                                      ? 'شدید'
+                                      : (severity == 'moderate'
+                                          ? 'درمیانی'
+                                          : 'ہلکی'))
+                                  : severity.toUpperCase()),
+                          badgeColor: isUncertain
+                              ? const Color(0xFFF59E0B)
+                              : (severity == 'severe'
+                                  ? AppColors.severe
                                   : (severity == 'moderate'
-                                      ? 'درمیانی'
-                                      : 'ہلکی'))
-                              : severity.toUpperCase(),
-                          badgeColor: severity == 'severe'
-                              ? AppColors.severe
-                              : (severity == 'moderate'
-                                  ? AppColors.moderate
-                                  : AppColors.mild),
+                                      ? AppColors.moderate
+                                      : AppColors.mild)),
                         ),
                       ),
                       Container(width: 1, height: 36, color: AppColors.borderLight),
                       Expanded(
                         child: _buildMetricTile(
                           label: isUrdu ? 'ضروری اقدام' : 'Action Urgency',
-                          value: isUrdu
-                              ? (urgency == 'vet_now'
-                                  ? 'فوری ڈاکٹر'
-                                  : (urgency == 'monitor' ? 'نگرانی' : 'آج ہی علاج'))
-                              : (urgency == 'monitor'
-                                  ? 'MONITOR'
-                                  : (urgency == 'vet_now'
-                                      ? 'VET NOW'
+                          value: isUncertain
+                              ? (isUrdu ? 'دوبارہ تصویر' : 'RETAKE PHOTO')
+                              : (isUrdu
+                                  ? (urgency == 'vet_now'
+                                      ? 'فوری ڈاکٹر'
+                                      : (urgency == 'monitor' ? 'نگرانی' : 'آج ہی علاج'))
+                                  : (urgency == 'monitor'
+                                      ? 'MONITOR'
+                                      : (urgency == 'vet_now'
+                                          ? 'VET NOW'
+                                          : (urgency == 'vet_soon'
+                                              ? 'VET SOON'
+                                              : 'TREAT TODAY')))),
+                          badgeColor: isUncertain
+                              ? const Color(0xFFF59E0B)
+                              : (urgency == 'vet_now'
+                                  ? AppColors.urgencyVetNow
+                                  : (urgency == 'monitor'
+                                      ? AppColors.urgencyMonitor
                                       : (urgency == 'vet_soon'
-                                          ? 'VET SOON'
-                                          : 'TREAT TODAY'))),
-                          badgeColor: urgency == 'vet_now'
-                              ? AppColors.urgencyVetNow
-                              : (urgency == 'monitor'
-                                  ? AppColors.urgencyMonitor
-                                  : (urgency == 'vet_soon'
-                                      ? AppColors.urgencyVetSoon
-                                      : AppColors.urgencyTreatToday)),
+                                          ? AppColors.urgencyVetSoon
+                                          : AppColors.urgencyTreatToday))),
                         ),
                       ),
                     ],
@@ -384,26 +401,82 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: AppDimensions.space16),
 
-            // 2.3 New Result-Screen Section: "Kyun hua hoga - ishare aur check list"
-            _buildCauseSection(
-              context: context,
-              record: record,
-              scanner: scanner,
-              isUrdu: isUrdu,
-              isDark: isDark,
-              diseaseCode: diseaseCode,
-              severity: severity,
-            ),
-
-            // 2.5 Quick Link to FCR & Economics Calculator
-            InkWell(
-              onTap: () => Navigator.pushNamed(context, AppRoutes.fcrCalculator),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            // Inconclusive Retake Guidance Card (Shown ONLY when scan is uncertain)
+            if (isUncertain) ...[
+              const SizedBox(height: AppDimensions.space16),
+              Container(
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFFEF3C7),
+                  borderRadius: AppDimensions.borderRadiusLarge,
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B),
+                    width: 1.5,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.help_outline_rounded, color: Color(0xFFB45309), size: 24),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            isUrdu
+                                ? 'تصویر سے بیماری کا حتمی فیصلہ نہیں ہو سکا'
+                                : 'Unable to Make Confident Diagnosis from Photo',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 15,
+                              color: Color(0xFFB45309),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      isUrdu
+                          ? 'تصویر میں فضلہ واضح نظر نہیں آ رہا یا روشنی مناسب نہیں تھی۔ پرندوں کے غلط علاج سے بچنے کے لیے کوئی دوائی تجویز نہیں کی جا رہی۔ برائے مہربانی صاف روشنی میں فضلہ کے قریب جا کر دوبارہ واضح تصویر لیں۔'
+                          : 'The photo quality or lighting is insufficient to distinguish pathology safely. To prevent improper medication, no prescription is provided. Please retake a clear photo closer to the fecal dropping.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        height: 1.4,
+                        color: isDark ? Colors.white70 : const Color(0xFF92400E),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    CustomButton(
+                      text: isUrdu ? 'دوبارہ صاف تصویر لیں' : 'Retake Clear Photo',
+                      icon: Icons.camera_alt_outlined,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              const SizedBox(height: AppDimensions.space16),
+
+              // 2.3 New Result-Screen Section: "Kyun hua hoga - ishare aur check list"
+              _buildCauseSection(
+                context: context,
+                record: record,
+                scanner: scanner,
+                isUrdu: isUrdu,
+                isDark: isDark,
+                diseaseCode: diseaseCode,
+                severity: severity,
+              ),
+
+              // 2.5 Quick Link to FCR & Economics Calculator
+              InkWell(
+                onTap: () => Navigator.pushNamed(context, AppRoutes.fcrCalculator),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF0C243B) : const Color(0xFFF0F9FF),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFF0284C7).withValues(alpha: 0.3)),
@@ -452,7 +525,6 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                   ? 'سنیں: بیماری کی صوتی وضاحت اور علاج'
                   : 'Diagnostic Voice Guide',
               isUrdu: isUrdu,
-              durationText: '1:15',
               diseaseName: diseaseCode,
               severity: severity,
               urgency: urgency,
@@ -1040,6 +1112,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
               ),
             ),
             const SizedBox(height: AppDimensions.space24),
+            ],
 
             // Emergency Vet Call Feature & Navigation Actions
             CustomButton(
@@ -1127,6 +1200,14 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
     String duration = isUrdu ? '3 سے 5 دن' : '3 to 5 Days';
     String route = isUrdu ? 'پینے کا پانی' : 'Drinking Water';
 
+    final lower = raw.toLowerCase();
+    final bool isDisclaimer = lower.contains('no specific treatment') ||
+        raw.contains('کوئی خاص علاج نہیں') ||
+        lower.contains('no medicine kills') ||
+        lower.contains('کوئی دوا اس وائرس') ||
+        lower.contains('no medication required') ||
+        raw.contains('کسی دوا کی ضرورت نہیں');
+
     if (raw.contains('(') && raw.contains(')')) {
       final startIndex = raw.indexOf('(');
       final endIndex = raw.lastIndexOf(')');
@@ -1134,7 +1215,6 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
       dosage = raw.substring(startIndex + 1, endIndex).trim();
     }
 
-    final lower = raw.toLowerCase();
     if (lower.contains('water') || raw.contains('پانی') || lower.contains('powder') || raw.contains('پاؤڈر') || lower.contains('ml') || raw.contains('ملی')) {
       route = isUrdu ? 'پینے کا پانی' : 'Drinking Water';
     } else if (lower.contains('feed') || raw.contains('خوراک') || raw.contains('دانہ')) {
@@ -1156,6 +1236,7 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
       'dosage': dosage,
       'duration': duration,
       'route': route,
+      'isDisclaimer': isDisclaimer ? 'true' : 'false',
     };
   }
 
@@ -1166,6 +1247,37 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
     required bool isDark,
   }) {
     final parsed = _parseMedicationDetails(rawMed, isUrdu);
+    if (parsed['isDisclaimer'] == 'true') {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFFEF3C7),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFF59E0B).withValues(alpha: 0.5),
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.info_outline_rounded, color: Color(0xFFB45309), size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                parsed['name'] ?? rawMed,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13.5,
+                  height: 1.35,
+                  color: Color(0xFFB45309),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(

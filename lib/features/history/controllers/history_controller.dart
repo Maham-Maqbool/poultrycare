@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/utils/flock_status_helper.dart';
-import '../../../data/mock/mock_scans_data.dart';
+import '../../../data/models/diagnostic_record.dart';
 import '../../../data/repositories/diagnostic_repository.dart';
 
 /// HistoryController manages search, category filtering,

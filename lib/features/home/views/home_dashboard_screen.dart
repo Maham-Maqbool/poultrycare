@@ -681,7 +681,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 title: isUrdu
                     ? 'روزانہ کی آڈیو رہنمائی: برادے کی نمی'
                     : 'Advisory: Litter Moisture Control',
-                durationText: '0:45',
                 isUrdu: isUrdu,
                 customScript: isUrdu
                     ? 'محترم کسان بھائی: شیڈ میں موجود برادے کو خشک رکھیں۔ ضرورت سے زیادہ نمی امونیا گیس اور کوکسیڈیوسس کے جراثیم کو جنم دیتی ہے۔ روزانہ برادے کی گہرائی چیک کریں اور گیلے حصے فوری تبدیل کریں۔'

@@ -97,7 +97,6 @@ class _DiseaseDetailScreenState extends State<DiseaseDetailScreen> {
                   ? '${d.nameUr}: آڈیو رہنمائی سنیں'
                   : '${d.nameEn}: Spoken Overview',
               isUrdu: isUrdu,
-              durationText: '1:30',
               diseaseName: d.code,
               severity: null,
             ),

@@ -121,7 +121,7 @@ void main() {
     expect(controller.sharpnessPassed, isFalse);
     controller.selectSampleImage('assets/images/samples/coccidiosis.jpg', targetDisease: 'coccidiosis');
     expect(controller.selectedImagePath, 'assets/images/samples/coccidiosis.jpg');
-    expect(controller.forcedDisease, 'coccidiosis');
+    expect(controller.forcedDisease, isNull); // Major 2: Model classifies demo samples organically
 
     controller.setFlockSignals(
       lethargy: 'Over 10% of birds',

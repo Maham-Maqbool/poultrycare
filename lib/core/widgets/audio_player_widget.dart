@@ -12,7 +12,6 @@ import 'status_badge.dart';
 /// for all 4 classes: Coccidiosis, Newcastle Disease, Salmonella, and Healthy.
 class AudioPlayerWidget extends StatefulWidget {
   final String title;
-  final String durationText;
   final bool isUrdu;
   final String? diseaseName;
   final String? severity;
@@ -25,7 +24,6 @@ class AudioPlayerWidget extends StatefulWidget {
   const AudioPlayerWidget({
     super.key,
     required this.title,
-    this.durationText = '1:15',
     this.isUrdu = false,
     this.diseaseName,
     this.severity,

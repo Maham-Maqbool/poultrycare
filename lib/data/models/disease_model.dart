@@ -11,8 +11,6 @@ class DiseaseModel {
   final String baselineSeverity; // 'mild' | 'moderate' | 'severe'
   final String baselineUrgency; // 'monitor' | 'treat_today' | 'vet_soon' | 'vet_now'
   final bool isNotifiable; // true for Newcastle Disease
-  final String? audioEn;
-  final String? audioUr;
   final int displayOrder;
 
   const DiseaseModel({
@@ -26,8 +24,6 @@ class DiseaseModel {
     required this.baselineSeverity,
     required this.baselineUrgency,
     this.isNotifiable = false,
-    this.audioEn,
-    this.audioUr,
     this.displayOrder = 0,
   });
 
@@ -46,8 +42,6 @@ class DiseaseModel {
     'baselineSeverity': baselineSeverity,
     'baselineUrgency': baselineUrgency,
     'isNotifiable': isNotifiable,
-    'audioEn': audioEn,
-    'audioUr': audioUr,
     'displayOrder': displayOrder,
   };
 
@@ -62,8 +56,6 @@ class DiseaseModel {
     baselineSeverity: json['baselineSeverity'] as String,
     baselineUrgency: json['baselineUrgency'] as String,
     isNotifiable: json['isNotifiable'] as bool? ?? false,
-    audioEn: json['audioEn'] as String?,
-    audioUr: json['audioUr'] as String?,
     displayOrder: json['displayOrder'] as int? ?? 0,
   );
 }

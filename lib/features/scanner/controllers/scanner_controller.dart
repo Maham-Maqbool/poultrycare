@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../data/mock/mock_scans_data.dart';
+import '../../../data/models/diagnostic_record.dart';
 import '../../../data/models/treatment_model.dart';
 import '../../../data/repositories/diagnostic_repository.dart';
 import '../../../data/repositories/disease_repository.dart';
@@ -168,10 +168,11 @@ class ScannerController extends ChangeNotifier {
   }
 
   /// Selects one of the curated standard poultry test samples.
+  /// Does NOT force the disease: the on-device AI model classifies the photo organically.
   void selectSampleImage(String path, {String? targetDisease}) {
     _selectedImagePath = path;
     _isLocalFile = false;
-    _forcedDisease = targetDisease;
+    _forcedDisease = null;
     _errorMessage = null;
     _qualityCheckFailed = false;
     _qualityReport = ImageQualityReport.initial();

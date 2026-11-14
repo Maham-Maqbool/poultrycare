@@ -35,27 +35,35 @@ class AuthRepository {
     return false;
   }
 
+  static const Map<String, String> _credentials = {
+    'farmer@poultrycare.farm': 'password123',
+    'vet.support@poultrycare.farm': 'vet123',
+    '03001234567': 'password123',
+  };
+
   Future<UserModel> login({
     required String identifier,
     required String password,
   }) async {
     await Future.delayed(const Duration(milliseconds: 250));
-    final match = mockUsersData.firstWhere(
-      (u) => (u.email == identifier || u.phone == identifier) && !u.isGuest,
-      orElse: () => UserModel(
-        id: 'usr-${DateTime.now().millisecondsSinceEpoch}',
-        displayName: identifier.contains('@')
-            ? identifier.split('@')[0]
-            : 'Farmer $identifier',
-        email: identifier.contains('@') ? identifier : null,
-        phone: identifier.contains('@') ? null : identifier,
-        role: 'farmer',
-        locale: 'ur',
-        consentToRetainImages: false,
-        createdAt: DateTime.now(),
-      ),
+    final trimmedId = identifier.trim().toLowerCase();
+
+    // Find matching registered user
+    final match = mockUsersData.where(
+      (u) => (u.email?.toLowerCase() == trimmedId || u.phone == trimmedId) && !u.isGuest,
     );
-    _currentUser = match;
+
+    if (match.isEmpty) {
+      throw Exception('Account not found. Please register or continue as guest.');
+    }
+
+    final user = match.first;
+    final expectedPassword = _credentials[user.email] ?? _credentials[user.phone] ?? 'password123';
+    if (password != expectedPassword) {
+      throw Exception('Incorrect password. Please try again.');
+    }
+
+    _currentUser = user;
 
     // Persist login state
     await _sessionService.saveUserSession(

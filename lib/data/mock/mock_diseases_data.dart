@@ -28,8 +28,6 @@ final List<DiseaseModel> mockDiseasesData = [
     baselineSeverity: 'moderate',
     baselineUrgency: 'treat_today',
     isNotifiable: false,
-    audioEn: 'assets/audio/coccidiosis_en.mp3',
-    audioUr: 'assets/audio/coccidiosis_ur.mp3',
     displayOrder: 2,
   ),
   const DiseaseModel(
@@ -57,8 +55,6 @@ final List<DiseaseModel> mockDiseasesData = [
     baselineSeverity: 'severe',
     baselineUrgency: 'vet_now',
     isNotifiable: true,
-    audioEn: 'assets/audio/ncd_en.mp3',
-    audioUr: 'assets/audio/ncd_ur.mp3',
     displayOrder: 1, // Highest clinical urgency
   ),
   const DiseaseModel(
@@ -86,8 +82,6 @@ final List<DiseaseModel> mockDiseasesData = [
     baselineSeverity: 'moderate',
     baselineUrgency: 'treat_today',
     isNotifiable: false,
-    audioEn: 'assets/audio/salmonella_en.mp3',
-    audioUr: 'assets/audio/salmonella_ur.mp3',
     displayOrder: 3,
   ),
   const DiseaseModel(
@@ -115,8 +109,6 @@ final List<DiseaseModel> mockDiseasesData = [
     baselineSeverity: 'mild',
     baselineUrgency: 'monitor',
     isNotifiable: false,
-    audioEn: 'assets/audio/healthy_en.mp3',
-    audioUr: 'assets/audio/healthy_ur.mp3',
     displayOrder: 4,
   ),
 ];

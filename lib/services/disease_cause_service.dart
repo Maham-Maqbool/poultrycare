@@ -141,8 +141,8 @@ class DiseaseCauseService {
       if (matchingShedScans.isNotEmpty) {
         dynamicObservations.add(
           const CauseObservation(
-            textEn: 'This disease keeps coming back in this shed - it is often linked to the shed environment and cleaning.',
-            textUr: 'اس شیڈ میں یہ بیماری بار بار آ رہی ہے - یہ اکثر شیڈ کے ماحول اور صفائی سے جڑا ہوتا ہے۔',
+            textEn: 'This disease was found again in this shed - check the shed cleaning and disinfection too.',
+            textUr: 'اس شیڈ میں یہ بیماری دوبارہ ملی ہے - شیڈ کی صفائی اور ڈس انفیکشن بھی چیک کر لو۔',
           ),
         );
 
@@ -227,8 +227,8 @@ class DiseaseCauseService {
             textUr: 'اس بیماری کی سب سے بڑی وجہ ویکسین کا نہ ہونا ہوتا ہے - اپنا ویکسینیشن ریکارڈ چیک کریں۔',
           ),
           CauseChecklistItem(
-            textEn: 'Farm visitors and feed vehicles - check entry footwear disinfection and vehicle tire spray logs.',
-            textUr: 'فارم پر آنے والے افراد اور فیڈ گاڑیاں - بوٹ ڈِپ اور گاڑیوں کے ٹائروں کی جراثیم کشی چیک کریں۔',
+            textEn: 'Only the farmer\'s own people should enter the shed, wearing separate shed footwear - no outside visitors or vehicles inside.',
+            textUr: 'شیڈ میں صرف اپنے بندے جائیں، الگ جوتے پہن کے - باہر کے لوگ اور گاڑیاں اندر نہ آئیں۔',
           ),
           CauseChecklistItem(
             textEn: 'Shed exhaust ventilation - check that exhaust fans are not blowing aerosol drafts into neighboring houses.',

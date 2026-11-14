@@ -125,7 +125,7 @@ class _FlocksListScreenState extends State<FlocksListScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${flock.birdCount ?? '0'} ${isUrdu ? 'پرندے' : 'birds'} | ${flock.breed ?? (isUrdu ? 'معیاری نسل' : 'Standard Breed')}',
+                              '${flock.birdCount != null ? '${flock.birdCount} ${isUrdu ? "پرندے" : "birds"}' : (isUrdu ? "غیر متعین تعداد" : "Unspecified")} | ${flock.breed ?? (isUrdu ? 'معیاری نسل' : 'Standard Breed')}',
                               style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondaryLight),
                             ),
                             const SizedBox(height: 6),

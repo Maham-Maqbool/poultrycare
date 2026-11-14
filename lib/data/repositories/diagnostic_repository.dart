@@ -24,13 +24,12 @@ class DiagnosticRepository {
       flockId: dbRec.flockId,
       idempotencyKey: 'idemp-db-${dbRec.id}',
       imagePath: dbRec.imagePath,
-      imageWidth: 1024,
-      imageHeight: 1024,
       locale: 'en',
       createdAt: dbRec.timestamp,
     );
 
-    final String diseaseCode = dbRec.diseaseName.toLowerCase().trim();
+    final String rawDiseaseCode = dbRec.diseaseName.toLowerCase().trim();
+    final String diseaseCode = (rawDiseaseCode == 'ncd') ? 'newcastle' : rawDiseaseCode;
     final String rawSev = dbRec.severityLevel.toLowerCase().trim();
     final String severity = (rawSev == 'healthy') ? 'mild' : rawSev;
     final String urgency = (diseaseCode == 'healthy')
@@ -74,10 +73,6 @@ class DiagnosticRepository {
       urgency: urgency,
       triageRules: const [],
       flockSignals: signals,
-      decodeMs: 12.0,
-      preprocessMs: 18.0,
-      inferenceMs: 35.0,
-      totalMs: 65.0,
       createdAt: dbRec.timestamp,
     );
 
@@ -175,9 +170,9 @@ class DiagnosticRepository {
       debugPrint('[DiagnosticRepository] TFLite diagnosis exception: $e');
     }
 
-    double preprocessMs = 18.0;
-    double decodeMs = 12.0;
-    double inferenceMs = 35.0;
+    double? preprocessMs;
+    double? decodeMs;
+    double? inferenceMs;
     String predictedClass = 'healthy';
     double confidence = 0.95;
     Map<String, double> probabilities = {'healthy': 0.95};
@@ -187,28 +182,29 @@ class DiagnosticRepository {
     String modelVersionId = 'PC-VisionAI-v2.4';
 
     if (tfliteResult != null) {
-      predictedClass =
-          (forcedDisease ?? tfliteResult.predictedClass).toLowerCase().trim();
+      final rawClass = (forcedDisease ?? tfliteResult.predictedClass).toLowerCase().trim();
+      predictedClass = (rawClass == 'ncd') ? 'newcastle' : rawClass;
       confidence = tfliteResult.confidence;
       probabilities = tfliteResult.probabilities
           .map((k, v) => MapEntry(k.toLowerCase().trim(), v));
       derivedSeverity = tfliteResult.severity.toLowerCase().trim();
       preprocessMs = tfliteResult.preprocessMs;
-      decodeMs = 12.0;
+      decodeMs = null;
       inferenceMs = tfliteResult.inferenceMs;
       modelVersionId = tfliteResult.modelName;
       rulesFired.add('tflite_ondevice_inference');
       rulesFired.add('ratio_severity_$derivedSeverity');
-    } else {
-      predictedClass = (forcedDisease ??
-              _detectClassFromImage(imagePath, flockSignals))
-          .toLowerCase().trim();
+    } else if (forcedDisease != null) {
+      final rawClass = forcedDisease.toLowerCase().trim();
+      predictedClass = (rawClass == 'ncd') ? 'newcastle' : rawClass;
       confidence = 0.94;
       probabilities = {predictedClass: 0.94};
       derivedSeverity = (predictedClass == 'newcastle')
           ? 'severe'
           : (predictedClass == 'healthy' ? 'mild' : 'moderate');
-      rulesFired.add('baseline_${predictedClass}_protocol');
+      rulesFired.add('test_forced_${predictedClass}_protocol');
+    } else {
+      throw StateError('AI engine unavailable. Please restart the app.');
     }
 
     // 2. Evaluate Clinical Flock Triage Escalations
@@ -323,7 +319,9 @@ class DiagnosticRepository {
       decodeMs: decodeMs,
       preprocessMs: preprocessMs,
       inferenceMs: inferenceMs,
-      totalMs: decodeMs + preprocessMs + inferenceMs,
+      totalMs: (preprocessMs != null || inferenceMs != null)
+          ? ((decodeMs ?? 0.0) + (preprocessMs ?? 0.0) + (inferenceMs ?? 0.0))
+          : null,
       createdAt: now,
     );
 
@@ -357,28 +355,5 @@ class DiagnosticRepository {
         feedback: newFeedback,
       );
     }
-  }
-
-  String _detectClassFromImage(String path, Map<String, dynamic> flockSignals) {
-    final lower = path.toLowerCase();
-    if (lower.contains('newcastle') || lower.contains('ncd')) return 'newcastle';
-    if (lower.contains('salmonella')) return 'salmonella';
-    if (lower.contains('coccidiosis')) return 'coccidiosis';
-    if (lower.contains('healthy')) return 'healthy';
-
-    final mortality = (flockSignals['suddenMortality'] ?? '').toString();
-    final intake = (flockSignals['intakeDrop'] ?? '').toString();
-    final lethargy = (flockSignals['lethargy'] ?? '').toString();
-
-    if (mortality.contains('Multiple') || mortality.contains('1 to 2')) {
-      return 'newcastle';
-    }
-    if (intake.contains('Severely') || lethargy.contains('Over 10%')) {
-      return 'coccidiosis';
-    }
-    if (intake.contains('Reduced') || lethargy.contains('Under 10%')) {
-      return 'salmonella';
-    }
-    return 'healthy';
   }
 }

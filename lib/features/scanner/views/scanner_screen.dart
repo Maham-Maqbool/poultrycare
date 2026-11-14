@@ -6,7 +6,6 @@ import '../../../core/constants/app_assets.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_image_view.dart';
 import '../../../routes/app_routes.dart';
-import '../../../data/repositories/diagnostic_repository.dart';
 import '../controllers/scanner_controller.dart';
 import '../../flocks/controllers/flock_controller.dart';
 import '../../profile/controllers/settings_controller.dart';
@@ -74,9 +73,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   title: isUrdu ? 'رانی کھیت کی بیماری (سبز پتلا پاخانہ)' : 'Newcastle Disease (Green Watery)',
                   subtitle: isUrdu ? 'سبز پتلا فضلہ اور جھٹکے' : 'Velogenic paramyxovirus diarrhea',
                   imagePath: AppAssets.sampleNewcastle,
-                  disease: 'ncd',
+                  disease: 'newcastle',
                   onSelect: () {
-                    scanner.selectSampleImage(AppAssets.sampleNewcastle, targetDisease: 'ncd');
+                    scanner.selectSampleImage(AppAssets.sampleNewcastle, targetDisease: 'newcastle');
                     Navigator.pop(ctx);
                   },
                 ),
@@ -514,7 +513,38 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 onPressed: () => _showSamplePicker(context, isUrdu),
               ),
             ),
-            const SizedBox(height: AppDimensions.space12),
+            const SizedBox(height: 6),
+
+            // Biosecurity Footwear Photo Hint
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.shield_outlined, size: 18, color: AppColors.primary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      isUrdu
+                          ? 'Photo lene ke liye shed ke andar wale jootay pehen ke jayein.'
+                          : 'Wear the shed\'s own footwear when you go in to take the photo.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
             // Quality Check Failure Alert & Retake Action (Only shown if quality check failed at scan time)
             if (scanner.isQualityFailed) ...[
@@ -632,7 +662,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                             return DropdownMenuItem<String?>(
                               value: flock.id,
                               child: Text(
-                                '${flock.name} (${flock.breed ?? 'Standard'}, ${flock.birdCount ?? 0} birds)',
+                                '${flock.name} (${flock.breed ?? 'Standard'}, ${flock.birdCount != null ? '${flock.birdCount} birds' : 'Unspecified'})',
                                 style: const TextStyle(fontSize: 13.0),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
@@ -902,10 +932,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
                             final navigator = Navigator.of(context);
                             final messenger = ScaffoldMessenger.of(context);
-                            final diagRepo = context.read<DiagnosticRepository>();
 
                             final res = await scanner.executeDiagnosis();
-                            debugPrint('[ScannerScreen DEBUG] executeDiagnosis res: ${res != null ? "RECORD_OK id=${res.scan.id}" : "NULL"}, errorMessage: ${scanner.errorMessage}');
                             if (!mounted) return;
 
                             if (scanner.isQualityFailed) {
@@ -937,20 +965,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
                                 arguments: res,
                               );
                             } else {
-                              // Failsafe per Round-3 item 4: if scan was persisted to SQLite, navigate on saved record anyway
-                              try {
-                                final allScans = await diagRepo.getAllRecords();
-                                if (allScans.isNotEmpty && mounted) {
-                                  debugPrint('[ScannerScreen DEBUG] Navigating on latest persisted SQLite scan: ${allScans.first.scan.id}');
-                                  navigator.pushNamed(
-                                    AppRoutes.diagnosticResult,
-                                    arguments: allScans.first,
-                                  );
-                                  return;
-                                }
-                              } catch (e) {
-                                debugPrint('[ScannerScreen DEBUG] Fallback record lookup error: $e');
-                              }
                               if (mounted) {
                                 messenger.showSnackBar(
                                   SnackBar(

@@ -68,12 +68,29 @@ class SettingsController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> saveVetPhone(String phone) async {
+  Future<bool> saveVetPhone(String phone) async {
     final trimmed = phone.trim();
-    _vetPhone = trimmed.isEmpty ? null : trimmed;
-    if (_vetPhone != null) {
-      await _sessionService.saveVetPhone(_vetPhone!);
+    if (trimmed.isEmpty) {
+      _vetPhone = null;
+      await _sessionService.saveVetPhone('');
+      notifyListeners();
+      return true;
     }
+
+    // Clean formatting characters
+    String digits = trimmed.replaceAll(RegExp(r'[\s\-\(\)\+]'), '');
+    if (digits.startsWith('92') && digits.length >= 12) {
+      digits = '0${digits.substring(2)}';
+    }
+
+    // Validate 10 to 11 digits
+    if (!RegExp(r'^\d{10,11}$').hasMatch(digits)) {
+      return false;
+    }
+
+    _vetPhone = trimmed;
+    await _sessionService.saveVetPhone(_vetPhone!);
     notifyListeners();
+    return true;
   }
 }

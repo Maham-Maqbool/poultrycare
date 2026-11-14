@@ -7,8 +7,7 @@ class FlockStatusHelper {
   /// Evaluates whether a flock currently has active risk.
   /// A flock is 'Active Risk' if:
   /// 1. Its persisted activeDiseaseCount is > 0, OR
-  /// 2. Any scan associated with the flock in the last 30 days is Severe or Moderate,
-  ///    or is any disease scan not yet marked resolved.
+  /// 2. Any scan associated with the flock in the last 30 days is Severe or Moderate.
   /// Otherwise, returns false ('Healthy').
   static bool isAtRisk({
     required FlockModel flock,
@@ -26,6 +25,7 @@ class FlockStatusHelper {
   }
 
   /// Helper to evaluate directly from a list of records for a specific flock ID.
+  /// Consistent with DatabaseService: disease != 'healthy' and (severe or moderate) within 30 days.
   static bool isAtRiskFromRecords(List<DiagnosticRecord> records, {String? flockId}) {
     final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
     return records.any((r) {
@@ -35,13 +35,7 @@ class FlockStatusHelper {
       final disease = r.prediction.predictedClass?.toLowerCase() ?? 'healthy';
       final severity = r.prediction.severity?.toLowerCase() ?? 'mild';
 
-      if (disease != 'healthy') {
-        if (severity == 'severe' || severity == 'moderate') {
-          return true;
-        }
-        return true;
-      }
-      return false;
+      return disease != 'healthy' && (severity == 'severe' || severity == 'moderate');
     });
   }
 }

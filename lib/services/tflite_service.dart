@@ -127,19 +127,17 @@ class TFLiteService {
           options: options,
         );
         _activeModelName = 'PoultryCare Neural Vision Engine';
+        _isInitialized = true;
+        debugPrint(
+          '[TFLiteService] Initialized $_activeModelName with ${_labels.length} classes: $_labels',
+        );
       } catch (assetErr) {
         debugPrint('[TFLiteService] Interpreter loading notice: $assetErr');
-        _activeModelName = 'PoultryCare Neural Vision Engine';
+        _isInitialized = false;
       }
-
-      debugPrint(
-        '[TFLiteService] Initialized $_activeModelName with ${_labels.length} classes: $_labels',
-      );
-      _isInitialized = true;
     } catch (e) {
       debugPrint('[TFLiteService] Native TFLite Interpreter init notice: $e');
-      // Set initialized true to enable graceful fallback inference when host lacks dynamic C library
-      _isInitialized = true;
+      _isInitialized = false;
     }
   }
 
@@ -233,8 +231,7 @@ class TFLiteService {
       _interpreter!.run(input, output);
       probabilities = List<double>.from(output[0]);
     } else {
-      // Graceful analytical fallback when running on host without libtensorflowlite_c
-      probabilities = _heuristicFallbackProbabilities(imagePath);
+      throw StateError('AI vision engine unavailable on this device. Please restart the app.');
     }
 
     inferenceWatch.stop();
@@ -347,23 +344,6 @@ class TFLiteService {
       'urgency': urgency,
       'is_uncertain': 'false',
     };
-  }
-
-  /// Heuristic analytical fallback based on file naming patterns
-  /// when running off-device without libtensorflowlite_c.
-  List<double> _heuristicFallbackProbabilities(String path) {
-    final lower = path.toLowerCase();
-    if (lower.contains('newcastle') || lower.contains('ncd')) {
-      return [0.012, 0.003, 0.978, 0.007];
-    } else if (lower.contains('salmonella')) {
-      return [0.038, 0.015, 0.012, 0.935];
-    } else if (lower.contains('coccidiosis')) {
-      return [0.946, 0.018, 0.009, 0.027];
-    } else if (lower.contains('healthy')) {
-      return [0.008, 0.972, 0.004, 0.016];
-    }
-    // Default balanced distribution
-    return [0.912, 0.038, 0.021, 0.029];
   }
 
   /// Disposes TFLite interpreter and frees native memory.
