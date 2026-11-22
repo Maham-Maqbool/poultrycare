@@ -6,10 +6,16 @@ import 'package:poultrycare/services/tflite_service.dart';
 import 'package:poultrycare/services/disease_audio_service.dart';
 import 'package:poultrycare/data/repositories/diagnostic_repository.dart';
 import 'package:poultrycare/features/history/controllers/history_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'fake_tflite_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
 
   group('TFLite Image Preprocessing & Severity Calculation Tests', () {
     test('Direct 224x224 average interpolation preprocessing contract', () {

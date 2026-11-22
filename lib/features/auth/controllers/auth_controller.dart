@@ -48,7 +48,7 @@ class AuthController extends ChangeNotifier {
     required String name,
     required String identifier,
     required String password,
-    required bool consent,
+    bool consent = true,
   }) async {
     _isLoading = true;
     _errorMessage = null;

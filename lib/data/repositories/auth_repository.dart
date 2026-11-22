@@ -18,13 +18,56 @@ class AuthRepository {
     final name = await _sessionService.getUserName();
     final id = await _sessionService.getUserId();
     final locale = await _sessionService.getLocale();
+    final storedEmail = await _sessionService.getUserEmail();
+    final storedPhone = await _sessionService.getUserPhone();
 
     if (isLoggedIn) {
+      if (isGuest || id == 'guest') {
+        _currentUser = UserModel(
+          id: 'guest',
+          displayName: name,
+          email: null,
+          phone: null,
+          role: 'farmer',
+          locale: locale,
+          consentToRetainImages: false,
+          createdAt: DateTime.now(),
+        );
+        return true;
+      }
+
+      // Check registered users in local store
+      final registered = await _sessionService.getRegisteredUsers();
+      final match = registered.where((u) => u['id'] == id);
+      if (match.isNotEmpty) {
+        final u = match.first;
+        _currentUser = UserModel(
+          id: id,
+          displayName: u['name'] as String? ?? name,
+          email: u['email'] as String? ?? storedEmail,
+          phone: u['phone'] as String? ?? storedPhone,
+          role: 'farmer',
+          locale: locale,
+          consentToRetainImages: u['consent'] as bool? ?? true,
+          createdAt: DateTime.now().subtract(const Duration(days: 30)),
+        );
+        return true;
+      }
+
+      // Check existing demo accounts (e.g. usr-001 demo farmer)
+      final demoMatch = mockUsersData.where((u) => u.id == id && !u.isGuest);
+      if (demoMatch.isNotEmpty) {
+        _currentUser = demoMatch.first.copyWith(locale: locale);
+        return true;
+      }
+
+      // Restored registered session carries the account's OWN stored email or phone.
+      // If none is stored, show none; never invent one.
       _currentUser = UserModel(
         id: id,
         displayName: name,
-        email: isGuest ? null : 'farmer@poultrycare.farm',
-        phone: null,
+        email: storedEmail,
+        phone: storedPhone,
         role: 'farmer',
         locale: locale,
         consentToRetainImages: true,
@@ -48,16 +91,56 @@ class AuthRepository {
     await Future.delayed(const Duration(milliseconds: 250));
     final trimmedId = identifier.trim().toLowerCase();
 
-    // Find matching registered user
-    final match = mockUsersData.where(
+    // 1. Check registered users first
+    final registered = await _sessionService.getRegisteredUsers();
+    final regMatch = registered.where((u) {
+      final email = (u['email'] as String?)?.toLowerCase();
+      final phone = (u['phone'] as String?)?.toLowerCase();
+      final ident = (u['identifier'] as String?)?.toLowerCase();
+      return email == trimmedId || phone == trimmedId || ident == trimmedId;
+    });
+
+    if (regMatch.isNotEmpty) {
+      final userMap = regMatch.first;
+      final expectedPassword = userMap['password'] as String? ?? '';
+      if (password != expectedPassword) {
+        throw Exception('Incorrect password. Please try again.');
+      }
+
+      final user = UserModel(
+        id: userMap['id'] as String,
+        displayName: userMap['name'] as String? ?? 'Poultry Farmer',
+        email: userMap['email'] as String?,
+        phone: userMap['phone'] as String?,
+        role: 'farmer',
+        locale: 'ur',
+        consentToRetainImages: userMap['consent'] as bool? ?? true,
+        createdAt: DateTime.now(),
+      );
+
+      _currentUser = user;
+
+      // Persist login state
+      await _sessionService.saveUserSession(
+        id: _currentUser.id,
+        name: _currentUser.displayName,
+        email: _currentUser.email,
+        phone: _currentUser.phone,
+      );
+
+      return _currentUser;
+    }
+
+    // 2. Check existing demo accounts
+    final demoMatch = mockUsersData.where(
       (u) => (u.email?.toLowerCase() == trimmedId || u.phone == trimmedId) && !u.isGuest,
     );
 
-    if (match.isEmpty) {
+    if (demoMatch.isEmpty) {
       throw Exception('Account not found. Please register or continue as guest.');
     }
 
-    final user = match.first;
+    final user = demoMatch.first;
     final expectedPassword = _credentials[user.email] ?? _credentials[user.phone] ?? 'password123';
     if (password != expectedPassword) {
       throw Exception('Incorrect password. Please try again.');
@@ -79,7 +162,7 @@ class AuthRepository {
   Future<UserModel> continueAsGuest() async {
     await Future.delayed(const Duration(milliseconds: 150));
     _currentUser = UserModel(
-      id: 'guest-${DateTime.now().millisecondsSinceEpoch}',
+      id: 'guest',
       displayName: 'Guest Farmer',
       email: null,
       phone: null,
@@ -89,10 +172,10 @@ class AuthRepository {
       createdAt: DateTime.now(),
     );
 
-    // Persist guest session
+    // Persist guest session with fixed id 'guest'
     await _sessionService.saveGuestSession(
-      id: _currentUser.id,
-      name: _currentUser.displayName,
+      id: 'guest',
+      name: 'Guest Farmer',
     );
 
     return _currentUser;
@@ -102,12 +185,13 @@ class AuthRepository {
     required String name,
     required String identifier,
     required String password,
-    required bool consent,
+    bool consent = true,
   }) async {
     await Future.delayed(const Duration(milliseconds: 250));
     final isEmail = identifier.contains('@');
+    final userId = 'usr-${DateTime.now().millisecondsSinceEpoch}';
     final newUser = UserModel(
-      id: 'usr-${DateTime.now().millisecondsSinceEpoch}',
+      id: userId,
       displayName: name,
       email: isEmail ? identifier : null,
       phone: isEmail ? null : identifier,
@@ -116,16 +200,27 @@ class AuthRepository {
       consentToRetainImages: consent,
       createdAt: DateTime.now(),
     );
-    _currentUser = newUser;
 
-    // Persist new user session
-    await _sessionService.saveUserSession(
-      id: _currentUser.id,
-      name: _currentUser.displayName,
-      email: _currentUser.email,
-      phone: _currentUser.phone,
+    // 1. Persist registered user into local store
+    await _sessionService.saveRegisteredUser(
+      id: userId,
+      name: name,
+      identifier: identifier,
+      password: password,
+      consent: consent,
+      email: isEmail ? identifier : null,
+      phone: isEmail ? null : identifier,
     );
 
+    // 2. Persist active user session
+    await _sessionService.saveUserSession(
+      id: newUser.id,
+      name: newUser.displayName,
+      email: newUser.email,
+      phone: newUser.phone,
+    );
+
+    _currentUser = newUser;
     return _currentUser;
   }
 
@@ -140,6 +235,15 @@ class AuthRepository {
 
   Future<void> logout() async {
     await _sessionService.clearSession();
-    _currentUser = mockUsersData[2]; // Return to guest
+    _currentUser = UserModel(
+      id: 'guest',
+      displayName: 'Guest Farmer',
+      email: null,
+      phone: null,
+      role: 'farmer',
+      locale: 'ur',
+      consentToRetainImages: false,
+      createdAt: DateTime.now(),
+    );
   }
 }

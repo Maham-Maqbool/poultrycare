@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../../services/database_service.dart';
+import '../../services/session_service.dart';
 import '../../services/tflite_service.dart';
 import '../models/detection_history_record.dart';
 import '../models/diagnostic_record.dart';
@@ -13,6 +14,7 @@ import '../models/feedback_model.dart';
 class DiagnosticRepository {
   final List<DiagnosticRecord> _records = [];
   final DatabaseService _dbService = DatabaseService.instance;
+  final SessionService _sessionService = SessionService.instance;
   final TFLiteService _tfliteService;
 
   DiagnosticRepository({TFLiteService? tfliteService})
@@ -22,7 +24,7 @@ class DiagnosticRepository {
   DiagnosticRecord _mapDbRecordToDiagnosticRecord(DetectionHistoryRecord dbRec) {
     final scan = ScanModel(
       id: 'scn-db-${dbRec.id ?? dbRec.timestamp.millisecondsSinceEpoch}',
-      userId: null,
+      userId: dbRec.userId,
       deviceId: '',
       flockId: dbRec.flockId,
       idempotencyKey: 'idemp-db-${dbRec.id}',
@@ -34,7 +36,7 @@ class DiagnosticRepository {
     final String rawDiseaseCode = dbRec.diseaseName.toLowerCase().trim();
     final String diseaseCode = (rawDiseaseCode == 'ncd') ? 'newcastle' : rawDiseaseCode;
     final String rawSev = dbRec.severityLevel.toLowerCase().trim();
-    final String severity = (rawSev == 'healthy') ? 'mild' : rawSev;
+    final String severity = (diseaseCode == 'healthy' || rawSev == 'healthy') ? 'healthy' : rawSev;
     final String urgency = (diseaseCode == 'healthy')
         ? 'monitor'
         : ((severity == 'severe' || diseaseCode == 'newcastle')
@@ -83,12 +85,15 @@ class DiagnosticRepository {
   }
 
   /// Fetches all records dynamically from the local SQLite database.
+  /// Scoped to the current account (or specified userId).
   Future<List<DiagnosticRecord>> getAllRecords({
     String? filterDisease,
     String? filterSeverity,
     String? flockId,
+    String? userId,
   }) async {
-    final savedDbRecords = await _dbService.fetchAllRecords();
+    final effectiveUserId = userId ?? await _sessionService.getUserId();
+    final savedDbRecords = await _dbService.fetchAllRecords(userId: effectiveUserId);
     _records.clear();
     for (final dbRec in savedDbRecords) {
       _records.add(_mapDbRecordToDiagnosticRecord(dbRec));
@@ -240,6 +245,7 @@ class DiagnosticRepository {
       derivedUrgency = 'retake_photo';
       rulesFired.add('uncertain_low_confidence_retake');
     } else if (predictedClass == 'healthy') {
+      derivedSeverity = 'healthy';
       derivedUrgency = 'monitor';
       rulesFired.add('healthy_specimen_routine_monitoring');
     } else if (predictedClass == 'newcastle' || derivedSeverity == 'severe') {
@@ -261,11 +267,13 @@ class DiagnosticRepository {
       enrichedSignals['ratioScore'] = ratios.severityScore;
     }
 
-    // 3. Persist diagnosis session directly to local SQLite database
+    // 4. Persist diagnosis session directly to local SQLite database with user_id
+    final currentUserId = await _sessionService.getUserId();
     int? insertedDbId;
     try {
       insertedDbId = await _dbService.insertRecord(
         DetectionHistoryRecord(
+          userId: currentUserId,
           imagePath: imagePath,
           diseaseName: predictedClass,
           severityLevel: derivedSeverity,
@@ -288,7 +296,7 @@ class DiagnosticRepository {
 
     final scan = ScanModel(
       id: scanId,
-      userId: null,
+      userId: currentUserId,
       deviceId: '',
       flockId: flockId,
       idempotencyKey: 'idemp-${now.millisecondsSinceEpoch}',

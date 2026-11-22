@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:poultrycare/data/repositories/auth_repository.dart';
 import 'package:poultrycare/data/repositories/flock_repository.dart';
 import 'package:poultrycare/data/repositories/disease_repository.dart';
@@ -59,6 +60,11 @@ Widget createTestApp(Widget child, {bool isUrdu = false, Size size = const Size(
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
 
   testWidgets('Test MainShellScreen for overflow in English (360x640)', (tester) async {
     tester.view.physicalSize = const Size(360, 640);

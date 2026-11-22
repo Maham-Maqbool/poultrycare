@@ -21,7 +21,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _nameController = TextEditingController();
   final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _consent = true;
 
   @override
   void dispose() {
@@ -38,7 +37,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       name: _nameController.text.trim(),
       identifier: _identifierController.text.trim(),
       password: _passwordController.text,
-      consent: _consent,
     );
     if (success && mounted) {
       Navigator.pushReplacementNamed(context, AppRoutes.mainShell);
@@ -103,50 +101,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   prefixIcon: Icons.lock_outline_rounded,
                   isPassword: true,
                   validator: AppValidators.validatePassword,
-                ),
-                const SizedBox(height: AppDimensions.space20),
-
-                // Research and Model Improvement Consent
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainerLight.withValues(alpha: 0.5),
-                    borderRadius: AppDimensions.borderRadiusMedium,
-                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Checkbox(
-                        value: _consent,
-                        activeColor: AppColors.primary,
-                        onChanged: (val) {
-                          setState(() {
-                            _consent = val ?? false;
-                          });
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isUrdu ? 'تصویری تشخیص کی بہتری کی اجازت' : 'Consent for Image Improvement',
-                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              isUrdu
-                                  ? 'تصاویر کو محفوظ طریقے سے ماڈل کی درستگی بڑھانے کے لیے استعمال کیا جا سکتا ہے'
-                                  : 'Allow anonymized encrypted image tokens to be retained locally for diagnostic model refinement.',
-                              style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondaryLight),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
                 const SizedBox(height: AppDimensions.space24),
                 CustomButton(

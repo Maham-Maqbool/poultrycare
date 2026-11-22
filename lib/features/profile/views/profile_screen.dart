@@ -20,6 +20,21 @@ class ProfileScreen extends StatelessWidget {
     final isUrdu = settings.isUrdu;
     final user = auth.user;
 
+    final rawName = user.displayName?.trim() ?? '';
+    final cleanName = rawName.contains(' in ')
+        ? rawName.split(' in ')[0].trim()
+        : rawName;
+    final displayName = cleanName.isNotEmpty
+        ? cleanName
+        : (isUrdu ? 'مہمان فارمر' : 'Guest Farmer');
+
+    final realContact = (user.email != null && user.email!.isNotEmpty)
+        ? user.email!
+        : ((user.phone != null && user.phone!.isNotEmpty) ? user.phone! : null);
+    final contactSubtitle = realContact ?? (user.isGuest
+        ? (isUrdu ? 'لوکل ڈیوائس سیشن' : 'Guest Session (Local Device)')
+        : null);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(isUrdu ? 'فارم اکاؤنٹ' : 'Farm Account'),
@@ -46,7 +61,7 @@ class ProfileScreen extends StatelessWidget {
                     radius: 36,
                     backgroundColor: AppColors.primaryContainerLight,
                     child: Text(
-                      (user.displayName ?? 'F')[0].toUpperCase(),
+                      displayName.isNotEmpty ? displayName[0].toUpperCase() : 'F',
                       style: const TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.w800,
@@ -56,14 +71,18 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    user.displayName ?? (isUrdu ? 'مہمان فارمر' : 'Guest Farmer'),
+                    displayName,
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    user.email ?? user.phone ?? (isUrdu ? 'لوکل ڈیوائس سیشن' : 'Guest Session (Local Device)'),
-                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondaryLight),
-                  ),
+                  if (contactSubtitle != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      contactSubtitle,
+                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondaryLight),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

@@ -311,7 +311,16 @@ class TFLiteService {
       };
     }
 
-    // Severity derived strictly from measured clinical ratio score
+    // Case 2: Healthy class always has healthy severity and monitor urgency
+    if (predictedClass.toLowerCase() == 'healthy') {
+      return {
+        'severity': 'healthy',
+        'urgency': 'monitor',
+        'is_uncertain': 'false',
+      };
+    }
+
+    // Severity derived strictly from measured clinical ratio score for diseased classes
     severity = clinicalRatios.severity.toLowerCase().trim();
 
     // Apply minimum severity rule (e.g. Newcastle is at least Moderate)

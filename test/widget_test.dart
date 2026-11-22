@@ -19,9 +19,16 @@ import 'package:poultrycare/data/models/diagnostic_record.dart';
 import 'package:poultrycare/data/models/scan_model.dart';
 import 'package:poultrycare/data/models/prediction_model.dart';
 import 'package:poultrycare/features/scanner/views/diagnostic_result_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'fake_tflite_service.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
   testWidgets('PoultryCare app launches and renders branding', (WidgetTester tester) async {
     final authRepo = AuthRepository();
     final flockRepo = FlockRepository();
@@ -150,25 +157,25 @@ void main() {
     expect(record.prediction.probabilities.isNotEmpty, isTrue);
   });
 
-  test('DiagnosticRepository preserves Healthy specimen severity as mild and urgency as monitor', () async {
+  test('DiagnosticRepository preserves Healthy specimen severity as healthy and urgency as monitor even with sudden mortality', () async {
     final diagnosticRepo = DiagnosticRepository(
-      tfliteService: FakeTFLiteService(predictedClass: 'healthy', severity: 'mild'),
+      tfliteService: FakeTFLiteService(predictedClass: 'healthy', severity: 'healthy'),
     );
     final record = await diagnosticRepo.runDiagnosis(
       imagePath: 'assets/images/samples/healthy.png',
       flockSignals: {
-        'lethargy': 'Under 10% of birds',
-        'intakeDrop': 'Reduced slightly',
-        'suddenMortality': '1 to 2 birds died',
+        'lethargy': 'Over 10% of birds',
+        'intakeDrop': 'Severely reduced (>30%)',
+        'suddenMortality': 'Multiple birds died',
       },
     );
 
     expect(record.prediction.predictedClass, 'healthy');
-    expect(record.prediction.severity, 'mild');
+    expect(record.prediction.severity, 'healthy');
     expect(record.prediction.urgency, 'monitor');
   });
 
-  testWidgets('DiagnosticResultScreen displays MILD and MONITOR for Healthy specimen', (WidgetTester tester) async {
+  testWidgets('DiagnosticResultScreen displays HEALTHY and MONITOR for Healthy specimen', (WidgetTester tester) async {
     final authRepo = AuthRepository();
     final flockRepo = FlockRepository();
     final diseaseRepo = DiseaseRepository();
@@ -196,7 +203,7 @@ void main() {
         certainty: 'high',
         conformalSet: ['healthy'],
         abstained: false,
-        severity: 'mild',
+        severity: 'healthy',
         urgency: 'monitor',
         triageRules: const [],
         flockSignals: const {},
@@ -229,7 +236,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('MILD'), findsOneWidget);
+    expect(find.text('HEALTHY'), findsOneWidget);
     expect(find.text('MONITOR'), findsOneWidget);
     expect(find.text('TREAT TODAY'), findsNothing);
   });

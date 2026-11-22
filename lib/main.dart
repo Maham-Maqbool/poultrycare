@@ -12,7 +12,7 @@ import 'features/home/controllers/dashboard_controller.dart';
 import 'features/history/controllers/history_controller.dart';
 import 'features/profile/controllers/settings_controller.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -36,6 +36,7 @@ void main() {
 
   // Instantiate Repositories
   final authRepository = AuthRepository();
+  await authRepository.restoreSession();
   final flockRepository = FlockRepository();
   final diseaseRepository = DiseaseRepository();
   final diagnosticRepository = DiagnosticRepository();

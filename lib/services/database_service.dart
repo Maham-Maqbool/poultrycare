@@ -9,7 +9,7 @@ import '../data/models/flock_model.dart';
 /// and farmer-managed flocks/sheds.
 class DatabaseService {
   static const String _databaseName = 'poultrycare_history.db';
-  static const int _databaseVersion = 2;
+  static const int _databaseVersion = 3;
   static const String tableHistory = 'detection_history';
   static const String tableFlocks = 'flocks';
 
@@ -51,6 +51,7 @@ class DatabaseService {
     await db.execute('''
       CREATE TABLE $tableHistory (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT,
         image_path TEXT NOT NULL,
         disease_name TEXT NOT NULL,
         severity_level TEXT NOT NULL,
@@ -95,6 +96,9 @@ class DatabaseService {
         )
       ''');
     }
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE $tableHistory ADD COLUMN user_id TEXT');
+    }
   }
 
   Future<void> _ensureTables(Database db) async {
@@ -110,6 +114,14 @@ class DatabaseService {
         active_disease_count INTEGER DEFAULT 0
       )
     ''');
+
+    try {
+      final info = await db.rawQuery('PRAGMA table_info($tableHistory)');
+      final hasUserId = info.any((c) => c['name'] == 'user_id');
+      if (!hasUserId) {
+        await db.execute('ALTER TABLE $tableHistory ADD COLUMN user_id TEXT');
+      }
+    } catch (_) {}
   }
 
   // ==========================================
@@ -142,17 +154,41 @@ class DatabaseService {
   }
 
   /// Fetches all detection history records sorted by timestamp descending.
-  /// Empty table stays empty with no automatic re-seeding.
-  Future<List<DetectionHistoryRecord>> fetchAllRecords() async {
+  /// If userId is specified, scopes to that user (usr-001 includes existing null rows).
+  Future<List<DetectionHistoryRecord>> fetchAllRecords({String? userId}) async {
     try {
       final db = await database;
+      String? whereClause;
+      List<dynamic>? whereArguments;
+
+      if (userId != null) {
+        if (userId == 'usr-001') {
+          whereClause = 'user_id = ? OR user_id IS NULL';
+          whereArguments = ['usr-001'];
+        } else {
+          whereClause = 'user_id = ?';
+          whereArguments = [userId];
+        }
+      }
+
       final maps = await db.query(
         tableHistory,
+        where: whereClause,
+        whereArgs: whereArguments,
         orderBy: 'timestamp DESC',
       );
       return maps.map((m) => DetectionHistoryRecord.fromMap(m)).toList();
     } catch (e) {
       debugPrint('[DatabaseService] Native SQLite query error: $e');
+      if (userId != null) {
+        if (userId == 'usr-001') {
+          return _memoryFallback
+              .where((r) => r.userId == 'usr-001' || r.userId == null)
+              .toList();
+        } else {
+          return _memoryFallback.where((r) => r.userId == userId).toList();
+        }
+      }
       return List.unmodifiable(_memoryFallback);
     }
   }
@@ -214,11 +250,28 @@ class DatabaseService {
   }
 
   /// Deletes all detection records from the local history table.
-  /// Returns the number of affected rows.
-  Future<int> deleteAllRecords() async {
+  /// If userId is specified, scopes deletion to that user.
+  Future<int> deleteAllRecords({String? userId}) async {
     try {
       final db = await database;
-      final count = await db.delete(tableHistory);
+      int count;
+      if (userId != null) {
+        if (userId == 'usr-001') {
+          count = await db.delete(
+            tableHistory,
+            where: 'user_id = ? OR user_id IS NULL',
+            whereArgs: ['usr-001'],
+          );
+        } else {
+          count = await db.delete(
+            tableHistory,
+            where: 'user_id = ?',
+            whereArgs: [userId],
+          );
+        }
+      } else {
+        count = await db.delete(tableHistory);
+      }
       await db.update(tableFlocks, {'active_disease_count': 0});
       for (int i = 0; i < _flocksMemoryFallback.length; i++) {
         _flocksMemoryFallback[i] = _flocksMemoryFallback[i].copyWith(activeDiseaseCount: 0);
@@ -227,7 +280,15 @@ class DatabaseService {
     } catch (e) {
       debugPrint('[DatabaseService] Native SQLite clear error: $e');
       final count = _memoryFallback.length;
-      _memoryFallback.clear();
+      if (userId != null) {
+        if (userId == 'usr-001') {
+          _memoryFallback.removeWhere((r) => r.userId == 'usr-001' || r.userId == null);
+        } else {
+          _memoryFallback.removeWhere((r) => r.userId == userId);
+        }
+      } else {
+        _memoryFallback.clear();
+      }
       for (int i = 0; i < _flocksMemoryFallback.length; i++) {
         _flocksMemoryFallback[i] = _flocksMemoryFallback[i].copyWith(activeDiseaseCount: 0);
       }
@@ -236,14 +297,33 @@ class DatabaseService {
   }
 
   /// Returns total count of saved detection records.
-  Future<int> getRecordCount() async {
+  /// If userId is specified, scopes count to that user.
+  Future<int> getRecordCount({String? userId}) async {
     try {
       final db = await database;
+      String query = 'SELECT COUNT(*) FROM $tableHistory';
+      List<dynamic>? args;
+      if (userId != null) {
+        if (userId == 'usr-001') {
+          query += ' WHERE user_id = ? OR user_id IS NULL';
+          args = ['usr-001'];
+        } else {
+          query += ' WHERE user_id = ?';
+          args = [userId];
+        }
+      }
       final count = Sqflite.firstIntValue(
-        await db.rawQuery('SELECT COUNT(*) FROM $tableHistory'),
+        await db.rawQuery(query, args),
       );
       return count ?? 0;
     } catch (_) {
+      if (userId != null) {
+        if (userId == 'usr-001') {
+          return _memoryFallback.where((r) => r.userId == 'usr-001' || r.userId == null).length;
+        } else {
+          return _memoryFallback.where((r) => r.userId == userId).length;
+        }
+      }
       return _memoryFallback.length;
     }
   }
@@ -275,17 +355,42 @@ class DatabaseService {
   );
 
   /// Fetches all flocks stored in the local database.
-  Future<List<FlockModel>> fetchAllFlocks() async {
+  /// If userId is specified, scopes to that user (usr-001 includes existing null/empty user_id).
+  Future<List<FlockModel>> fetchAllFlocks({String? userId}) async {
     try {
       await syncAllFlocksRisk();
       final db = await database;
+      String? whereClause;
+      List<dynamic>? whereArguments;
+
+      if (userId != null) {
+        if (userId == 'usr-001') {
+          whereClause = 'user_id = ? OR user_id IS NULL OR user_id = ?';
+          whereArguments = ['usr-001', ''];
+        } else {
+          whereClause = 'user_id = ?';
+          whereArguments = [userId];
+        }
+      }
+
       final maps = await db.query(
         tableFlocks,
+        where: whereClause,
+        whereArgs: whereArguments,
         orderBy: 'created_at DESC',
       );
       return maps.map(_flockFromDbMap).toList();
     } catch (e) {
       debugPrint('[DatabaseService] Native SQLite query flocks error: $e');
+      if (userId != null) {
+        if (userId == 'usr-001') {
+          return _flocksMemoryFallback
+              .where((f) => f.userId == 'usr-001' || f.userId.isEmpty)
+              .toList();
+        } else {
+          return _flocksMemoryFallback.where((f) => f.userId == userId).toList();
+        }
+      }
       return List.unmodifiable(_flocksMemoryFallback);
     }
   }

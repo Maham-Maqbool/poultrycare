@@ -188,8 +188,8 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
     final scan = record.scan;
     final rawDiseaseCode = (pred.predictedClass ?? 'healthy').toLowerCase().trim();
     final diseaseCode = (rawDiseaseCode == 'ncd') ? 'newcastle' : rawDiseaseCode;
-    final rawSeverity = (pred.severity ?? 'mild').toLowerCase().trim();
-    final severity = (rawSeverity == 'healthy') ? 'mild' : rawSeverity;
+    final rawSeverity = (pred.severity ?? 'healthy').toLowerCase().trim();
+    final severity = (diseaseCode == 'healthy' || rawSeverity == 'healthy') ? 'healthy' : rawSeverity;
     final rawUrgency = (pred.urgency ?? '').toLowerCase().replaceAll(' ', '_').trim();
     final urgency = (diseaseCode == 'healthy')
         ? 'monitor'
@@ -357,15 +357,21 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
                                       ? 'شدید'
                                       : (severity == 'moderate'
                                           ? 'درمیانی'
-                                          : 'ہلکی'))
-                                  : severity.toUpperCase()),
+                                          : (severity == 'healthy' || diseaseCode == 'healthy'
+                                              ? 'صحت مند'
+                                              : 'ہلکی')))
+                                  : ((severity == 'healthy' || diseaseCode == 'healthy')
+                                      ? 'HEALTHY'
+                                      : severity.toUpperCase())),
                           badgeColor: isUncertain
                               ? const Color(0xFFF59E0B)
                               : (severity == 'severe'
                                   ? AppColors.severe
                                   : (severity == 'moderate'
                                       ? AppColors.moderate
-                                      : AppColors.mild)),
+                                      : ((severity == 'healthy' || diseaseCode == 'healthy')
+                                          ? AppColors.healthy
+                                          : AppColors.mild))),
                         ),
                       ),
                       Container(width: 1, height: 36, color: AppColors.borderLight),
@@ -1747,6 +1753,12 @@ class _DiagnosticResultScreenState extends State<DiagnosticResultScreen> {
     Map<String, dynamic> signals,
     bool isUrdu,
   ) {
+    if (diseaseCode == 'healthy') {
+      return isUrdu
+          ? 'فلاک کے وائٹلز تسلی بخش ہیں۔ کوئی غیر معمولی علامات نہیں پائی گئیں۔'
+          : 'Flock vital signals are stable. Normal healthy specimen monitored.';
+    }
+
     final mortality = (signals['suddenMortality'] ?? '').toString();
     final intake = (signals['intakeDrop'] ?? '').toString();
     final lethargy = (signals['lethargy'] ?? '').toString();

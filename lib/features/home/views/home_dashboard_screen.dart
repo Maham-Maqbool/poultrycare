@@ -13,6 +13,7 @@ import '../../auth/controllers/auth_controller.dart';
 import '../controllers/dashboard_controller.dart';
 import '../../scanner/controllers/scanner_controller.dart';
 import '../../flocks/controllers/flock_controller.dart';
+import '../../history/controllers/history_controller.dart';
 import '../../profile/controllers/settings_controller.dart';
 import '../../../data/models/flock_model.dart';
 import '../../../data/repositories/disease_repository.dart';
@@ -38,6 +39,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       if (mounted) {
         context.read<DashboardController>().loadDashboard();
         context.read<FlockController>().loadFlocks();
+        context.read<HistoryController>().loadRecords();
       }
     });
   }
@@ -66,8 +68,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final isUrdu = settings.isUrdu;
 
     final user = auth.user;
-    final farmName = user.displayName?.isNotEmpty == true
-        ? user.displayName!
+    final rawFarmName = user.displayName?.trim() ?? '';
+    final cleanFarmName = rawFarmName.contains(' in ')
+        ? rawFarmName.split(' in ')[0].trim()
+        : rawFarmName;
+    final farmName = cleanFarmName.isNotEmpty
+        ? cleanFarmName
         : 'Chaudhary Poultry Farms';
 
     return Scaffold(

@@ -4,6 +4,7 @@ import 'dart:convert';
 /// stored in the local SQLite database.
 class DetectionHistoryRecord {
   final int? id;
+  final String? userId;
   final String imagePath;
   final String diseaseName;
   final String severityLevel;
@@ -15,6 +16,7 @@ class DetectionHistoryRecord {
 
   const DetectionHistoryRecord({
     this.id,
+    this.userId,
     required this.imagePath,
     required this.diseaseName,
     required this.severityLevel,
@@ -29,6 +31,7 @@ class DetectionHistoryRecord {
   Map<String, dynamic> toMap() {
     return {
       if (id != null) 'id': id,
+      'user_id': userId,
       'image_path': imagePath,
       'disease_name': diseaseName,
       'severity_level': severityLevel,
@@ -57,9 +60,10 @@ class DetectionHistoryRecord {
 
     return DetectionHistoryRecord(
       id: map['id'] as int?,
+      userId: map['user_id'] as String?,
       imagePath: map['image_path'] as String? ?? '',
       diseaseName: map['disease_name'] as String? ?? 'Healthy',
-      severityLevel: map['severity_level'] as String? ?? 'Mild',
+      severityLevel: map['severity_level'] as String? ?? 'Healthy',
       confidenceScore: (map['confidence_score'] as num?)?.toDouble() ?? 0.0,
       timestamp: map['timestamp'] != null
           ? DateTime.tryParse(map['timestamp'] as String) ?? DateTime.now()
@@ -73,6 +77,7 @@ class DetectionHistoryRecord {
   /// Returns a copy of the record with modified fields.
   DetectionHistoryRecord copyWith({
     int? id,
+    String? userId,
     String? imagePath,
     String? diseaseName,
     String? severityLevel,
@@ -84,6 +89,7 @@ class DetectionHistoryRecord {
   }) {
     return DetectionHistoryRecord(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       imagePath: imagePath ?? this.imagePath,
       diseaseName: diseaseName ?? this.diseaseName,
       severityLevel: severityLevel ?? this.severityLevel,
