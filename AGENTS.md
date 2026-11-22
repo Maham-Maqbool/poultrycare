@@ -594,3 +594,15 @@ All 11 project rules documented in `.agents/rules/project-rules.md` are actively
     - Added unit tests for Items 1 and 3 in `test/addendum9_test.dart`.
     - Executed `flutter analyze`: 0 issues found (clean static analysis).
     - Executed `flutter test`: 63/63 tests passed across all test suites (100% success rate).
+- Phase 40 Complete (EfficientNetB0 Model Swap):
+  - Model Asset Swap: Copied `poultry_efficientnetb0_fp16.tflite` (8,458,040 bytes) over `assets/model/poultry_neural_vision_fp16.tflite` preserving exact destination filename.
+  - Model Metadata Asset Swap: Copied EfficientNet `model_meta.json` over `assets/model/model_meta.json` (model: `efficientnetb0`, baked-in calibration temperature: `0.6145899997434524`, test_accuracy: `0.9896446700507615`).
+  - Zero Code Changes: `labels.txt`, `severity_config.json`, Dart source code, and `pubspec.yaml` remained 100% untouched.
+  - Static Analysis: Executed `flutter analyze`: 0 issues found (clean static analysis).
+  - Production Release Build: Executed `flutter clean; flutter pub get; flutter build apk --release --split-per-abi`:
+    - `app-arm64-v8a-release.apk`: 35,927,927 bytes (34.26 MiB / 35.93 MB, exactly +3.67 MB over MobileNetV2, matching expected ~35 MB).
+    - `app-armeabi-v7a-release.apk`: 31,460,335 bytes (30.00 MB).
+    - `app-x86_64-release.apk`: 39,364,903 bytes (37.54 MB).
+  - Physical Device Run Status: Blocked pending physical USB device reconnection (`adb devices` reports no attached device).
+  - Local Git Commit: Committed modified assets with message `Swap shipped model to EfficientNetB0 fp16 (model + meta)`.
+  - Strict Rule 7 compliance: Zero em dashes or en dashes across all touched files.
